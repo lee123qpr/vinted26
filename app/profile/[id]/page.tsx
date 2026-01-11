@@ -95,11 +95,26 @@ export default async function ProfilePage({ params }: Props) {
         notFound();
     }
 
+    // Calculate Ranks
+    const { count: rankCarbon } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .gt('total_carbon_saved_kg', profile.total_carbon_saved_kg || 0);
+
+    const { count: rankLandfill } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .gt('total_landfill_saved_kg', profile.total_landfill_saved_kg || 0);
+
     return (
         <ProfileClient
             profile={profile}
             listings={listings || []}
             reviews={reviews || []}
+            ranks={{
+                carbon: (rankCarbon || 0) + 1,
+                landfill: (rankLandfill || 0) + 1
+            }}
         />
     );
 }

@@ -13,10 +13,10 @@ export default async function DashboardPage() {
     }
 
     // Parallel data fetching for performance
-    const [profileRes, listingsCountRes, recentSalesRes] = await Promise.all([
+    const [profileRes, listingsCountRes, recentSalesRes, recentOrdersRes] = await Promise.all([
         supabase
             .from('profiles')
-            .select('full_name, username, total_carbon_saved_kg, total_sales, total_earnings_gbp') // Assuming total_earnings_gbp exists, else calculate
+            .select('full_name, username, total_carbon_saved_kg, total_sales')
             .eq('id', user.id)
             .single(),
         supabase
@@ -35,12 +35,26 @@ export default async function DashboardPage() {
             `)
             .eq('seller_id', user.id)
             .order('created_at', { ascending: false })
+            .limit(5),
+        supabase
+            .from('transactions')
+            .select(`
+                id,
+                total_price_gbp,
+                created_at,
+                order_status,
+                seller:seller_id(username),
+                listings(title)
+            `)
+            .eq('buyer_id', user.id)
+            .order('created_at', { ascending: false })
             .limit(5)
     ]);
 
     const profile = profileRes.data;
     const activeListingsCount = listingsCountRes.count || 0;
     const recentSales = recentSalesRes.data || [];
+    const recentOrders = recentOrdersRes.data || [];
 
     // Fallback if total_earnings_gbp is not in profile (it wasn't in the snippet I saw, but total_sales was)
     // If not in profile, we might need to sum transactions myself or rely on hardcoded for now if schema unknown.
@@ -118,36 +132,69 @@ export default async function DashboardPage() {
                 </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-sm border border-secondary-100 overflow-hidden">
-                <div className="p-6 border-b border-secondary-100">
-                    <h3 className="font-bold text-lg text-secondary-900">Recent Sales Activity</h3>
-                </div>
-                <div className="divide-y divide-secondary-100">
-                    {recentSales.length > 0 ? (
-                        recentSales.map((sale: any) => (
-                            <div key={sale.id} className="p-4 hover:bg-secondary-50 transition flex items-center justify-between">
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center flex-shrink-0 font-bold">
-                                        £
+            {/* Recent Activity Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                {/* Recent Sales (Sold Items) */}
+                <div className="bg-white rounded-xl shadow-sm border border-secondary-100 overflow-hidden flex flex-col h-full">
+                    <div className="p-6 border-b border-secondary-100 flex justify-between items-center">
+                        <h3 className="font-bold text-lg text-secondary-900">Recent Sales</h3>
+                        <Link href="/dashboard/sales" className="text-xs font-semibold text-primary-600 hover:text-primary-700">View All</Link>
+                    </div>
+                    <div className="divide-y divide-secondary-100 flex-1">
+                        {recentSales.length > 0 ? (
+                            recentSales.map((sale: any) => (
+                                <div key={sale.id} className="p-4 hover:bg-secondary-50 transition flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center flex-shrink-0 font-bold">
+                                            £
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-secondary-900 capitalize text-sm">{sale.order_status?.replace(/_/g, ' ')}</p>
+                                            <p className="text-xs text-secondary-500">Buyer: {sale.buyer?.username || 'Unknown'}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-medium text-secondary-900 capitalize">Order {sale.order_status?.replace('_', ' ')}</p>
-                                        <p className="text-sm text-secondary-500">Buyer: {sale.buyer?.username || 'Unknown'}</p>
-                                    </div>
+                                    <span className="text-sm font-semibold text-green-600">+{formatCurrency(sale.total_price_gbp)}</span>
                                 </div>
-                                <span className="text-sm font-semibold text-green-600">+{formatCurrency(sale.total_price_gbp)}</span>
+                            ))
+                        ) : (
+                            <div className="p-8 text-center text-secondary-400 text-sm">
+                                No recent sales found.
                             </div>
-                        ))
-                    ) : (
-                        <div className="p-8 text-center text-secondary-500">
-                            No recent sales found.
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
-                <div className="p-4 bg-secondary-50 text-center">
-                    <Link href="/dashboard/sales" className="text-primary-600 font-medium hover:text-primary-700 text-sm">View All Sales</Link>
+
+                {/* Recent Orders (Purchases) */}
+                <div className="bg-white rounded-xl shadow-sm border border-secondary-100 overflow-hidden flex flex-col h-full">
+                    <div className="p-6 border-b border-secondary-100 flex justify-between items-center">
+                        <h3 className="font-bold text-lg text-secondary-900">Recent Orders</h3>
+                        <Link href="/dashboard/orders" className="text-xs font-semibold text-primary-600 hover:text-primary-700">View All</Link>
+                    </div>
+                    <div className="divide-y divide-secondary-100 flex-1">
+                        {recentOrders.length > 0 ? (
+                            recentOrders.map((order: any) => (
+                                <div key={order.id} className="p-4 hover:bg-secondary-50 transition flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-secondary-900 truncate text-sm">{order.listings?.title || 'Unknown Item'}</p>
+                                            <p className="text-xs text-secondary-500 capitalize">{order.order_status?.replace(/_/g, ' ')}</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-sm font-medium text-secondary-900">-{formatCurrency(order.total_price_gbp)}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="p-8 text-center text-secondary-400 text-sm">
+                                No recent orders found.
+                            </div>
+                        )}
+                    </div>
                 </div>
+
             </div>
         </div>
     );

@@ -1,130 +1,99 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 
 export default function Footer() {
-    const [email, setEmail] = useState('');
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [message, setMessage] = useState('');
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email) return;
-
-        setStatus('loading');
-        setMessage('');
-
-        try {
-            const res = await fetch('/api/newsletter', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Something went wrong');
-            }
-
-            setStatus('success');
-            setMessage(data.message);
-            setEmail('');
-        } catch (error: any) {
-            setStatus('error');
-            setMessage(error.message);
-        }
-    };
-
     return (
-        <footer className="bg-secondary-900 text-white py-12 mt-20">
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* Brand & Description */}
-                    <div>
-                        <h3 className="text-xl font-bold mb-4">Skipped</h3>
-                        <p className="text-secondary-300">
-                            The UK's marketplace for construction materials. Buy, sell, and save the planet.
+        <footer className="bg-secondary-900 text-white pt-20 pb-10 border-t border-secondary-800">
+            <div className="container-custom">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                    {/* Column 1: Brand & Socials */}
+                    <div className="space-y-6">
+                        <Link href="/" className="flex items-center space-x-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <span className="text-white font-bold text-xl">S</span>
+                            </div>
+                            <span className="text-2xl font-black tracking-tight text-white hover:text-primary-400 transition">Skipped.</span>
+                        </Link>
+                        <p className="text-secondary-400 leading-relaxed">
+                            The UK's marketplace for reclaimed construction materials. Stop waste, save money, and build better.
                         </p>
+                        <div className="flex space-x-4">
+                            {/* Instagram */}
+                            <a href="#" className="w-10 h-10 rounded-full bg-secondary-800 flex items-center justify-center text-white hover:bg-primary-600 hover:scale-110 transition-all">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.069-4.85.069-3.204 0-3.584-.012-4.849-.069-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                            </a>
+                            {/* Facebook */}
+                            <a href="#" className="w-10 h-10 rounded-full bg-secondary-800 flex items-center justify-center text-white hover:bg-primary-600 hover:scale-110 transition-all">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" /></svg>
+                            </a>
+                            {/* LinkedIn */}
+                            <a href="#" className="w-10 h-10 rounded-full bg-secondary-800 flex items-center justify-center text-white hover:bg-primary-600 hover:scale-110 transition-all">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z" /></svg>
+                            </a>
+                            {/* X / Twitter */}
+                            <a href="#" className="w-10 h-10 rounded-full bg-secondary-800 flex items-center justify-center text-white hover:bg-primary-600 hover:scale-110 transition-all">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                            </a>
+                        </div>
                     </div>
 
-                    {/* Discover */}
+                    {/* Column 2: Shop */}
                     <div>
-                        <h4 className="font-semibold mb-4">Discover</h4>
-                        <ul className="space-y-2 text-secondary-300">
-                            <li><Link href="/how-it-works" className="hover:text-white transition">How It Works</Link></li>
-                            <li><Link href="/categories" className="hover:text-white transition">Browse Categories</Link></li>
-                            <li><Link href="/dashboard/impact" className="hover:text-white transition">Sustainability</Link></li>
+                        <h4 className="font-bold text-lg mb-6">Shop</h4>
+                        <ul className="space-y-4 text-secondary-400">
+                            <li><Link href="/category/building-materials?subcategory=bricks-blocks" className="hover:text-primary-400 transition">Bricks & Blocks</Link></li>
+                            <li><Link href="/category/timber-joinery" className="hover:text-primary-400 transition">Timber & Joinery</Link></li>
+                            <li><Link href="/category/building-materials?subcategory=insulation" className="hover:text-primary-400 transition">Insulation</Link></li>
+                            <li><Link href="/category/building-materials?subcategory=roofing" className="hover:text-primary-400 transition">Roofing</Link></li>
+                            <li><Link href="/search" className="hover:text-primary-400 transition">View All Categories</Link></li>
                         </ul>
                     </div>
 
-                    {/* Help */}
+                    {/* Column 3: Support */}
                     <div>
-                        <h4 className="font-semibold mb-4">Help</h4>
-                        <ul className="space-y-2 text-secondary-300">
-                            <li><Link href="/help" className="hover:text-white transition">Help Centre</Link></li>
-                            <li><Link href="/sell" className="hover:text-white transition">Selling</Link></li>
-                            <li><Link href="/" className="hover:text-white transition">Buying</Link></li>
+                        <h4 className="font-bold text-lg mb-6">Support</h4>
+                        <ul className="space-y-4 text-secondary-400">
+                            <li><Link href="/help" className="hover:text-primary-400 transition">Help Centre</Link></li>
+                            <li><Link href="/faq" className="hover:text-primary-400 transition">FAQ</Link></li>
+                            <li><Link href="/trust-safety" className="hover:text-primary-400 transition">Trust & Safety</Link></li>
+                            <li><Link href="/contact" className="hover:text-primary-400 transition">Contact Us</Link></li>
+                            <li><Link href="/about" className="hover:text-primary-400 transition">About Us</Link></li>
+                            <li><Link href="/articles" className="hover:text-primary-400 transition">News & Articles</Link></li>
+                            <li><Link href="/how-it-works" className="hover:text-primary-400 transition">How it Works</Link></li>
                         </ul>
                     </div>
 
-                    {/* Newsletter (Replaces 'About' in the original layout, or adds to it. 
-             The original layout had 'About' as the 4th column. 
-             I'll merge About links into 'Discover' or 'Help', or just keep About and make this a 5th column or row?
-             Looking at the original layout, it was 4 columns.
-             I'll modify the 4th column to be 'Stay Updated' and move useful About links elsewhere or keep them.
-             Actually, usually Newsletter is a full width row or a prominent column.
-             Let's keep the design clean: 4 columns. 
-             Col 1: Brand
-             Col 2: Discover (with About links merged in)
-             Col 3: Help
-             Col 4: Newsletter
-          */}
+                    {/* Column 4: Newsletter */}
                     <div>
-                        <h4 className="font-semibold mb-4">Stay Updated</h4>
-                        <p className="text-sm text-secondary-300 mb-4">
+                        <h4 className="font-bold text-lg mb-6">Stay Updated</h4>
+                        <p className="text-secondary-400 mb-4 text-sm">
                             Get the latest updates on new materials and sustainability tips.
                         </p>
-                        <form onSubmit={handleSubmit} className="space-y-2">
-                            <div>
-                                <input
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    aria-label="Email address"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    disabled={status === 'loading' || status === 'success'}
-                                    className="w-full px-4 py-2 text-primary-900 rounded bg-white border border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                    required
-                                />
-                            </div>
+                        <form className="space-y-2">
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
+                                className="w-full px-4 py-2 rounded bg-white border border-secondary-200 text-secondary-900 placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition"
+                                suppressHydrationWarning
+                            />
                             <button
                                 type="submit"
-                                disabled={status === 'loading' || status === 'success'}
-                                className="w-full btn-primary py-2 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full btn-primary py-2 text-sm font-bold rounded hover:shadow-lg transition-transform hover:-translate-y-0.5"
+                                suppressHydrationWarning
                             >
-                                {status === 'loading' ? 'Subscribing...' : status === 'success' ? 'Subscribed!' : 'Subscribe'}
+                                Subscribe
                             </button>
-                            {message && (
-                                <p className={`text-xs mt-2 ${status === 'error' ? 'text-red-400' : 'text-green-400'}`}>
-                                    {message}
-                                </p>
-                            )}
                         </form>
-                        <div className="mt-6 text-sm text-secondary-400">
-                            <Link href="/about" className="hover:text-white transition mr-4">About Us</Link>
-                            <Link href="/contact" className="hover:text-white transition">Contact</Link>
-                        </div>
                     </div>
                 </div>
 
-                {/* Legal Links Row */}
-                <div className="border-t border-secondary-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-secondary-400">
-                    <p>&copy; {new Date().getFullYear()} Skipped. All rights reserved.</p>
-                    <div className="flex space-x-6 mt-4 md:mt-0">
-                        <Link href="/legal/terms" className="hover:text-white transition">Terms</Link>
-                        <Link href="/legal/privacy" className="hover:text-white transition">Privacy</Link>
+                {/* Bottom Bar */}
+                <div className="border-t border-secondary-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-secondary-500">
+                    <p>&copy; {new Date().getFullYear()} Skipped Ltd. All rights reserved.</p>
+                    <div className="flex space-x-8 mt-4 md:mt-0">
+                        <Link href="/legal/privacy" className="hover:text-white transition">Privacy Policy</Link>
+                        <Link href="/legal/terms" className="hover:text-white transition">Terms of Service</Link>
                         <Link href="/legal/cookies" className="hover:text-white transition">Cookies</Link>
                     </div>
                 </div>

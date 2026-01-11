@@ -2,33 +2,43 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+// import { useRouter } from 'next/navigation'; // Not needed with Server Actions redirect
+import { login } from '../actions';
+
+import TurnstileWidget from '@/components/TurnstileWidget';
 
 export default function LoginPage() {
-    const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    // const router = useRouter(); 
+    // We can rely on server action redirect, but for error handling we might want local state or useUrlState
+
+    // For simplicity with standard form submission:
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [turnstileToken, setTurnstileToken] = useState<string>('');
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (formData: FormData) => {
         setLoading(true);
         setError(null);
 
-        try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
+        if (!turnstileToken) {
+            setError("Please verify you are human");
+            setLoading(false);
+            return;
+        }
 
-            if (error) throw error;
-            router.push('/dashboard');
-            router.refresh();
+        // Append token to formData manually since widget doesn't use hidden input
+        formData.append('turnstileToken', turnstileToken);
+
+        try {
+            const result = await login(formData);
+            if (result?.error) {
+                setError(result.error);
+                setTurnstileToken(''); // Reset token
+                setLoading(false);
+            }
+            // If success, it redirects, so we don't need to setLoading(false) necessarily
         } catch (err: any) {
-            setError(err.message);
-        } finally {
+            setError('An unexpected error occurred');
             setLoading(false);
         }
     };
@@ -54,7 +64,7 @@ export default function LoginPage() {
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                    <form className="space-y-6" onSubmit={handleLogin}>
+                    <form action={handleSubmit} className="space-y-6">
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                                 {error}
@@ -72,8 +82,6 @@ export default function LoginPage() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
                                     className="input-field"
                                 />
                             </div>
@@ -90,8 +98,6 @@ export default function LoginPage() {
                                     type="password"
                                     autoComplete="current-password"
                                     required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
                                     className="input-field"
                                 />
                             </div>
@@ -111,11 +117,16 @@ export default function LoginPage() {
                             </div>
 
                             <div className="text-sm">
-                                <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                                <Link href="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
                                     Forgot your password?
-                                </a>
+                                </Link>
                             </div>
                         </div>
+
+                        <TurnstileWidget
+                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                            onVerify={(token) => setTurnstileToken(token)}
+                        />
 
                         <div>
                             <button

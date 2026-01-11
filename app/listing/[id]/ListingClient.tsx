@@ -16,19 +16,27 @@ const MapView = dynamic(() => import('@/components/MapView'), {
     loading: () => <div className="h-full w-full bg-secondary-100 animate-pulse flex items-center justify-center text-secondary-400">Loading Map...</div>
 });
 
+import OfferModal from '@/components/OfferModal';
+
+// ... other imports ...
+
 export default function ListingClient({ listing, relatedListings, user }: { listing: any, relatedListings: any[], user: any }) {
     const router = useRouter();
     const [isFavourite, setIsFavourite] = useState(false);
     const [favLoading, setFavLoading] = useState(false);
+    const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
 
     useEffect(() => {
         const trackView = async () => {
+            // Don't count views if the user is the seller
+            if (user?.id === listing.seller_id) return;
+
             if (listing && listing.status === 'active') {
                 await supabase.rpc('increment_view_count', { listing_id: listing.id });
             }
         };
         trackView();
-    }, [listing]);
+    }, [listing, user]);
 
     // Initial check for favourite could be done here if needed, or passed as prop
     // For now we will keep the toggle logic local as it depends on client interaction
@@ -72,6 +80,16 @@ export default function ListingClient({ listing, relatedListings, user }: { list
 
     const isOwner = user?.id === listing.seller_id;
 
+    const conditionColors: Record<string, string> = {
+        new_unused: 'bg-green-100 text-green-800 border-green-200',
+        like_new: 'bg-blue-100 text-blue-800 border-blue-200',
+        good: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        fair: 'bg-orange-100 text-orange-800 border-orange-200',
+        for_parts: 'bg-red-100 text-red-800 border-red-200',
+    };
+
+    const conditionStyle = listing.condition ? (conditionColors[listing.condition] || 'bg-secondary-100 text-secondary-800 border-secondary-200') : 'bg-secondary-100 text-secondary-800 border-secondary-200';
+
     return (
         <div className="bg-secondary-50 min-h-screen pb-12">
             <div className="container-custom py-6">
@@ -88,12 +106,6 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                         <span className="text-secondary-900 truncate max-w-xs">{listing.title}</span>
                     </div>
 
-                    {isOwner && (
-                        <Link href={`/listing/${listing.id}/edit`} className="flex items-center space-x-1 text-primary-600 font-semibold hover:text-primary-700 bg-white px-3 py-1.5 rounded-lg border border-primary-200 shadow-sm transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            <span>Edit Listing</span>
-                        </Link>
-                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -105,18 +117,41 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                                 images={images}
                                 alt={listing.title}
                                 renderOverlay={() => (
-                                    <button
-                                        onClick={handleToggleFavourite}
-                                        className={`p-2 rounded-full transition shadow-sm ${isFavourite
-                                            ? 'bg-red-50 text-red-500 hover:bg-red-100'
-                                            : 'bg-white/80 text-secondary-600 hover:text-red-500 hover:bg-white'
-                                            }`}
-                                        aria-label={isFavourite ? "Remove from favourites" : "Add to favourites"}
-                                    >
-                                        <svg className={`w-6 h-6 ${isFavourite ? 'fill-current' : 'fill-none'}`} stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
-                                    </button>
+                                    <div className="flex space-x-2">
+                                        <button
+                                            onClick={() => {
+                                                if (navigator.share) {
+                                                    navigator.share({
+                                                        title: listing.title,
+                                                        text: `Check out this ${listing.title} on Skipped!`,
+                                                        url: window.location.href,
+                                                    }).catch(console.error);
+                                                } else {
+                                                    navigator.clipboard.writeText(window.location.href);
+                                                    alert('Link copied to clipboard!');
+                                                }
+                                            }}
+                                            className="p-2 rounded-full bg-white/80 text-secondary-600 hover:text-primary-600 hover:bg-white transition shadow-sm"
+                                            aria-label="Share listing"
+                                            title="Share listing"
+                                        >
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={handleToggleFavourite}
+                                            className={`p-2 rounded-full transition shadow-sm ${isFavourite
+                                                ? 'bg-red-50 text-red-500 hover:bg-red-100'
+                                                : 'bg-white/80 text-secondary-600 hover:text-red-500 hover:bg-white'
+                                                }`}
+                                            aria-label={isFavourite ? "Remove from favourites" : "Add to favourites"}
+                                        >
+                                            <svg className={`w-6 h-6 ${isFavourite ? 'fill-current' : 'fill-none'}`} stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 )}
                             />
                         </div>
@@ -127,8 +162,8 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                                 <span className={`text-2xl font-bold ${listing.is_free ? 'text-green-600' : 'text-primary-700'}`}>
                                     {listing.is_free ? 'FREE' : formatCurrency(listing.price_gbp)}
                                 </span>
-                                <span className="inline-flex items-center px-3 py-1 bg-secondary-100 text-secondary-800 text-sm font-medium rounded-full capitalize">
-                                    {listing.condition?.replace('_', ' ')}
+                                <span className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full capitalize border ${conditionStyle}`}>
+                                    Condition - {listing.condition?.replace('_', ' ')}
                                 </span>
                             </div>
 
@@ -147,16 +182,16 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                                             <span className="font-medium">{listing.brand}</span>
                                         </div>
                                     )}
-                                    {listing.dimensions_length_cm && (
+                                    {listing.dimensions_length_mm && (
                                         <div>
                                             <span className="text-secondary-500 block">Dimensions</span>
-                                            <span className="font-medium">{listing.dimensions_length_cm} x {listing.dimensions_width_cm} x {listing.dimensions_height_cm} cm</span>
+                                            <span className="font-medium">{listing.dimensions_length_mm} x {listing.dimensions_width_mm} x {listing.dimensions_height_mm} mm</span>
                                         </div>
                                     )}
                                     {listing.weight_kg && (
                                         <div>
                                             <span className="text-secondary-500 block">Weight</span>
-                                            <span className="font-medium">{listing.weight_kg}kg</span>
+                                            <span className="font-medium">{listing.weight_kg?.toFixed(2)}kg</span>
                                         </div>
                                     )}
                                     <div>
@@ -172,7 +207,7 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                                 </div>
                             </div>
 
-                            {listing.include_carbon_certificate && (
+                            {listing.include_carbon_certificate ? (
                                 <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start space-x-3">
                                     <div className="p-2 bg-white rounded-full text-green-600 shadow-sm">
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,7 +217,21 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                                     <div>
                                         <h4 className="font-semibold text-green-900">Carbon Certificate Included</h4>
                                         <p className="text-sm text-green-800 mt-1">
-                                            Buying this item prevents <span className="font-bold">{listing.carbon_saved_kg?.toFixed(1)}kg</span> of CO₂ emissions and diverts <span className="font-bold">{listing.weight_kg?.toFixed(1)}kg</span> from landfill. You will receive a verified certificate with your purchase.
+                                            Buying this item prevents <span className="font-bold">{listing.carbon_saved_kg?.toFixed(2)}kg</span> of CO₂ emissions and diverts <span className="font-bold">{listing.weight_kg?.toFixed(2)}kg</span> from landfill. You will receive a verified certificate with your purchase.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="mt-8 bg-secondary-50 border border-secondary-200 rounded-lg p-4 flex items-start space-x-3">
+                                    <div className="p-2 bg-white rounded-full text-secondary-400 shadow-sm">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-secondary-900">No Carbon Certificate</h4>
+                                        <p className="text-sm text-secondary-600 mt-1">
+                                            A carbon savings certificate is not available for this item because the necessary data (weight/material) was not provided by the seller.
                                         </p>
                                     </div>
                                 </div>
@@ -216,7 +265,7 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                     {/* Sidebar: Seller Info & Actions */}
                     <div className="space-y-6">
                         {/* Buy Action */}
-                        <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 z-30 relative">
+                        <div className="bg-white rounded-xl shadow-sm p-6 relative">
                             <div className="flex justify-between items-end mb-4">
                                 <div>
                                     <p className="text-sm text-secondary-500">Total Price</p>
@@ -236,22 +285,38 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                                     <h3 className="text-xl font-bold text-secondary-900 mb-1">SOLD</h3>
                                     <p className="text-sm text-secondary-600">This item is no longer available</p>
                                 </div>
+                            ) : isOwner ? (
+                                <div className="bg-secondary-50 border-2 border-secondary-200 rounded-lg p-6 text-center">
+                                    <h3 className="text-lg font-bold text-secondary-900 mb-2">This is your listing</h3>
+                                    <p className="text-sm text-secondary-600 mb-4">You can manage this item from your dashboard.</p>
+                                    <Link href={`/listing/${listing.id}/edit`} className="inline-block w-full btn-secondary text-center py-2">
+                                        Edit Details
+                                    </Link>
+                                </div>
                             ) : (
                                 <>
                                     <div className="space-y-3">
                                         <Link href={`/checkout/${listing.id}`} className="block w-full btn-primary text-center py-3 text-lg">
                                             Buy Now
                                         </Link>
-                                        <button className="block w-full btn-secondary text-center py-3">
+                                        <button
+                                            onClick={() => setIsOfferModalOpen(true)}
+                                            className="block w-full btn-secondary text-center py-3"
+                                        >
                                             Make Offer
                                         </button>
                                     </div>
 
-                                    <div className="mt-4 flex items-center justify-center text-xs text-secondary-500 space-x-1">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                        </svg>
-                                        <span>Secure Escrow Transaction</span>
+                                    <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                                        <div className="flex items-center space-x-2 text-green-800 font-bold mb-1">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>
+                                            <h3>Buyer Protection</h3>
+                                        </div>
+                                        <p className="text-sm text-green-700">
+                                            Your payment is held securely by us until you confirm you've received the item and are happy with it.
+                                        </p>
                                     </div>
                                 </>
                             )}
@@ -333,9 +398,26 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                                             </svg>
                                         </span>
                                         <div>
-                                            <p className="font-medium text-secondary-900">Delivery Available</p>
+                                            <p className="font-medium text-secondary-900">Local Delivery Available</p>
                                             <p className="text-sm text-secondary-500">
                                                 Up to {listing.delivery_radius_miles} miles (+{formatCurrency(listing.delivery_charge_gbp)})
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {listing.courier_delivery_available && (
+                                    <div className="flex items-start space-x-3">
+                                        <span className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                                            {/* Truck/Courier Icon */}
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                            </svg>
+                                        </span>
+                                        <div>
+                                            <p className="font-medium text-secondary-900">Nationwide Courier</p>
+                                            <p className="text-sm text-secondary-500">
+                                                Flat rate (+{formatCurrency(listing.courier_delivery_cost_gbp)})
                                             </p>
                                         </div>
                                     </div>
@@ -356,21 +438,31 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                 </div>
             </div>
 
-            {relatedListings.length > 0 && (
-                <div className="container-custom pt-8 pb-12 border-t border-secondary-200">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-secondary-900">More from {listing.profiles?.username || 'this seller'}</h2>
-                        <Link href={`/profile/${listing.seller_id}`} className="text-primary-600 font-semibold hover:text-primary-700">
-                            View all items
-                        </Link>
+            {
+                relatedListings.length > 0 && (
+                    <div className="container-custom pt-8 pb-12 border-t border-secondary-200">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-secondary-900">More from {listing.profiles?.username || 'this seller'}</h2>
+                            <Link href={`/profile/${listing.seller_id}`} className="text-primary-600 font-semibold hover:text-primary-700">
+                                View all items
+                            </Link>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {relatedListings.map((item) => (
+                                <ListingCard key={item.id} listing={item} />
+                            ))}
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {relatedListings.map((item) => (
-                            <ListingCard key={item.id} listing={item} />
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+            {/* Offer Modal */}
+            <OfferModal
+                isOpen={isOfferModalOpen}
+                onClose={() => setIsOfferModalOpen(false)}
+                listingId={listing.id}
+                listingTitle={listing.title}
+                price={listing.price_gbp}
+            />
+        </div >
     );
 }

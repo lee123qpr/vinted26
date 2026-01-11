@@ -191,7 +191,7 @@ export default async function CategoryPage(props: {
                     <h1 className="text-3xl font-bold text-secondary-900 mb-2">
                         {currentDetailName || currentSubcategoryName || catData.name}
                     </h1>
-                    <p className="text-secondary-600 max-w-2xl">
+                    <p className="text-secondary-600">
                         Browse surplus {currentDetailName || currentSubcategoryName || catData.name} available for collection or delivery.
                         Help reduce waste and find great deals.
                     </p>

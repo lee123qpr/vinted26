@@ -11,9 +11,13 @@ interface ProfileClientProps {
     profile: any;
     listings: any[];
     reviews: any[];
+    ranks: {
+        carbon: number;
+        landfill: number;
+    };
 }
 
-export default function ProfileClient({ profile, listings, reviews }: ProfileClientProps) {
+export default function ProfileClient({ profile, listings, reviews, ranks }: ProfileClientProps) {
     const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>('listings');
 
     if (!profile) {
@@ -65,27 +69,35 @@ export default function ProfileClient({ profile, listings, reviews }: ProfileCli
                             <p className="text-secondary-600 max-w-lg mx-auto md:mx-0">{profile.bio || "No bio added yet."}</p>
 
                             <div className="flex items-center justify-center md:justify-start gap-4 text-sm text-secondary-500 pt-2">
-                                <span>📍 {profile.postcode_area || 'UK'}</span>
+                                <span>📍 {profile.location || profile.postcode_area || listings[0]?.postcode_area || 'United Kingdom'}</span>
                                 <span>📅 Member since {format(new Date(profile.created_at), 'MMMM yyyy')}</span>
                             </div>
                         </div>
 
                         {/* Impact Stats Card */}
-                        <div className="bg-green-50 rounded-xl p-4 border border-green-100 min-w-[200px]">
+                        <div className="bg-green-50 rounded-xl p-5 border border-green-100 w-full md:w-[320px] shrink-0">
                             <h3 className="font-semibold text-green-900 mb-3 border-b border-green-200 pb-2">Community Impact</h3>
                             <div className="space-y-3">
-                                <div>
-                                    <p className="text-xs text-green-700 uppercase font-bold tracking-wider">Carbon Saved</p>
-                                    <p className="text-2xl font-bold text-green-800">{profile.total_carbon_saved_kg?.toFixed(0) || 0}kg</p>
+                                <div className="grid grid-cols-2 gap-4 border-b border-green-200 pb-2">
+                                    <div>
+                                        <p className="text-[10px] text-green-700 uppercase font-bold tracking-wider truncate" title="Carbon Saved">Carbon Saved</p>
+                                        <p className="text-xl font-bold text-green-800">{profile.total_carbon_saved_kg?.toFixed(0) || 0}kg</p>
+                                        <p className="text-[10px] text-green-600 font-semibold">Rank #{ranks.carbon}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-green-700 uppercase font-bold tracking-wider truncate" title="Landfill Diverted">Landfill Saved</p>
+                                        <p className="text-xl font-bold text-green-800">{profile.total_landfill_saved_kg?.toFixed(0) || 0}kg</p>
+                                        <p className="text-[10px] text-green-600 font-semibold">Rank #{ranks.landfill}</p>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-xs text-green-700 uppercase font-bold tracking-wider">Sold</p>
-                                        <p className="text-lg font-bold text-green-800">{profile.total_sales || 0}</p>
+                                        <p className="text-[10px] text-green-700 uppercase font-bold tracking-wider">Sold</p>
+                                        <p className="text-xl font-bold text-green-800">{profile.total_sales || 0}</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-green-700 uppercase font-bold tracking-wider">Bought</p>
-                                        <p className="text-lg font-bold text-green-800">{profile.total_purchases || 0}</p>
+                                        <p className="text-[10px] text-green-700 uppercase font-bold tracking-wider">Bought</p>
+                                        <p className="text-xl font-bold text-green-800">{profile.total_purchases || 0}</p>
                                     </div>
                                 </div>
                             </div>

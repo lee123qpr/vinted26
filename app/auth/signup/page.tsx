@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import TurnstileWidget from '@/components/TurnstileWidget';
+import { signup } from '../actions';
 
 export default function SignupPage() {
     const router = useRouter();
@@ -17,6 +19,7 @@ export default function SignupPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string>('');
 
     // Username availability state
     const [checkingUsername, setCheckingUsername] = useState(false);
@@ -67,35 +70,35 @@ export default function SignupPage() {
             return;
         }
 
+        if (!turnstileToken) {
+            setError("Please verify you are human");
+            setLoading(false);
+            return;
+        }
+
         try {
-            const { data, error: authError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
-                options: {
-                    data: {
-                        full_name: formData.fullName,
-                        username: formData.username,
-                    },
-                },
-            });
+            const payload = new FormData();
+            payload.append('fullName', formData.fullName);
+            payload.append('username', formData.username);
+            payload.append('email', formData.email);
+            payload.append('password', formData.password);
+            payload.append('turnstileToken', turnstileToken);
 
-            if (authError) throw authError;
+            const result = await signup(payload);
 
-            if (authError) throw authError;
-
-            // Profile creation is handled by Database Trigger (handle_new_user)
-            // No need to manually insert into profiles table here.
-
-            if (data.user && !data.session) {
-                // User signed up but needs to verify email (session is null)
+            if (result?.error) {
+                setError(result.error);
+                // Reset token on failure so user has to verify again? 
+                // Usually good practice, but Cloudflare might handle it.
+                setTurnstileToken('');
+                // We clear the token so the user must re-verify or the widget handles it.
+            } else if (result?.success) {
                 setSuccess(true);
             } else {
-                // Session active (email confirm disabled or auto-confirmed), redirect
-                router.push('/dashboard');
-                router.refresh();
+                // Redirect handled by Server Action
             }
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || "Something went wrong");
         } finally {
             setLoading(false);
         }
@@ -265,6 +268,11 @@ export default function SignupPage() {
                                 />
                             </div>
                         </div>
+
+                        <TurnstileWidget
+                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                            onVerify={(token) => setTurnstileToken(token)}
+                        />
 
                         <div className="text-xs text-secondary-500 text-center">
                             By clicking "Create Account", you agree to our{' '}

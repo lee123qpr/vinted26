@@ -6,14 +6,27 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Category, SubCategory, SubSubCategory } from '@/types';
 import { sortByOrder } from '@/lib/utils';
+import NotificationBell from './NotificationBell';
+import { createClient } from '@/lib/supabase/client'; // Check this import
+
+const fetchAdminStatus = async (uid: string) => {
+    try {
+        const { data } = await supabase.from('profiles').select('is_admin').eq('id', uid).single();
+        return data?.is_admin || false;
+    } catch {
+        return false;
+    }
+};
 
 export default function Navigation() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false); // Mobile menu state
-    const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false); // Desktop 'Shop by Category' state
-    const [activeCategory, setActiveCategory] = useState<Category | null>(null); // Currently hovered L1 category in Mega Menu
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+    const [activeCategory, setActiveCategory] = useState<Category | null>(null);
     const [navCategories, setNavCategories] = useState<Category[]>([]);
     const [user, setUser] = useState<any>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [userProfile, setUserProfile] = useState<any>(null);
+    const [unreadCount, setUnreadCount] = useState(0);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -21,7 +34,9 @@ export default function Navigation() {
         try {
             await supabase.auth.signOut();
             setUser(null);
+            setUserProfile(null);
             setAvatarUrl(null);
+            setUnreadCount(0);
             setIsMenuOpen(false);
             window.location.href = '/';
         } catch (error) {
@@ -30,43 +45,87 @@ export default function Navigation() {
         }
     };
 
-    // Close menus on route change
+    // Close menus and refresh unread count on route change
     useEffect(() => {
         setIsMenuOpen(false);
         setIsMegaMenuOpen(false);
-    }, [pathname]);
+        if (user) {
+            fetchUnreadCount(user.id);
+        }
+    }, [pathname, user]);
+
+    // Fetch unread count helper
+    const fetchUnreadCount = async (userId: string) => {
+        const { count } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('recipient_id', userId)
+            .eq('is_read', false);
+        setUnreadCount(count || 0);
+    };
 
     useEffect(() => {
+        let messageSubscription: any;
+
         // 1. Fetch User & Profile
         const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user }, error } = await supabase.auth.getUser();
+            console.log('Navigation: getUser result:', user, error);
+
             setUser(user);
 
             if (user) {
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('avatar_url')
+                    .select('avatar_url, full_name, username, is_admin')
                     .eq('id', user.id)
                     .single();
 
+                setUserProfile(profile);
                 if (profile?.avatar_url) {
                     setAvatarUrl(profile.avatar_url);
                 }
+
+                // Initial fetch
+                fetchUnreadCount(user.id);
+
+                // Realtime subscription for unread count
+                messageSubscription = supabase
+                    .channel('nav_messages')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'messages',
+                            filter: `recipient_id=eq.${user.id}`,
+                        },
+                        () => {
+                            // On any change (insert new msg, or update to read), re-fetch count
+                            fetchUnreadCount(user.id);
+                        }
+                    )
+                    .subscribe();
             }
         };
         getUser();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            console.log('Navigation: onAuthStateChange:', _event, session?.user);
             setUser(session?.user ?? null);
             if (session?.user) {
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('avatar_url')
+                    .select('avatar_url, full_name, username, is_admin')
                     .eq('id', session.user.id)
                     .single();
+                setUserProfile(profile);
                 setAvatarUrl(profile?.avatar_url || null);
+                fetchUnreadCount(session.user.id);
             } else {
+                setUserProfile(null);
                 setAvatarUrl(null);
+                setUnreadCount(0);
             }
         });
 
@@ -112,7 +171,8 @@ export default function Navigation() {
         fetchCategories();
 
         return () => {
-            subscription.unsubscribe();
+            authSubscription.unsubscribe();
+            if (messageSubscription) supabase.removeChannel(messageSubscription);
         };
 
     }, []);
@@ -128,8 +188,14 @@ export default function Navigation() {
                             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
                                 <span className="text-white font-bold text-xl">S</span>
                             </div>
-                            <span className="text-2xl font-bold text-secondary-900 hidden md:block">Skipped</span>
+                            <span className="text-2xl font-black tracking-tight text-secondary-900 hidden md:block">Skipped.</span>
                         </Link>
+
+                        <div className="hidden md:flex items-center space-x-6">
+                            <Link href="/how-it-works" className="text-secondary-600 hover:text-secondary-900 font-medium text-sm">
+                                How it Works
+                            </Link>
+                        </div>
 
                         {/* Desktop: Shop by Category Trigger */}
                         <div
@@ -139,6 +205,7 @@ export default function Navigation() {
                         >
                             <button
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${isMegaMenuOpen ? 'bg-primary-50 text-primary-700' : 'bg-secondary-50 text-secondary-700 hover:bg-secondary-100'}`}
+                                suppressHydrationWarning
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -247,8 +314,9 @@ export default function Navigation() {
                                     placeholder="Search for materials (e.g. bricks, timber, insulation)..."
                                     aria-label="Search for materials"
                                     className="w-full pl-10 pr-4 py-2.5 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-secondary-50 transition-shadow shadow-sm focus:shadow-md"
+                                    suppressHydrationWarning
                                 />
-                                <button type="submit" aria-label="Submit search" className="absolute left-3 top-3 text-secondary-400 hover:text-primary-600">
+                                <button type="submit" aria-label="Submit search" className="absolute left-3 top-3 text-secondary-400 hover:text-primary-600" suppressHydrationWarning>
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
@@ -258,6 +326,13 @@ export default function Navigation() {
 
                         {/* Desktop User Actions */}
                         <div className="hidden md:flex items-center space-x-6 flex-shrink-0">
+                            {/* Admin Link */}
+                            {userProfile?.is_admin && (
+                                <Link href="/admin" className="text-sm font-bold text-slate-900 bg-slate-100 px-3 py-2 rounded-lg hover:bg-slate-800 hover:text-white transition-colors border border-slate-200">
+                                    Admin Panel
+                                </Link>
+                            )}
+
                             <Link href="/sell" className="btn-primary flex items-center gap-2 shadow-md hover:shadow-lg transition-transform hover:-translate-y-0.5">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                                 List Item
@@ -265,11 +340,16 @@ export default function Navigation() {
 
                             {user ? (
                                 <div className="flex items-center space-x-5">
+                                    <NotificationBell userId={user.id} />
                                     <Link href="/messages" aria-label="Messages" className="text-secondary-600 hover:text-primary-600 transition relative p-1 group">
                                         <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                         </svg>
-                                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+                                                {unreadCount > 9 ? '9+' : unreadCount}
+                                            </span>
+                                        )}
                                     </Link>
                                     <Link href="/favourites" aria-label="Favourites" className="text-secondary-600 hover:text-primary-600 transition p-1 group">
                                         <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,21 +366,25 @@ export default function Navigation() {
                                                 />
                                             ) : (
                                                 <span className="text-primary-700 font-bold">
-                                                    {user.email?.[0].toUpperCase()}
+                                                    {(userProfile?.full_name?.[0] || userProfile?.username?.[0] || user.email?.[0] || 'U').toUpperCase()}
                                                 </span>
                                             )}
                                         </Link>
-                                        <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 border border-secondary-100 hidden group-hover:block transform transition-all duration-200 origin-top-right">
-                                            <div className="px-4 py-3 border-b border-secondary-100 bg-secondary-50/50 rounded-t-xl">
-                                                <p className="text-xs text-secondary-500 uppercase tracking-wider font-semibold mb-1">Signed in as</p>
-                                                <p className="text-sm font-bold text-secondary-900 truncate">{user.email}</p>
-                                            </div>
-                                            <div className="py-2">
-                                                <Link href="/dashboard" className="block px-4 py-2 text-sm text-secondary-700 hover:bg-primary-50 hover:text-primary-700">Dashboard</Link>
-                                                <Link href="/dashboard/settings" className="block px-4 py-2 text-sm text-secondary-700 hover:bg-primary-50 hover:text-primary-700">Settings</Link>
-                                            </div>
-                                            <div className="border-t border-secondary-100 py-2">
-                                                <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">Sign out</button>
+
+                                        {/* Dropdown with padding-top bridge for hover stability */}
+                                        <div className="absolute right-0 top-full pt-2 w-56 hidden group-hover:block hover:block transform transition-all duration-200 origin-top-right">
+                                            <div className="bg-white rounded-xl shadow-xl py-2 border border-secondary-100">
+                                                <div className="px-4 py-3 border-b border-secondary-100 bg-secondary-50/50 rounded-t-xl">
+                                                    <p className="text-xs text-secondary-500 uppercase tracking-wider font-semibold mb-1">Signed in as</p>
+                                                    <p className="text-sm font-bold text-secondary-900 truncate">{user.email}</p>
+                                                </div>
+                                                <div className="py-2">
+                                                    <Link href="/dashboard" className="block px-4 py-2 text-sm text-secondary-700 hover:bg-primary-50 hover:text-primary-700">Dashboard</Link>
+                                                    <Link href="/dashboard/settings" className="block px-4 py-2 text-sm text-secondary-700 hover:bg-primary-50 hover:text-primary-700">Settings</Link>
+                                                </div>
+                                                <div className="border-t border-secondary-100 py-2">
+                                                    <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">Sign out</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -339,8 +423,8 @@ export default function Navigation() {
                                     }
                                 }}
                             >
-                                <input name="q" type="text" placeholder="Search..." aria-label="Search" className="w-full pl-10 pr-4 py-3 border border-secondary-300 rounded-xl text-base bg-secondary-50" />
-                                <button type="submit" aria-label="Submit search" className="absolute left-3 top-3.5 text-secondary-400">
+                                <input name="q" type="text" placeholder="Search..." aria-label="Search" className="w-full pl-10 pr-4 py-3 border border-secondary-300 rounded-xl text-base bg-secondary-50" suppressHydrationWarning />
+                                <button type="submit" aria-label="Submit search" className="absolute left-3 top-3.5 text-secondary-400" suppressHydrationWarning>
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
@@ -349,6 +433,9 @@ export default function Navigation() {
                         </div>
 
                         {/* Mobile Actions */}
+                        <Link href="/how-it-works" className="block text-center w-full text-secondary-700 font-medium py-3 border border-secondary-200 rounded-lg mb-3">
+                            How it Works
+                        </Link>
                         <Link href="/sell" className="btn-primary block text-center w-full text-lg py-3 shadow-sm">
                             List an Item
                         </Link>
@@ -423,7 +510,10 @@ export default function Navigation() {
                                 <h3 className="font-bold text-secondary-900 mb-4 px-2 text-lg">My Account</h3>
                                 <div className="space-y-1">
                                     <Link href="/dashboard" className="block px-4 py-3 text-secondary-700 hover:bg-primary-50 rounded-lg font-medium">Dashboard</Link>
-                                    <Link href="/messages" className="block px-4 py-3 text-secondary-700 hover:bg-primary-50 rounded-lg font-medium">Messages</Link>
+                                    <Link href="/messages" className="flex items-center justify-between px-4 py-3 text-secondary-700 hover:bg-primary-50 rounded-lg font-medium">
+                                        Messages
+                                        {unreadCount > 0 && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{unreadCount}</span>}
+                                    </Link>
                                     <Link href="/favourites" className="block px-4 py-3 text-secondary-700 hover:bg-primary-50 rounded-lg font-medium">Favourites</Link>
                                     <Link href="/dashboard/settings" className="block px-4 py-3 text-secondary-700 hover:bg-primary-50 rounded-lg font-medium">Settings</Link>
                                     <button onClick={handleSignOut} className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg font-medium">Sign Out</button>

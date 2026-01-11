@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { Category, SubCategory, SubSubCategory } from '@/types';
+import { getCategories, getSubcategories, getSubSubcategories, getMaterials } from '@/app/actions/taxonomy';
+import { createListing, updateListing } from '@/app/actions/listings';
 
 interface ListingFormProps {
     mode: 'create' | 'edit';
@@ -15,6 +18,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
     const [subcategories, setSubcategories] = useState<any[]>([]);
     const [subSubcategories, setSubSubcategories] = useState<any[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
+    const [loadingSubcategories, setLoadingSubcategories] = useState(false);
 
     const [materials, setMaterials] = useState<any[]>([]);
     const [selectedMaterialId, setSelectedMaterialId] = useState('');
@@ -44,6 +48,8 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
         deliveryRadius: '',
         deliveryCharge: '',
         deliveryChargeType: 'flat_rate',
+        courierAvailable: false,
+        courierCost: '',
         postcode: '',
         includeCarbonCertificate: false,
         isFree: false,
@@ -63,12 +69,27 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
     // --- Data Fetching (Categories & Materials) ---
     useEffect(() => {
         const fetchData = async () => {
-            const { data: catData } = await supabase.from('categories').select('id, name, slug').order('name');
-            if (catData) setCategories(catData);
-            setLoadingCategories(false);
+            setLoadingCategories(true);
 
-            const { data: matData } = await supabase.from('materials').select('*').order('name');
-            if (matData) setMaterials(matData);
+            // Parallel Fetch using Server Actions
+            const [catRes, matRes] = await Promise.all([
+                getCategories(),
+                getMaterials()
+            ]);
+
+            if (catRes.error) {
+                console.error('Error fetching categories:', catRes.error);
+            } else if (catRes.data) {
+                setCategories(catRes.data);
+            }
+
+            if (matRes.error) {
+                console.error('Error fetching materials:', matRes.error);
+            } else if (matRes.data) {
+                setMaterials(matRes.data);
+            }
+
+            setLoadingCategories(false);
         };
         fetchData();
     }, []);
@@ -85,44 +106,33 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 brand: initialData.brand || '',
                 condition: initialData.condition || '',
                 quantity: initialData.quantity_available || 1,
-                dimensionsLength: initialData.dimensions_length_cm?.toString() || '',
-                dimensionsWidth: initialData.dimensions_width_cm?.toString() || '',
-                dimensionsHeight: initialData.dimensions_height_cm?.toString() || '',
-                weight: initialData.weight_kg?.toString() || '', // This might be calculated, but if manually entered or we want to show it
-                price: initialData.price_gbp?.toString() || '',
+                // Map from DB MM columns to form state
+                dimensionsLength: initialData.dimensions_length_mm?.toString() || '',
+                dimensionsWidth: initialData.dimensions_width_mm?.toString() || '',
+                dimensionsHeight: initialData.dimensions_height_mm?.toString() || '',
+                weight: initialData.weight_kg ? Number(initialData.weight_kg).toFixed(2) : '',
+                price: initialData.price_gbp ? Number(initialData.price_gbp).toFixed(2) : '',
                 offersCollection: initialData.offers_collection || false,
                 offersDelivery: initialData.offers_delivery || false,
                 deliveryRadius: initialData.delivery_radius_miles?.toString() || '',
                 deliveryCharge: initialData.delivery_charge_gbp?.toString() || '',
                 deliveryChargeType: initialData.delivery_charge_type || 'flat_rate',
-                postcode: (initialData.postcode_area || '') + ' (verify)', // We don't store full postcode usually? actually we map it. 
-                // Wait, we don't store the full postcode in the DB listings table row shown in previous file views? 
-                // We only store postcode_area. 
-                // If we want to edit, we might need to ask for postcode again or store it. 
-                // For now let's leave it blank or hint. 
-                // Actually looking at previous code, user input 'postcode' is used to fetch coords.
-                // We store 'postcode_area'. 
-                // If we edit, we probably need to re-enter postcode if we want to change location, 
-                // or we can pre-fill if we had it. Use 'postcode_area' as placeholder?
-                // a better UX is to reverse geocode or just leave empty and say "Leave empty to keep location".
-                // But for simplicity let's require it if we want to update location. 
-                // Let's try to infer or leave it blank but keep existing coords if not changed.
+                courierAvailable: initialData.courier_delivery_available || false,
+                courierCost: initialData.courier_delivery_cost_gbp?.toString() || '',
+                postcode: (initialData.postcode_area || '') + ' (verify)',
                 includeCarbonCertificate: initialData.include_carbon_certificate || false,
                 isFree: initialData.is_free || false,
                 collectionNotes: initialData.collection_notes || '',
             });
 
-            // Set specific states
             if (initialData.listing_material_id) {
                 setSelectedMaterialId(initialData.listing_material_id);
             }
             if (initialData.location_lat && initialData.location_lng) {
                 setCoordinates({ lat: initialData.location_lat, lng: initialData.location_lng });
-                setLocationVerified(true); // Assume verified if from DB
+                setLocationVerified(true);
             }
 
-            // Images
-            // Fetch images for this listing
             const fetchImages = async () => {
                 const { data: imgData } = await supabase.from('listing_images').select('image_url').eq('listing_id', initialData.id).order('sort_order');
                 if (imgData) {
@@ -132,6 +142,21 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
             fetchImages();
         }
     }, [mode, initialData]);
+
+    // ... (Geocoding omitted for brevity in match, unchanged) ...
+    // Note: Since I am replacing a huge chunk, I should be careful to include the unchanged parts or narrow the range.
+    // The instructions say "specify start/end lines". I'll narrow the chunks.
+
+    // ... [Chunk 1: InitialData and Carbon Calc] ... 
+
+    // ... [Chunk 2: Payload] ...
+
+    // ... [Chunk 3: UI Brand & Dimensions Label] ...
+
+    // Wait, the tool only allows ONE contiguous block or MultiReplace. 
+    // I should use `multi_replace_file_content` for this distributed change.
+    // I will switch to multi_replace_file_content.
+
 
 
     // --- Geocoding Helper ---
@@ -170,6 +195,8 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
         setIsLocating(false);
     };
 
+    const [subsCache, setSubsCache] = useState<Record<string, SubCategory[]>>({});
+
     useEffect(() => {
         // Only reset subs if user is manually changing category in create mode or interacting
         // In edit mode initialization, we don't want to wipe them immediately.
@@ -179,15 +206,35 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
 
         if (!formData.categoryId) { setSubcategories([]); return; }
 
+        if (subsCache[formData.categoryId]) {
+            setSubcategories(subsCache[formData.categoryId]);
+            return;
+        }
+
         const fetchSubcategories = async () => {
-            const { data } = await supabase.from('subcategories')
-                .select('id, name, embodied_carbon_kg_per_kg, default_density_kg_per_m3, is_material_ambiguous')
-                .eq('category_id', formData.categoryId)
-                .order('name');
-            if (data) {
-                setSubcategories(data);
-                // If the current subcategoryId is not in the new list, clear it (unless it's loading)
-                // This logic is tricky with async state.
+            console.log('Fetching subcategories for:', formData.categoryId);
+            try {
+                setLoadingSubcategories(true);
+                // Switch to Server Action here too? 
+                // Wait, logic below still uses supabase.from... 
+                // I need to SWITCH this to use getSubcategories(formData.categoryId) as per my Plan!
+                // I thought I did that? 
+                // Looking at the view_file output from Step 2273, lines 208-211 behave like this:
+                // const { data, error } = await supabase.from('subcategories')...
+                // I MUST HAVE FAILED TO APPLY THE EDIT TO LISTINGFORM BEFORE!
+
+                const { data, error } = await getSubcategories(formData.categoryId);
+
+                if (error) throw error;
+                if (data) {
+                    console.log('Subs loaded:', data.length);
+                    setSubcategories(data);
+                    setSubsCache(prev => ({ ...prev, [formData.categoryId]: data }));
+                }
+            } catch (err) {
+                console.error('Error fetching subcategories:', err);
+            } finally {
+                setLoadingSubcategories(false);
             }
         };
         fetchSubcategories();
@@ -197,10 +244,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
         if (!formData.subcategoryId) { setSubSubcategories([]); return; }
 
         const fetchSubSubcategories = async () => {
-            const { data } = await supabase.from('sub_subcategories')
-                .select('id, name')
-                .eq('subcategory_id', formData.subcategoryId)
-                .order('name');
+            const { data, error } = await getSubSubcategories(formData.subcategoryId);
             if (data) setSubSubcategories(data);
         };
         fetchSubSubcategories();
@@ -231,11 +275,11 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 }
             }
 
-            // Calculate Volume (cm -> m)
+            // Calculate Volume (mm -> m)
             if (formData.dimensionsLength && formData.dimensionsWidth && formData.dimensionsHeight && density) {
-                const l = parseFloat(formData.dimensionsLength) / 100;
-                const w = parseFloat(formData.dimensionsWidth) / 100;
-                const h = parseFloat(formData.dimensionsHeight) / 100;
+                const l = parseFloat(formData.dimensionsLength) / 1000;
+                const w = parseFloat(formData.dimensionsWidth) / 1000;
+                const h = parseFloat(formData.dimensionsHeight) / 1000;
                 const volumeM3 = l * w * h;
 
                 const totalVolume = volumeM3 * formData.quantity;
@@ -278,16 +322,21 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
             setUploading(true);
             setError(null);
 
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                setError('You must be logged in.');
-                router.push('/auth/login');
-                return;
-            }
+            // Client-side auth check removed to rely on Server Action & Middleware
+            // This prevents "ghost" logouts where client SDK might be out of sync with cookies
+            // const { data: { user } } = await supabase.auth.getUser();
+            // if (!user) {
+            //    setError('You must be logged in.');
+            //    router.push('/auth/login');
+            //    return;
+            // }
 
             // Validation
             if (!formData.categoryId) throw new Error("Please select a category");
-            if (!formData.title) throw new Error("Title is required");
+            // Validation
+            if (!formData.categoryId) throw new Error("Please select a category");
+            if (!formData.title || formData.title.length < 5) throw new Error("Title must be at least 5 characters long");
+            if (!formData.description) throw new Error("Description is required");
             if (!formData.description) throw new Error("Description is required");
             if (!formData.isFree && !formData.price) throw new Error("Price is required (or list as Free)");
             if (!formData.condition) throw new Error("Condition is required");
@@ -321,90 +370,88 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
             if (!finalLat || !finalLng) throw new Error("Could not verify location. Please check postcode.");
 
 
-            // 1. Upload New Images & Collect URLs
-            const finalImageUrls: string[] = [];
+            // 1. Prepare FormData
+            const payload = new FormData();
+            payload.append('categoryId', formData.categoryId);
+            payload.append('title', formData.title);
+            payload.append('description', formData.description);
+            payload.append('condition', formData.condition);
+            payload.append('price', formData.price);
+            payload.append('quantity', formData.quantity.toString());
+            payload.append('isFree', formData.isFree.toString());
 
-            for (const img of imageFiles) {
-                if (typeof img === 'string') {
-                    // It's an existing URL
-                    finalImageUrls.push(img);
-                } else {
-                    // It's a new File
-                    const fileExt = img.name.split('.').pop();
-                    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-                    const filePath = `${user.id}/${fileName}`;
-                    const { error: uploadError } = await supabase.storage.from('listings').upload(filePath, img);
-                    if (uploadError) throw uploadError;
-                    const { data: { publicUrl } } = supabase.storage.from('listings').getPublicUrl(filePath);
-                    finalImageUrls.push(publicUrl);
-                }
-            }
+            // Optional fields
+            if (formData.subcategoryId) payload.append('subcategoryId', formData.subcategoryId);
+            if (formData.subSubcategoryId) payload.append('subSubcategoryId', formData.subSubcategoryId);
+            if (formData.brand) payload.append('brand', formData.brand);
+            if (formData.collectionNotes) payload.append('collectionNotes', formData.collectionNotes);
+            if (selectedMaterialId) payload.append('materialId', selectedMaterialId);
 
+            // Dimensions & Weight
+            if (formData.weight) payload.append('weight', formData.weight);
+            if (formData.dimensionsLength) payload.append('dimensionsLength', formData.dimensionsLength);
+            if (formData.dimensionsWidth) payload.append('dimensionsWidth', formData.dimensionsWidth);
+            if (formData.dimensionsHeight) payload.append('dimensionsHeight', formData.dimensionsHeight);
 
-            // 2. Prepare Payload
-            const payload = {
-                seller_id: user.id,
-                category_id: formData.categoryId,
-                subcategory_id: formData.subcategoryId || null,
-                sub_subcategory_id: formData.subSubcategoryId || null,
-                title: formData.title,
-                description: formData.description,
-                brand: formData.brand || null,
-                condition: formData.condition,
-                quantity_available: formData.quantity,
-                dimensions_length_cm: formData.dimensionsLength ? parseFloat(formData.dimensionsLength) : null,
-                dimensions_width_cm: formData.dimensionsWidth ? parseFloat(formData.dimensionsWidth) : null,
-                dimensions_height_cm: formData.dimensionsHeight ? parseFloat(formData.dimensionsHeight) : null,
-                weight_kg: calculatedWeight,
-                listing_material_id: selectedMaterialId || null,
-                price_gbp: parseFloat(formData.price),
-                offers_collection: formData.offersCollection,
-                offers_delivery: formData.offersDelivery,
-                delivery_radius_miles: formData.offersDelivery && formData.deliveryRadius ? parseInt(formData.deliveryRadius) : null,
-                delivery_charge_gbp: formData.offersDelivery && formData.deliveryCharge ? parseFloat(formData.deliveryCharge) : null,
-                delivery_charge_type: formData.deliveryChargeType,
-                postcode_area: formData.postcode ? formData.postcode.split(' ')[0].trim().toUpperCase() : (initialData?.postcode_area || null), // Use existing if not updated
-                location_lat: finalLat,
-                location_lng: finalLng,
-                is_free: formData.isFree,
-                collection_notes: formData.collectionNotes,
-                include_carbon_certificate: !!calculatedWeight,
-                carbon_saved_kg: carbonSaved || 0,
-                calculated_weight_kg: calculatedWeight,
-            };
+            // Carbon
+            payload.append('includeCarbonCertificate', (!!calculatedWeight).toString());
+            if (carbonSaved) payload.append('carbonSaved', carbonSaved.toString());
+            if (calculatedWeight) payload.append('calculatedWeight', calculatedWeight.toString());
 
-            let listingId = initialData?.id;
+            // Logistics
+            payload.append('offersCollection', formData.offersCollection.toString());
+            payload.append('offersDelivery', formData.offersDelivery.toString());
+            if (formData.deliveryRadius) payload.append('deliveryRadius', formData.deliveryRadius);
+            if (formData.deliveryCharge) payload.append('deliveryCharge', formData.deliveryCharge);
+            payload.append('deliveryChargeType', formData.deliveryChargeType);
+            payload.append('courierAvailable', formData.courierAvailable.toString());
+            if (formData.courierCost) payload.append('courierCost', formData.courierCost);
 
+            // Location
+            if (formData.postcode) payload.append('postcodeArea', formData.postcode.split(' ')[0].trim().toUpperCase());
+            if (finalLat) payload.append('lat', finalLat.toString());
+            if (finalLng) payload.append('lng', finalLng.toString());
+
+            // Image Handling: Separate existing URLs from new Files
+            // NOTE: createListing Server Action currently mainly handles NEW files.
+            // Dealing with mixed existing/new images in Edit mode via Server Action is complex (we'd need to tell server which existing URLs to keep).
+            // For CREATE mode (which is blocking the user), we just send files.
+            // Refinement: Ideally ListingForm handles image state differently. 
+            // Let's send ALL files. If it's a File object, append it. If it's a string (URL), we might need logic to keep it (Server Action doesn't support that yet).
+            // MVP Fix for "Post Item" (Create Mode):
             if (mode === 'create') {
-                const { data, error } = await supabase.from('listings').insert(payload).select().single();
-                if (error) throw error;
-                listingId = data.id;
+                // For Create, all images in imageFiles are new Files (or should be).
+                // Existing logic ensures they are appended to 'images'.
+                for (const img of imageFiles) {
+                    if (typeof img !== 'string') {
+                        payload.append('images', img);
+                    }
+                }
+
+                const result = await createListing(payload);
+                if (result.error) throw new Error(result.error);
+                router.push(`/listing/${result.listingId}`);
             } else {
-                const { error } = await supabase.from('listings').update(payload).eq('id', listingId);
-                if (error) throw error;
-            }
+                // EDIT MODE
+                if (!initialData?.id) throw new Error("Missing listing ID for update.");
 
-            // 3. Update Images Table (Replace Strategy)
-            // Delete old images for this listing
-            if (mode === 'edit') {
-                await supabase.from('listing_images').delete().eq('listing_id', listingId);
-            }
+                // Separate existing URLs (strings) from new Files
+                const keepUrls = imageFiles.filter(img => typeof img === 'string') as string[];
+                const newFiles = imageFiles.filter(img => typeof img !== 'string') as File[];
 
-            // Insert new set
-            if (finalImageUrls.length > 0) {
-                const imageInserts = finalImageUrls.map((url, index) => ({
-                    listing_id: listingId,
-                    image_url: url,
-                    sort_order: index
-                }));
-                await supabase.from('listing_images').insert(imageInserts);
-            }
+                for (const url of keepUrls) payload.append('keepUrls', url);
+                for (const file of newFiles) payload.append('images', file);
 
-            router.push(`/listing/${listingId}`);
-            router.refresh();
+                const result = await updateListing(initialData.id, payload);
+                if (result.error) throw new Error(result.error);
+
+                router.refresh();
+                router.push(`/listing/${result.listingId}`);
+            }
 
         } catch (err: any) {
             console.error('Error submitting form:', err);
+            // ... error handling ...
             setError(err.message || 'Failed to submit.');
         } finally {
             setUploading(false);
@@ -454,26 +501,38 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                         <div className="bg-white rounded-xl shadow-sm p-6 space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2">
-                                    <label className="label text-xs">Title *</label>
+                                    <label className="label text-xs">Title <span className="text-red-500">*</span></label>
                                     <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="input-field" placeholder="e.g. 50x Red Bricks" maxLength={100} />
+                                    <p className="text-[10px] text-secondary-500 mt-1">Minimum 5 characters. Be descriptive!</p>
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="label text-xs">Description *</label>
+                                    <label className="label text-xs">Description <span className="text-red-500">*</span></label>
                                     <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="input-field h-24 text-sm" placeholder="Describe condition, history..." maxLength={2000} />
+                                    <p className="text-[10px] text-secondary-500 mt-1">Include details about condition, age, and any defects.</p>
                                 </div>
 
                                 {/* Category Row */}
                                 <div>
-                                    <label className="label text-xs">Category *</label>
-                                    <select value={formData.categoryId} onChange={e => setFormData({ ...formData, categoryId: e.target.value })} className="input-field text-sm">
-                                        <option value="">Select...</option>
+                                    <label className="label text-xs">Category <span className="text-red-500">*</span></label>
+                                    <select
+                                        value={formData.categoryId}
+                                        onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
+                                        className="input-field text-sm"
+                                        disabled={loadingCategories}
+                                    >
+                                        <option value="">{loadingCategories ? 'Loading...' : 'Select Category...'}</option>
                                         {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                                     </select>
                                 </div>
                                 <div>
                                     <label className="label text-xs">Subcategory</label>
-                                    <select value={formData.subcategoryId} disabled={!subcategories.length} onChange={e => setFormData({ ...formData, subcategoryId: e.target.value })} className="input-field text-sm disabled:bg-secondary-50">
-                                        <option value="">Select...</option>
+                                    <select
+                                        value={formData.subcategoryId}
+                                        disabled={!formData.categoryId || loadingSubcategories}
+                                        onChange={e => setFormData({ ...formData, subcategoryId: e.target.value })}
+                                        className="input-field text-sm disabled:bg-secondary-50"
+                                    >
+                                        <option value="">{loadingSubcategories ? 'Loading...' : 'Select...'}</option>
                                         {subcategories.map(sub => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
                                     </select>
                                 </div>
@@ -489,10 +548,20 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
 
                                 <div>
                                     <label className="label text-xs">Brand</label>
-                                    <input type="text" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} className="input-field text-sm" placeholder="Optional" />
+                                    <input
+                                        type="text"
+                                        value={formData.brand}
+                                        onChange={e => {
+                                            // Capitalise first letter of each word
+                                            const val = e.target.value.replace(/\b\w/g, l => l.toUpperCase());
+                                            setFormData({ ...formData, brand: val });
+                                        }}
+                                        className="input-field text-sm"
+                                        placeholder="Optional"
+                                    />
                                 </div>
                                 <div>
-                                    <label className="label text-xs">Condition *</label>
+                                    <label className="label text-xs">Condition <span className="text-red-500">*</span></label>
                                     <select value={formData.condition} onChange={e => setFormData({ ...formData, condition: e.target.value })} className="input-field text-sm">
                                         <option value="">Select...</option>
                                         {conditions.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
@@ -501,15 +570,15 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                             </div>
                         </div>
 
-                        {/* 3. Specs & Price */}
+                        {/* 3. Specifications */}
                         <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
                             <div className="flex justify-between items-end border-b pb-2 mb-2">
-                                <h2 className="text-lg font-semibold">Specs & Pricing</h2>
+                                <h2 className="text-lg font-semibold">Item Specifications</h2>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="col-span-2">
-                                    <label className="label text-xs">Dimensions (cm)</label>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="md:col-span-2">
+                                    <label className="label text-xs">Dimensions (mm)</label>
                                     <div className="flex space-x-2">
                                         <input type="number" placeholder="L" value={formData.dimensionsLength} onChange={e => setFormData({ ...formData, dimensionsLength: e.target.value })} className="input-field text-sm px-2 text-center" />
                                         <span className="self-center text-secondary-400">x</span>
@@ -520,36 +589,63 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                 </div>
 
                                 <div>
-                                    <label className="label text-xs">Quantity</label>
+                                    <label className="label text-xs">Quantity <span className="text-red-500">*</span></label>
                                     <input type="number" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })} className="input-field text-sm" min="1" />
                                 </div>
+                            </div>
+                        </div>
 
-                                <div>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <label className="label text-xs font-bold text-secondary-900">Price (£)</label>
-                                        <label className="flex items-center space-x-1 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.isFree}
-                                                onChange={e => {
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        isFree: e.target.checked,
-                                                        price: e.target.checked ? '0' : prev.price
-                                                    }));
-                                                }}
-                                                className="rounded border-secondary-300 text-primary-600 focus:ring-primary-500 w-3 h-3"
-                                            />
-                                            <span className="text-[10px] font-medium text-secondary-600">Free?</span>
-                                        </label>
-                                    </div>
+                        {/* 4. Price */}
+                        <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+                            <div className="flex justify-between items-end border-b pb-2 mb-2">
+                                <h2 className="text-lg font-semibold">Price</h2>
+                            </div>
+
+                            <div className="max-w-xs">
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="label text-base font-semibold text-secondary-900">Asking Price (£)</label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.isFree}
+                                            onChange={e => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    isFree: e.target.checked,
+                                                    price: e.target.checked ? '0' : prev.price
+                                                }));
+                                            }}
+                                            className="rounded border-green-300 text-green-600 focus:ring-green-500 w-5 h-5"
+                                        />
+                                        <span className="text-base font-semibold text-green-700">Mark as Free</span>
+                                    </label>
+                                </div>
+                                <div className="relative">
+                                    <span className={`absolute left-3 top-1/2 -translate-y-1/2 font-bold ${formData.isFree ? 'text-secondary-300' : 'text-primary-800'}`}>£</span>
                                     <input
-                                        type="number"
-                                        step="0.01"
+                                        type="text"
+                                        inputMode="decimal"
                                         value={formData.price}
                                         disabled={formData.isFree}
-                                        onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                        className={`input-field text-sm font-semibold ${formData.isFree ? 'bg-secondary-100 text-secondary-400' : 'text-primary-900 border-primary-200 focus:border-primary-500'}`}
+                                        onChange={e => {
+                                            // Allow only numbers and decimals
+                                            const val = e.target.value;
+                                            if (/^[\d,.]*$/.test(val)) {
+                                                setFormData({ ...formData, price: val });
+                                            }
+                                        }}
+                                        onBlur={e => {
+                                            // Parse string, remove commas, format
+                                            const raw = e.target.value.replace(/,/g, '');
+                                            const val = parseFloat(raw);
+                                            if (!isNaN(val)) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    price: val.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                }));
+                                            }
+                                        }}
+                                        className={`input-field text-lg pl-7 font-bold ${formData.isFree ? 'bg-secondary-100 text-secondary-400' : 'text-primary-900 border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'}`}
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -562,86 +658,130 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                     <div className="space-y-6">
 
                         {/* Sustainability Card */}
-                        <div className="bg-gradient-to-br from-green-50 to-white rounded-xl shadow-sm border border-green-100 p-5">
-                            <div className="flex items-start space-x-3 mb-4">
-                                <span className={`p-2 rounded-full ${carbonSaved ? 'bg-green-100 text-green-600' : 'bg-secondary-100 text-secondary-400'}`}>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg>
-                                </span>
-                                <div>
-                                    <h3 className={`font-semibold text-sm ${carbonSaved ? 'text-green-900' : 'text-secondary-700'}`}>
-                                        {carbonSaved ? 'Certificate Unlocked!' : 'Carbon Certificate'}
-                                    </h3>
-                                    <p className="text-xs text-secondary-500 mt-1 leading-relaxed">
-                                        We calculate this automatically from your dimensions.
-                                    </p>
-                                </div>
-                            </div>
+                        <div className="bg-emerald-50 rounded-xl shadow-sm border-2 border-emerald-100 p-5 relative overflow-hidden">
+                            {/* Decorative background element */}
+                            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-emerald-100/50 rounded-full blur-2xl"></div>
 
-                            {/* Material Selector (Conditional) */}
-                            {subcategories.find(s => s.id === formData.subcategoryId)?.is_material_ambiguous && (
-                                <div className="mb-4">
-                                    <label className="label text-xs text-yellow-700 font-semibold">What is this made of?</label>
-                                    <select
-                                        value={selectedMaterialId}
-                                        onChange={e => setSelectedMaterialId(e.target.value)}
-                                        className="input-field text-sm border-yellow-200 bg-yellow-50 focus:ring-yellow-500"
-                                    >
-                                        <option value="">Select Material...</option>
-                                        {materials.map(m => (
-                                            <option key={m.id} value={m.id}>{m.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
+                            {/* Dynamic Guidance Logic */}
+                            {(() => {
+                                const selectedSub = subcategories.find(s => s.id === formData.subcategoryId);
+                                const isManualWeightRequired = selectedSub && !selectedSub.default_density_kg_per_m3 && !selectedSub.is_material_ambiguous;
+                                const hasResult = calculatedWeight !== null;
 
-                            {/* Results Display */}
-                            {calculatedWeight !== null && (
-                                <div className="bg-green-50 rounded-lg p-3 mb-4 border border-green-200">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-xs text-green-800">Est. Weight:</span>
-                                        <span className="text-sm font-bold text-green-900">{calculatedWeight} kg</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-xs text-green-800">Carbon Saved:</span>
-                                        <span className="text-sm font-bold text-green-900">{carbonSaved} kg CO₂e</span>
-                                    </div>
-                                </div>
-                            )}
+                                return (
+                                    <>
+                                        <div className="flex items-start space-x-4 mb-4 relative z-10">
+                                            <div className={`p-3 rounded-full shrink-0 ${hasResult ? 'bg-emerald-200 text-emerald-800' : 'bg-emerald-100 text-emerald-600'}`}>
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg>
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-base text-emerald-950">
+                                                    {hasResult ? 'Certificate Unlocked!' : 'Carbon Certificate'}
+                                                </h3>
+                                                <p className="text-sm text-emerald-800 mt-1 font-medium leading-snug">
+                                                    {hasResult
+                                                        ? "Great! Your listing now includes an environmental impact certificate."
+                                                        : isManualWeightRequired
+                                                            ? "We can't guess the weight of this item. Please enter the Weight below to unlock."
+                                                            : "Enter Dimensions (or Weight) to unlock."
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
 
-                            <div className="mt-2 pt-2 border-t border-secondary-100">
-                                <label className="label text-[10px] text-secondary-400">Manual Weight Overide (Optional)</label>
-                                <input
-                                    type="number"
-                                    value={formData.weight}
-                                    onChange={e => setFormData({ ...formData, weight: e.target.value })}
-                                    className="input-field text-xs bg-white py-1"
-                                    placeholder="Enter kg only if needed"
-                                />
-                            </div>
+                                        {/* Material Selector (Conditional) */}
+                                        {selectedSub?.is_material_ambiguous && (
+                                            <div className="mb-4 relative z-10">
+                                                <label className="label text-xs text-yellow-800 font-bold uppercase tracking-wide mb-1">What is this made of?</label>
+                                                <select
+                                                    value={selectedMaterialId}
+                                                    onChange={e => setSelectedMaterialId(e.target.value)}
+                                                    className="input-field text-sm border-2 border-yellow-200 bg-yellow-50 focus:ring-yellow-500 font-medium text-yellow-900"
+                                                >
+                                                    <option value="">Select Material...</option>
+                                                    {materials.map(m => (
+                                                        <option key={m.id} value={m.id}>{m.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+
+                                        {/* Results Display */}
+                                        {hasResult && (
+                                            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 mb-4 border border-emerald-200 relative z-10 shadow-sm">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Est. Weight</span>
+                                                    <span className="text-lg font-bold text-emerald-900">{calculatedWeight?.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Carbon Saved</span>
+                                                    <span className="text-lg font-bold text-emerald-900">{carbonSaved?.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg CO₂e</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="mt-4 pt-4 border-t border-emerald-200/60 relative z-10">
+                                            <label className={`label text-xs font-bold uppercase tracking-wider mb-2 ${isManualWeightRequired ? "text-orange-700" : "text-emerald-700"}`}>
+                                                {isManualWeightRequired ? "Manual Weight (Required for Certificate)" : "Manual Weight Override (Optional)"}
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    inputMode="decimal"
+                                                    value={formData.weight}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        if (/^[\d,.]*$/.test(val)) {
+                                                            setFormData({ ...formData, weight: val });
+                                                        }
+                                                    }}
+                                                    onBlur={e => {
+                                                        const raw = e.target.value.replace(/,/g, '');
+                                                        const val = parseFloat(raw);
+                                                        if (!isNaN(val)) {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                weight: val.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                            }));
+                                                        }
+                                                    }}
+                                                    className={`input-field text-sm py-2 pl-3 font-semibold shadow-sm ${isManualWeightRequired && !formData.weight
+                                                        ? 'border-2 border-orange-300 bg-orange-50 text-orange-900 placeholder-orange-400 focus:border-orange-500 focus:ring-orange-200'
+                                                        : 'border-emerald-200 focus:border-emerald-500 focus:ring-emerald-200 text-emerald-900 placeholder-emerald-400'
+                                                        }`}
+                                                    placeholder="Enter weight..."
+                                                />
+                                                <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold ${isManualWeightRequired ? 'text-orange-600' : 'text-emerald-600'}`}>kg</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                );
+                            })()}
                         </div>
 
                         {/* Logistics */}
                         <div className="bg-white rounded-xl shadow-sm p-5 space-y-4">
                             <h2 className="text-md font-semibold border-b pb-2">Logistics</h2>
 
-                            <div>
-                                <label className="label text-xs">Location Postcode *</label>
+                            <div className="relative">
+                                <label className="label text-xs">Location Postcode <span className="text-red-500">*</span></label>
                                 <input
                                     type="text"
                                     value={formData.postcode}
                                     onChange={e => setFormData({ ...formData, postcode: e.target.value.toUpperCase() })}
                                     onBlur={(e) => handlePostcodeBlur(e.target.value)}
-                                    className={`input-field text-sm ${locationVerified ? 'border-green-500 focus:ring-green-500' : ''}`}
+                                    className={`input-field text-sm pr-10 ${locationVerified ? 'border-green-500 focus:ring-green-500' : ''}`}
                                     placeholder={mode === 'edit' && !formData.postcode ? 'Confirmed (Change to update)' : 'SW1A 1AA'}
                                 />
-                                <div className="absolute right-3 top-8 pointer-events-none">
+                                <div className="absolute right-3 top-7 pointer-events-none">
                                     {isLocating && <div className="animate-spin h-4 w-4 border-2 border-primary-500 border-t-transparent rounded-full"></div>}
-                                    {locationVerified && !isLocating && <span className="text-green-500">✓</span>}
+                                    {locationVerified && !isLocating && <span className="text-green-500 font-bold">✓</span>}
                                 </div>
                             </div>
 
                             <div className="space-y-2 pt-2">
                                 <label className="flex items-center space-x-2 text-sm">
+// ... (unchanged checkboxes omitted for brevity, but tool requires contiguous block. I'll include them)
                                     <input type="checkbox" checked={formData.offersCollection} onChange={e => setFormData({ ...formData, offersCollection: e.target.checked })} className="rounded border-secondary-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Collection Available</span>
                                 </label>
@@ -652,14 +792,59 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                             </div>
 
                             {formData.offersDelivery && (
-                                <div className="grid grid-cols-2 gap-3 pl-6 border-l-2 border-secondary-100">
-                                    <div>
-                                        <label className="label text-[10px]">Radius (mi)</label>
-                                        <input type="number" value={formData.deliveryRadius} onChange={e => setFormData({ ...formData, deliveryRadius: e.target.value })} className="input-field text-sm py-1" />
+                                <div className="space-y-4 pl-6 border-l-2 border-secondary-100">
+                                    {/* Local Delivery Option */}
+                                    <div className="bg-secondary-50 p-3 rounded-lg">
+                                        <h3 className="text-xs font-semibold text-secondary-900 mb-2 uppercase tracking-wide">Local Delivery</h3>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="label text-[10px]">Max Radius (miles)</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.deliveryRadius}
+                                                    onChange={e => setFormData({ ...formData, deliveryRadius: e.target.value })}
+                                                    className="input-field text-sm py-1"
+                                                    placeholder="e.g. 20"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="label text-[10px]">Cost (£)</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.deliveryCharge}
+                                                    onChange={e => setFormData({ ...formData, deliveryCharge: e.target.value })}
+                                                    className="input-field text-sm py-1"
+                                                    placeholder="e.g. 15"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="label text-[10px]">Cost (£)</label>
-                                        <input type="number" value={formData.deliveryCharge} onChange={e => setFormData({ ...formData, deliveryCharge: e.target.value })} className="input-field text-sm py-1" />
+
+                                    {/* Courier Option (New) */}
+                                    <div className="bg-secondary-50 p-3 rounded-lg">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-xs font-semibold text-secondary-900 uppercase tracking-wide">Nationwide Courier</h3>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.courierAvailable}
+                                                onChange={e => setFormData({ ...formData, courierAvailable: e.target.checked })}
+                                                className="rounded border-secondary-300 text-primary-600 focus:ring-primary-500 h-4 w-4"
+                                            />
+                                        </div>
+
+                                        {formData.courierAvailable && (
+                                            <div>
+                                                <label className="label text-[10px]">Courier Cost (£)</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.courierCost}
+                                                    onChange={e => setFormData({ ...formData, courierCost: e.target.value })}
+                                                    className="input-field text-sm py-1"
+                                                    placeholder="e.g. 50"
+                                                />
+                                                <p className="text-[10px] text-secondary-500 mt-1">Flat rate for nationwide delivery.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -681,9 +866,16 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                             <button
                                 onClick={handleSubmit}
                                 disabled={uploading}
-                                className="w-full btn-primary py-4 text-base shadow-lg shadow-primary-900/10 transition-transform active:scale-[0.98]"
+                                className="w-full btn-primary py-4 text-base shadow-lg shadow-primary-900/10 transition-transform active:scale-[0.98] flex items-center justify-center space-x-2"
                             >
-                                {uploading ? (mode === 'edit' ? 'Updating...' : 'Publishing...') : (mode === 'edit' ? 'Save Changes' : 'Publish Listing')}
+                                {uploading ? (
+                                    <>
+                                        <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                                        <span>{mode === 'edit' ? 'Updating...' : 'Publishing...'}</span>
+                                    </>
+                                ) : (
+                                    <span>{mode === 'edit' ? 'Save Changes' : 'Publish Listing'}</span>
+                                )}
                             </button>
                         </div>
                     </div>

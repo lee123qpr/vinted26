@@ -26,7 +26,7 @@ interface ListingCardProps {
 
 export default function ListingCard({ listing, isFavourited = false }: ListingCardProps) {
     // Normalise image handling (RPC vs standard select)
-    let imageUrl = '/placeholder-image.jpg';
+    let imageUrl = 'https://placehold.co/400x400?text=No+Image';
     if (listing.images && Array.isArray(listing.images) && listing.images.length > 0) {
         // RPC returns JSON array of objects or strings depending on query. 
         // Based on RPC definition: json_build_object('image_url', ...)
@@ -39,10 +39,20 @@ export default function ListingCard({ listing, isFavourited = false }: ListingCa
     // Normalise carbon saved (some queries might not return it)
     const carbonSaved = listing.carbon_saved_kg || 0;
 
+    const conditionColors: Record<string, string> = {
+        new_unused: 'bg-green-100 text-green-800 border-green-200',
+        like_new: 'bg-blue-100 text-blue-800 border-blue-200',
+        good: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        fair: 'bg-orange-100 text-orange-800 border-orange-200',
+        for_parts: 'bg-red-100 text-red-800 border-red-200',
+    };
+
+    const conditionStyle = listing.condition ? (conditionColors[listing.condition] || 'bg-secondary-100 text-secondary-800 border-secondary-200') : 'bg-secondary-100 text-secondary-800 border-secondary-200';
+
     return (
         <div className="card group bg-white rounded-xl shadow-sm border border-secondary-200 overflow-hidden hover:shadow-md transition-shadow block relative">
             <div className="relative aspect-square bg-secondary-100 overflow-hidden">
-                <Link href={`/listing/${listing.id}`} className="block w-full h-full">
+                <Link href={`/listing/${listing.id}`} className="block w-full h-full relative">
                     <Image
                         src={imageUrl}
                         alt={listing.title}
@@ -57,11 +67,7 @@ export default function ListingCard({ listing, isFavourited = false }: ListingCa
                     <FavouritesButton listingId={listing.id} initialIsFavourited={isFavourited} />
                 </div>
 
-                {listing.include_carbon_certificate && (
-                    <div className="absolute top-2 left-2 bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded-full flex items-center shadow-sm border border-green-200 z-10 pointer-events-none">
-                        Cert Included
-                    </div>
-                )}
+                {/* Removed "Cert Included" tag as per user request */}
 
                 {listing.distance_miles !== null && listing.distance_miles !== undefined && (
                     <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-full flex items-center shadow-sm z-10 pointer-events-none">
@@ -85,7 +91,7 @@ export default function ListingCard({ listing, isFavourited = false }: ListingCa
                 </div>
 
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-secondary-100">
-                    <span className="text-xs px-2 py-1 bg-secondary-100 rounded text-secondary-600 capitalize">
+                    <span className={`text-xs px-2 py-1 rounded border ${conditionStyle} capitalize font-medium`}>
                         {listing.condition?.replace('_', ' ') || 'Used'}
                     </span>
 
@@ -94,7 +100,7 @@ export default function ListingCard({ listing, isFavourited = false }: ListingCa
                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                            {carbonSaved.toFixed(1)}kg CO₂ Saved
+                            {carbonSaved.toFixed(2)}kg CO₂ Saved
                         </span>
                     )}
                 </div>

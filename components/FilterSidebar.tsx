@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 
 export default function FilterSidebar() {
     const router = useRouter();
@@ -26,6 +26,8 @@ export default function FilterSidebar() {
         setRadius(searchParams.get('radius') || '');
         setSearchQuery(searchParams.get('q') || '');
     }, [searchParams]);
+
+    const [isPending, startTransition] = useTransition();
 
     const applyFilters = async () => {
         const params = new URLSearchParams(searchParams.toString());
@@ -75,7 +77,9 @@ export default function FilterSidebar() {
             params.delete('postcode');
         }
 
-        router.push(`${pathname}?${params.toString()}`);
+        startTransition(() => {
+            router.push(`${pathname}?${params.toString()}`);
+        });
     };
 
     const handleConditionChange = (condition: string) => {
@@ -104,7 +108,9 @@ export default function FilterSidebar() {
         params.delete('postcode');
         params.delete('q');
 
-        router.push(`${pathname}?${params.toString()}`);
+        startTransition(() => {
+            router.push(`${pathname}?${params.toString()}`);
+        });
     };
 
     return (
@@ -120,8 +126,8 @@ export default function FilterSidebar() {
             </div>
 
             {/* Keywords */}
-            <div className="mb-6 pb-6 border-b border-secondary-100">
-                <h3 className="font-semibold text-secondary-900 mb-3">Keywords</h3>
+            <div className="mb-4 pb-4 border-b border-secondary-100">
+                <h3 className="font-semibold text-secondary-900 mb-2">Keywords</h3>
                 <input
                     type="text"
                     placeholder="Search terms..."
@@ -134,9 +140,9 @@ export default function FilterSidebar() {
             </div>
 
             {/* Location Filter */}
-            <div className="mb-6 pb-6 border-b border-secondary-100">
-                <h3 className="font-semibold text-secondary-900 mb-3">Location</h3>
-                <div className="space-y-3">
+            <div className="mb-4 pb-4 border-b border-secondary-100">
+                <h3 className="font-semibold text-secondary-900 mb-2">Location</h3>
+                <div className="space-y-2">
                     <input
                         type="text"
                         placeholder="Postcode (e.g. SW1A 1AA)"
@@ -162,8 +168,8 @@ export default function FilterSidebar() {
             </div>
 
             {/* Price Range */}
-            <div className="mb-6">
-                <h3 className="font-semibold text-secondary-900 mb-3">Price (£)</h3>
+            <div className="mb-4">
+                <h3 className="font-semibold text-secondary-900 mb-2">Price (£)</h3>
                 <div className="flex items-center gap-2">
                     <input
                         type="number"
@@ -186,9 +192,9 @@ export default function FilterSidebar() {
             </div>
 
             {/* Condition */}
-            <div className="mb-6">
-                <h3 className="font-semibold text-secondary-900 mb-3">Condition</h3>
-                <div className="space-y-2">
+            <div className="mb-4">
+                <h3 className="font-semibold text-secondary-900 mb-2">Condition</h3>
+                <div className="space-y-1">
                     {['new_unused', 'like_new', 'good', 'fair', 'for_parts'].map((condition) => (
                         <label key={condition} className="flex items-center space-x-2 cursor-pointer">
                             <input
@@ -205,11 +211,12 @@ export default function FilterSidebar() {
 
             <div className="pt-6 border-t border-secondary-100">
                 <button
-                    className="w-full btn-primary disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full btn-primary disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                     onClick={applyFilters}
-                    disabled={isGeocoding}
+                    disabled={isGeocoding || isPending}
                 >
-                    {isGeocoding ? 'Updating...' : 'Apply Filters'}
+                    {(isGeocoding || isPending) && <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>}
+                    <span>{isGeocoding ? 'Updating...' : isPending ? 'Filtering...' : 'Apply Filters'}</span>
                 </button>
             </div>
         </div>

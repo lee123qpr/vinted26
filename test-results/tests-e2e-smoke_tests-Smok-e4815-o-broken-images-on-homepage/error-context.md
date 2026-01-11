@@ -1,0 +1,276 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e5]:
+      - link "S Skipped." [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: S
+        - generic [ref=e9]: Skipped.
+      - link "How it Works" [ref=e11] [cursor=pointer]:
+        - /url: /how-it-works
+      - button "Shop by Category" [ref=e13]:
+        - img [ref=e14]
+        - text: Shop by Category
+      - generic [ref=e17]:
+        - textbox "Search for materials" [ref=e18]:
+          - /placeholder: Search for materials (e.g. bricks, timber, insulation)...
+        - button "Submit search" [ref=e19]:
+          - img [ref=e20]
+      - generic [ref=e22]:
+        - link "List Item" [ref=e23] [cursor=pointer]:
+          - /url: /sell
+          - img [ref=e24]
+          - text: List Item
+        - generic [ref=e26]:
+          - link "Log in" [ref=e27] [cursor=pointer]:
+            - /url: /auth/login
+          - link "Sign up" [ref=e28] [cursor=pointer]:
+            - /url: /auth/signup
+  - main [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e33]:
+        - heading "Buy and Sell Construction Materials" [level=1] [ref=e34]
+        - paragraph [ref=e35]: Save money, reduce waste, and track your environmental impact. The UK's marketplace for surplus building materials.
+        - generic [ref=e36]:
+          - textbox "What are you looking for?" [ref=e38]
+          - generic [ref=e39]:
+            - textbox "Location or postcode" [ref=e40]
+            - img [ref=e41]
+          - button "Search" [ref=e44]
+        - generic [ref=e45]:
+          - link "List an Item" [ref=e46] [cursor=pointer]:
+            - /url: /sell
+          - link "Browse Listings" [ref=e47] [cursor=pointer]:
+            - /url: /search
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - generic [ref=e50]: 12,500+
+            - generic [ref=e51]: Active Listings
+          - generic [ref=e52]:
+            - generic [ref=e53]: 8,200+
+            - generic [ref=e54]: Happy Users
+          - generic [ref=e55]:
+            - generic [ref=e56]: 450 tonnes
+            - generic [ref=e57]: CO₂ Saved
+      - generic [ref=e59]:
+        - paragraph [ref=e60]: Trusted by leading construction suppliers
+        - generic [ref=e61]:
+          - generic [ref=e63]: Selco
+          - generic [ref=e65]: Travis Perkins
+          - generic [ref=e67]: Jewson
+          - generic [ref=e69]: Screwfix
+          - generic [ref=e71]: Wickes
+      - generic [ref=e73]:
+        - heading "How It Works" [level=2] [ref=e74]
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - img [ref=e78]
+            - heading "1. Find Materials" [level=3] [ref=e80]
+            - paragraph [ref=e81]: Browse thousands of surplus construction materials near you. Filter by location, price, and sustainability impact.
+          - generic [ref=e82]:
+            - img [ref=e84]
+            - heading "2. Buy Securely" [level=3] [ref=e86]
+            - paragraph [ref=e87]: Purchase with confidence using our escrow payment system. Choose collection or delivery options.
+          - generic [ref=e88]:
+            - img [ref=e90]
+            - heading "3. Get Your Certificate" [level=3] [ref=e92]
+            - paragraph [ref=e93]: Receive a carbon savings certificate showing your environmental impact. Share your contribution to sustainability.
+        - link "Learn more about the process →" [ref=e95] [cursor=pointer]:
+          - /url: /how-it-works
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - generic [ref=e99]:
+            - heading "Latest Listings" [level=2] [ref=e100]
+            - paragraph [ref=e101]: Fresh materials added by sellers near you
+          - link "View All" [ref=e102] [cursor=pointer]:
+            - /url: /search
+            - text: View All
+            - img [ref=e103]
+        - generic [ref=e105]:
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - 'link "TEST: Contact me for this scam deal!" [ref=e108] [cursor=pointer]':
+                - /url: /listing/01d95973-c3e2-462e-ad8c-e8f2b9eaac08
+                - 'img "TEST: Contact me for this scam deal!" [ref=e109]'
+              - button "Add to favourites" [ref=e111]:
+                - img [ref=e112]
+            - 'link "TEST: Contact me for this scam deal! £50.00 Location n/a good" [ref=e114] [cursor=pointer]':
+              - /url: /listing/01d95973-c3e2-462e-ad8c-e8f2b9eaac08
+              - generic [ref=e115]:
+                - 'heading "TEST: Contact me for this scam deal!" [level=3] [ref=e116]'
+                - generic [ref=e117]: £50.00
+              - generic [ref=e118]: Location n/a
+              - generic [ref=e120]: good
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - link "Excavator 10T" [ref=e123] [cursor=pointer]:
+                - /url: /listing/2499dfa7-d028-4f2a-8bfc-bdacb6dc5ce3
+                - img "Excavator 10T" [ref=e124]
+              - button "Add to favourites" [ref=e126]:
+                - img [ref=e127]
+            - link "Excavator 10T £55,555.00 NW10 new unused" [ref=e129] [cursor=pointer]:
+              - /url: /listing/2499dfa7-d028-4f2a-8bfc-bdacb6dc5ce3
+              - generic [ref=e130]:
+                - heading "Excavator 10T" [level=3] [ref=e131]
+                - generic [ref=e132]: £55,555.00
+              - generic [ref=e133]: NW10
+              - generic [ref=e135]: new unused
+      - generic [ref=e137]:
+        - generic [ref=e138]:
+          - heading "What Our Users Say" [level=2] [ref=e139]
+          - paragraph [ref=e140]: Join thousands of satisfied buyers and sellers who are saving money and reducing waste
+        - generic [ref=e141]:
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - generic [ref=e144]: J
+              - generic [ref=e145]:
+                - heading "James Mitchell" [level=4] [ref=e146]
+                - paragraph [ref=e147]: Site Manager, BuildCo Ltd
+            - generic [ref=e148]:
+              - img [ref=e149]
+              - img [ref=e151]
+              - img [ref=e153]
+              - img [ref=e155]
+              - img [ref=e157]
+            - paragraph [ref=e159]: "\"Saved thousands on our last project by sourcing materials through Skipped. The quality was excellent and the carbon certificate was a great bonus for our sustainability report.\""
+          - generic [ref=e160]:
+            - generic [ref=e161]:
+              - generic [ref=e162]: S
+              - generic [ref=e163]:
+                - heading "Sarah Thompson" [level=4] [ref=e164]
+                - paragraph [ref=e165]: DIY Enthusiast
+            - generic [ref=e166]:
+              - img [ref=e167]
+              - img [ref=e169]
+              - img [ref=e171]
+              - img [ref=e173]
+              - img [ref=e175]
+            - paragraph [ref=e177]: "\"Found exactly what I needed for my kitchen renovation at half the price. The seller was friendly and delivery was smooth. Highly recommend!\""
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - generic [ref=e180]: D
+              - generic [ref=e181]:
+                - heading "David Chen" [level=4] [ref=e182]
+                - paragraph [ref=e183]: Property Developer
+            - generic [ref=e184]:
+              - img [ref=e185]
+              - img [ref=e187]
+              - img [ref=e189]
+              - img [ref=e191]
+              - img [ref=e193]
+            - paragraph [ref=e195]: "\"As both a buyer and seller on Skipped, I've had nothing but positive experiences. It's transformed how we handle surplus materials across our sites.\""
+      - generic [ref=e198]:
+        - img [ref=e200]
+        - heading "Building a Sustainable Future" [level=2] [ref=e202]
+        - paragraph [ref=e203]: Every purchase on Skipped helps reduce construction waste and carbon emissions. Track your environmental impact with verified carbon savings certificates.
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]: "450"
+            - generic [ref=e207]: Tonnes CO₂ Saved
+          - generic [ref=e208]:
+            - generic [ref=e209]: 1,200
+            - generic [ref=e210]: Tonnes Diverted
+          - generic [ref=e211]:
+            - generic [ref=e212]: 5,400
+            - generic [ref=e213]: Certificates Issued
+          - generic [ref=e214]:
+            - generic [ref=e215]: 98%
+            - generic [ref=e216]: Satisfaction Rate
+      - generic [ref=e219]:
+        - img [ref=e221]
+        - heading "Stay in the Loop" [level=2] [ref=e223]
+        - paragraph [ref=e224]: Get weekly updates on new listings in your area, sustainability tips, and exclusive deals
+        - generic [ref=e225]:
+          - textbox "Enter your email" [ref=e226]
+          - button "Subscribe" [ref=e227]
+        - paragraph [ref=e228]: We respect your privacy. Unsubscribe at any time.
+      - generic [ref=e230]:
+        - heading "Ready to Get Started?" [level=2] [ref=e231]
+        - paragraph [ref=e232]: Join thousands of builders, contractors, and DIY enthusiasts buying and selling construction materials.
+        - generic [ref=e233]:
+          - link "List Your Materials" [ref=e234] [cursor=pointer]:
+            - /url: /sell
+          - link "Browse Listings" [ref=e235] [cursor=pointer]:
+            - /url: /search
+  - contentinfo [ref=e236]:
+    - generic [ref=e237]:
+      - generic [ref=e238]:
+        - generic [ref=e239]:
+          - link "Skipped." [ref=e240] [cursor=pointer]:
+            - /url: /
+          - paragraph [ref=e241]: The UK's marketplace for reclaimed construction materials. Stop waste, save money, and build better.
+          - generic [ref=e242]:
+            - link [ref=e243] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e244]
+            - link [ref=e246] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e247]
+            - link [ref=e249] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e250]
+            - link [ref=e252] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e253]
+        - generic [ref=e255]:
+          - heading "Shop" [level=4] [ref=e256]
+          - list [ref=e257]:
+            - listitem [ref=e258]:
+              - link "Bricks & Blocks" [ref=e259] [cursor=pointer]:
+                - /url: /category/building-materials?subcategory=bricks-blocks
+            - listitem [ref=e260]:
+              - link "Timber & Joinery" [ref=e261] [cursor=pointer]:
+                - /url: /category/timber-joinery
+            - listitem [ref=e262]:
+              - link "Insulation" [ref=e263] [cursor=pointer]:
+                - /url: /category/building-materials?subcategory=insulation
+            - listitem [ref=e264]:
+              - link "Roofing" [ref=e265] [cursor=pointer]:
+                - /url: /category/building-materials?subcategory=roofing
+            - listitem [ref=e266]:
+              - link "View All Categories" [ref=e267] [cursor=pointer]:
+                - /url: /search
+        - generic [ref=e268]:
+          - heading "Support" [level=4] [ref=e269]
+          - list [ref=e270]:
+            - listitem [ref=e271]:
+              - link "Help Centre" [ref=e272] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e273]:
+              - link "FAQ" [ref=e274] [cursor=pointer]:
+                - /url: /faq
+            - listitem [ref=e275]:
+              - link "Trust & Safety" [ref=e276] [cursor=pointer]:
+                - /url: /faq?category=safety
+            - listitem [ref=e277]:
+              - link "Contact Us" [ref=e278] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=e279]:
+              - link "About Us" [ref=e280] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e281]:
+              - link "News & Articles" [ref=e282] [cursor=pointer]:
+                - /url: /articles
+            - listitem [ref=e283]:
+              - link "How it Works" [ref=e284] [cursor=pointer]:
+                - /url: /how-it-works
+        - generic [ref=e285]:
+          - heading "Stay Updated" [level=4] [ref=e286]
+          - paragraph [ref=e287]: Get the latest updates on new materials and sustainability tips.
+          - generic [ref=e288]:
+            - textbox "Enter your email" [ref=e289]
+            - button "Subscribe" [ref=e290]
+      - generic [ref=e291]:
+        - paragraph [ref=e292]: © 2026 Skipped Ltd. All rights reserved.
+        - generic [ref=e293]:
+          - link "Privacy Policy" [ref=e294] [cursor=pointer]:
+            - /url: /legal/privacy
+          - link "Terms of Service" [ref=e295] [cursor=pointer]:
+            - /url: /legal/terms
+          - link "Cookies" [ref=e296] [cursor=pointer]:
+            - /url: /legal/cookies
+  - button "Open Next.js Dev Tools" [ref=e302] [cursor=pointer]:
+    - img [ref=e303]
+```

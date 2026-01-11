@@ -21,6 +21,7 @@ export async function middleware(request: NextRequest) {
                     supabaseResponse = NextResponse.next({
                         request,
                     });
+                    supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
                     cookiesToSet.forEach(({ name, value, options }) =>
                         supabaseResponse.cookies.set(name, value, options)
                     );
@@ -34,6 +35,30 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // Protected routes
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+        if (!user) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/auth/login';
+            url.searchParams.set('redirectTo', request.nextUrl.pathname);
+            return NextResponse.redirect(url);
+        }
+
+        // Check Admin Status using simple query that matches "Users can view own profile" RLS
+        // We select 'id' as well to ensure it matches the typical policy pattern if any
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', user.id)
+            .single();
+
+        // If profile exists but is_admin is false (or null), deny access.
+        if (!profile || !profile.is_admin) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/'; // Go home
+            return NextResponse.redirect(url);
+        }
+    }
+
     if (
         !user &&
         (request.nextUrl.pathname.startsWith('/sell') ||
