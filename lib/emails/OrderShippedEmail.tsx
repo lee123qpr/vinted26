@@ -43,7 +43,7 @@ export default function OrderShippedEmail({
 
             <Section className="bg-white border border-secondary-200 rounded-lg p-6 mb-8 shadow-sm">
                 <Text className="text-secondary-600 text-base leading-relaxed m-0 text-center">
-                    {bodyText}
+                    Hi {buyerName}, {bodyText.charAt(0).toLowerCase() + bodyText.slice(1)}
                 </Text>
             </Section>
 

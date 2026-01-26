@@ -39,7 +39,7 @@ export default function DebugMessagingClient({ user }: { user: any }) {
 
             if (error) throw error;
             setMessages(data || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Fetch error:', err);
             setError(err.message || 'Unknown error');
         } finally {
@@ -53,7 +53,7 @@ export default function DebugMessagingClient({ user }: { user: any }) {
         const channel = supabase.channel('debug_msgs')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
                 setLastEvent(payload);
-                // Don't auto-fetch if we are stuck to avoid loops, but user can click refresh
+                // don&apos;t auto-fetch if we are stuck to avoid loops, but user can click refresh
                 console.log('Realtime payload:', payload);
             })
             .subscribe((status) => {
@@ -80,7 +80,7 @@ export default function DebugMessagingClient({ user }: { user: any }) {
                 }
             });
             alert(`Raw Fetch Status: ${res.status} ${res.statusText}`);
-        } catch (e: any) {
+        } catch (e: unknown) {
             alert(`Raw Fetch Error: ${e.message}`);
         }
     };

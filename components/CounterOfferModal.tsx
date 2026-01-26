@@ -59,9 +59,10 @@ export default function CounterOfferModal({ offerId, listingTitle, counterpartNa
                 onClose();
             }, 2000);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Counter Offer Error:', err);
-            setError(err.message || 'Failed to send counter offer');
+            const msg = err instanceof Error ? err.message : 'Failed to send counter offer';
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -91,7 +92,7 @@ export default function CounterOfferModal({ offerId, listingTitle, counterpartNa
                     <>
                         <h2 className="text-xl font-bold text-secondary-900 mb-1">Counter Offer</h2>
                         <p className="text-sm text-secondary-500 mb-6">
-                            Responding to <span className="font-semibold text-secondary-900">{counterpartName}'s</span> offer of <span className="font-semibold text-secondary-900">£{currentOfferAmount.toFixed(2)}</span> for "{listingTitle}"
+                            Responding to <span className="font-semibold text-secondary-900">{counterpartName}&apos;s</span> offer of <span className="font-semibold text-secondary-900">£{currentOfferAmount.toFixed(2)}</span> for &quot;{listingTitle}&quot;
                         </p>
 
                         {error && (

@@ -93,9 +93,10 @@ export default function CheckoutClient({ listing, currentUser, offer }: Props) {
             setClientSecret(data.clientSecret);
             console.log('DEBUG: Client Secret received:', data.clientSecret?.substring(0, 10) + '...');
             console.log('DEBUG: Publishable Key prefix:', process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.substring(0, 10) + '...');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Payment Init Error:', err);
-            setError(err.message);
+            const msg = err instanceof Error ? err.message : 'Failed to initialize payment';
+            setError(msg);
         } finally {
             setLoading(false);
         }

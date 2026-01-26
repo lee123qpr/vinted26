@@ -44,7 +44,7 @@ export default function OrdersClient({ initialOrders: orders }: Props) {
             alert('Failed to update status');
         } finally {
             setLoadingMap(prev => ({ ...prev, [orderId]: false }));
-            // Note: We don't close modal here on error to allow retry, 
+            // Note: We don&apos;t close modal here on error to allow retry, 
             // but on success we closed it above.
             // Actually, if we want to close on error to avoid stuck state:
             if (loadingMap[orderId]) setConfirmModalOpen(false);

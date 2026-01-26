@@ -48,7 +48,7 @@ export default function FinanceClient({ totalRevenue, totalFees, totalPending, t
             a.download = filename;
             a.click();
             window.URL.revokeObjectURL(url);
-        } catch (e: any) {
+        } catch (e: unknown) {
             alert(e.message);
         }
     };

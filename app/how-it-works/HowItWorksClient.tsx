@@ -223,7 +223,7 @@ export default function HowItWorksClient() {
                             <p className="text-secondary-300">Seller can offer collection, local delivery (set by mile), or nationwide courier. You choose at checkout.</p>
                         </div>
                         <div className="bg-secondary-800 p-6 rounded-xl">
-                            <h4 className="font-bold text-lg mb-2">What if the item isn't as described?</h4>
+                            <h4 className="font-bold text-lg mb-2">What if the item isn&apos;t as described?</h4>
                             <p className="text-secondary-300">Our Buyer Protection means we can refund you if the item is significantly different from the listing photos.</p>
                         </div>
                     </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+
 
 interface DisputeModalProps {
     isOpen: boolean;
@@ -50,7 +50,7 @@ export default function DisputeModal({ isOpen, onClose, transactionId }: Dispute
                     if (error) throw error;
                     if (data?.path) {
                         // We can just store the path or the full URL. Path is better for storage ops, usually URL for display.
-                        // Let's assume we store the path for now or construct public URL if public. 
+                        // let&apos;s assume we store the path for now or construct public URL if public. 
                         // But bucket is private. So we store the path `transactionId/filename`.
                         evidenceUrls.push(data.path);
                     }
@@ -74,9 +74,10 @@ export default function DisputeModal({ isOpen, onClose, transactionId }: Dispute
                 setStep('prompt');
             }, 2000);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Dispute Error:', error);
-            alert(error.message || 'Failed to raise dispute. Please try again.');
+            const msg = error instanceof Error ? error.message : 'Failed to raise dispute. Please try again.';
+            alert(msg);
         } finally {
             setLoading(false);
             setUploading(false);

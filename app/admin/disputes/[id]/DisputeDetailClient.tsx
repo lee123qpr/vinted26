@@ -24,8 +24,9 @@ export default function DisputeDetailClient({ dispute, messages, evidence }: any
             try {
                 await sendDisputeMessage(dispute.id, messageText, recipientId);
                 setMessageText('');
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to send message';
+                alert(msg);
             }
         });
     };
@@ -52,8 +53,9 @@ export default function DisputeDetailClient({ dispute, messages, evidence }: any
                 await resolveDispute(dispute.id, resolutionType as any, amount, adminNotes);
                 setShowResolveForm(false);
                 alert('Dispute resolved successfully');
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to resolve dispute';
+                alert(msg);
             }
         });
     };

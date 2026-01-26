@@ -20,7 +20,7 @@ export default async function DebugMessagingPage() {
 
             if (data) serverMessages = data;
             if (error) serverError = error.message;
-        } catch (e: any) {
+        } catch (e: unknown) {
             serverError = e.message;
         }
     }

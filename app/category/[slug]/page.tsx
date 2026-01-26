@@ -113,15 +113,13 @@ export default async function CategoryPage(props: {
     let currentDetailName = null;
 
     if (searchParams.subcategory) {
-        // @ts-ignore
-        const sub = catData.subcategories.find((s: any) => s.slug === searchParams.subcategory);
+        const sub = catData.subcategories.find((s: { slug: string; id: string; name: string }) => s.slug === searchParams.subcategory);
         if (sub) {
             selectedSubcategoryId = sub.id;
             currentSubcategoryName = sub.name;
 
             if (searchParams.detail) {
-                // @ts-ignore
-                const detail = sub.sub_subcategories.find((d: any) => d.slug === searchParams.detail);
+                const detail = sub.sub_subcategories.find((d: { slug: string; id: string; name: string }) => d.slug === searchParams.detail);
                 if (detail) {
                     selectedSubSubcategoryId = detail.id;
                     currentDetailName = detail.name;
@@ -208,8 +206,7 @@ export default async function CategoryPage(props: {
                             <div className="bg-white p-6 rounded-lg shadow-sm">
                                 <h3 className="font-bold text-secondary-900 mb-4">Categories</h3>
                                 <ul className="space-y-2">
-                                    {/* @ts-ignore */}
-                                    {catData.subcategories.map((sub: any) => (
+                                    {catData.subcategories.map((sub: { id: string; slug: string; name: string }) => (
                                         <li key={sub.id}>
                                             <Link
                                                 href={`/category/${catData.slug}?subcategory=${sub.slug}`}
@@ -234,8 +231,7 @@ export default async function CategoryPage(props: {
                                 </div>
 
                                 <ul className="space-y-2">
-                                    {/* @ts-ignore */}
-                                    {catData.subcategories.find(s => s.id === selectedSubcategoryId)?.sub_subcategories?.map((detail: any) => (
+                                    {catData.subcategories.find((s: { id: string }) => s.id === selectedSubcategoryId)?.sub_subcategories?.map((detail: { id: string; slug: string; name: string }) => (
                                         <li key={detail.id}>
                                             <Link
                                                 href={`/category/${catData.slug}?subcategory=${searchParams.subcategory}&detail=${detail.slug}`}

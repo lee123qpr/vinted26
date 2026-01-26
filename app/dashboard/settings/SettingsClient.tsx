@@ -45,7 +45,7 @@ export default function SettingsClient({ user, initialProfile }: Props) {
             // Redirect happening in server action usually, but we can double tap
             window.location.href = '/';
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error deleting account:', err);
             setMessage({ type: 'error', text: 'Failed to delete account. Please try again.' });
             setShowDeleteModal(false);
@@ -80,7 +80,7 @@ export default function SettingsClient({ user, initialProfile }: Props) {
 
             if (error) throw error;
             setMessage({ type: 'success', text: 'Profile updated successfully!' });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error updating profile:', err);
             setMessage({ type: 'error', text: 'Failed to update profile.' });
         } finally {
@@ -239,8 +239,9 @@ export default function SettingsClient({ user, initialProfile }: Props) {
                                                 const data = await res.json();
                                                 if (data.url) window.location.href = data.url;
                                                 else throw new Error(data.error);
-                                            } catch (err: any) {
-                                                alert('Connect failed: ' + err.message);
+                                            } catch (err: unknown) {
+                                                const msg = err instanceof Error ? err.message : 'Connect failed';
+                                                alert('Connect failed: ' + msg);
                                                 setSaving(false);
                                             }
                                         }}

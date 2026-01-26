@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { createOffer } from '@/app/actions/offers';
 
@@ -48,12 +47,13 @@ export default function OfferModal({ listingId, listingTitle, price, isOpen, onC
                 setOfferAmount('');
             }, 2000);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Offer Submision Error:', err);
-            if (err.message && err.message.includes('must be logged in')) {
+            const msg = err instanceof Error ? err.message : 'Failed to submit offer';
+            if (msg.includes('must be logged in')) {
                 router.push(`/auth/login?redirect=/listing/${listingId}`);
             }
-            setError(err.message || 'Failed to submit offer');
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -83,7 +83,7 @@ export default function OfferModal({ listingId, listingTitle, price, isOpen, onC
                     <>
                         <h2 className="text-xl font-bold text-secondary-900 mb-1">Make an Offer</h2>
                         <p className="text-sm text-secondary-500 mb-6">
-                            Price listed: <span className="font-semibold text-secondary-900">£{price.toFixed(2)}</span> for "{listingTitle}"
+                            Price listed: <span className="font-semibold text-secondary-900">£{price.toFixed(2)}</span> for &quot;{listingTitle}&quot;
                         </p>
 
                         {error && (

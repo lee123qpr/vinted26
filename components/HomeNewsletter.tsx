@@ -30,9 +30,10 @@ export default function HomeNewsletter() {
             setStatus('success');
             setMessage(data.message);
             setEmail('');
-        } catch (error: any) {
+        } catch (error: unknown) {
             setStatus('error');
-            setMessage(error.message);
+            const msg = error instanceof Error ? error.message : 'Something went wrong';
+            setMessage(msg);
         }
     };
 

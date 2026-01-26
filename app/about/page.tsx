@@ -115,7 +115,7 @@ export default function AboutPage() {
                         />
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-8">
                             <p className="text-lg font-medium text-white/90">
-                                "We're a team of builders, developers, and techies who got tired of seeing good materials go to waste."
+                                "we&apos;re a team of builders, developers, and techies who got tired of seeing good materials go to waste."
                             </p>
                         </div>
                     </div>

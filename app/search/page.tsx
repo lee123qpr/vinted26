@@ -1,5 +1,3 @@
-import { Suspense } from 'react';
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import FilterSidebar from '@/components/FilterSidebar';
 import ListingGridWithMap from '@/components/ListingGridWithMap';

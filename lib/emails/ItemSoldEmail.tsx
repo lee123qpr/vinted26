@@ -40,7 +40,7 @@ export default function ItemSoldEmail({
                     1. Message the buyer to arrange collection/delivery.
                 </Text>
                 <Text className="m-0 text-secondary-600 text-[14px]">
-                    2. Mark the item as "Shipped" or "Ready" in your dashboard.
+                    2. Mark the item as &quot;Shipped&quot; or &quot;Ready&quot; in your dashboard.
                 </Text>
             </Section>
 

@@ -29,7 +29,7 @@ export default function DebugCategoriesPage() {
                 console.log('Fetch complete', { data, error });
                 if (error) throw error;
                 setCategories(data);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Raw Error", err);
                 setError((prev: any) => ({ ...prev, raw: err.message }));
             }
@@ -49,7 +49,7 @@ export default function DebugCategoriesPage() {
                     console.log("Sub Data:", subData);
                 }
 
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setError((prev: any) => ({ ...prev, server: err.message }));
             } finally {
                 setLoading(false);

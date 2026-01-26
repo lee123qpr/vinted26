@@ -50,7 +50,17 @@ export async function saveArticle(formData: FormData) {
     const id = formData.get('id') as string;
 
     // Build payload
-    const payload: any = {
+    const payload: {
+        title: string;
+        slug: string;
+        content: string;
+        summary: string;
+        is_published: boolean;
+        published_at: string | null;
+        tags: string[];
+        cover_image?: string;
+        author_id?: string;
+    } = {
         title,
         slug,
         content,

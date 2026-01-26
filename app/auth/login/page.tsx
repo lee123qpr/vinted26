@@ -26,7 +26,7 @@ export default function LoginPage() {
             return;
         }
 
-        // Append token to formData manually since widget doesn't use hidden input
+        // Append token to formData manually since widget doesn&apos;t use hidden input
         formData.append('turnstileToken', turnstileToken);
 
         try {
@@ -36,8 +36,8 @@ export default function LoginPage() {
                 setTurnstileToken(''); // Reset token
                 setLoading(false);
             }
-            // If success, it redirects, so we don't need to setLoading(false) necessarily
-        } catch (err: any) {
+            // If success, it redirects, so we don&apos;t need to setLoading(false) necessarily
+        } catch (err: unknown) {
             setError('An unexpected error occurred');
             setLoading(false);
         }

@@ -8,9 +8,9 @@ export async function getCategories() {
         const { data, error } = await supabase.from('categories').select('*').order('name');
         if (error) throw error;
         return { data, error: null };
-    } catch (err: any) {
-        console.error('Server Action Error (Categories):', err);
-        return { data: null, error: err.message };
+    } catch (err: unknown) {
+        console.error('Error fetching categories:', err);
+        return { error: 'Failed to load categories' };
     }
 }
 
@@ -20,9 +20,9 @@ export async function getMaterials() {
         const { data, error } = await supabase.from('materials').select('*').order('name');
         if (error) throw error;
         return { data, error: null };
-    } catch (err: any) {
-        console.error('Server Action Error (Materials):', err);
-        return { data: null, error: err.message };
+    } catch (err: unknown) {
+        console.error('Error fetching materials:', err);
+        return { error: 'Failed to load materials' };
     }
 }
 
@@ -36,9 +36,9 @@ export async function getSubcategories(categoryId: string) {
 
         if (error) throw error;
         return { data, error: null };
-    } catch (err: any) {
-        console.error('Server Action Error (Subcategories):', err);
-        return { data: null, error: err.message };
+    } catch (err: unknown) {
+        console.error('Error fetching subcategories:', err);
+        return { error: 'Failed to load subcategories' };
     }
 }
 

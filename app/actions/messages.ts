@@ -39,8 +39,9 @@ export async function sendMessage(formData: FormData) {
         revalidatePath('/messages');
 
         return { data };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error sending message:', error);
-        return { error: error.message };
+        const msg = error instanceof Error ? error.message : 'Failed to send message';
+        return { error: msg };
     }
 }

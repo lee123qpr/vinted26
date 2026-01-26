@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { getUsersForExport } from '@/app/actions/export';
+import { Profile } from '@/types';
 
 export default function ExportUsersButton() {
     const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ export default function ExportUsersButton() {
             const headers = ['ID', 'Email', 'Full Name', 'Username', 'Joined Date', 'Total Sales', 'Total Purchases', 'Carbon Saved (kg)', 'Admin', 'Status'];
             const csvContent = [
                 headers.join(','),
-                ...users.map((u: any) => [
+                ...users.map((u: Partial<Profile>) => [
                     u.id,
                     `"${u.email}"`,
                     `"${u.full_name || ''}"`,
@@ -45,7 +46,7 @@ export default function ExportUsersButton() {
             link.click();
             document.body.removeChild(link);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Export failed:', err);
             alert('Failed to export users: ' + err.message);
         } finally {

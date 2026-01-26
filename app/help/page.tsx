@@ -110,7 +110,7 @@ export default function HelpPage() {
 
             {/* Contact CTA */}
             <div className="container-custom pb-20 text-center">
-                <h2 className="text-2xl font-bold text-secondary-900 mb-4">Can't find what you're looking for?</h2>
+                <h2 className="text-2xl font-bold text-secondary-900 mb-4">can&apos;t find what you&apos;re looking for?</h2>
                 <p className="text-secondary-600 mb-8">Our support team is just a click away.</p>
                 <Link
                     href="/contact"

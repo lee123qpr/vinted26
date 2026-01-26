@@ -13,7 +13,7 @@ export default function FavouritesClient({ listings }: Props) {
             <div className="container mx-auto px-4 py-8">
                 <h1 className="text-2xl font-bold mb-6 text-secondary-900">My Favourites</h1>
                 <div className="text-center py-12 bg-secondary-50 rounded-xl">
-                    <p className="text-secondary-600 mb-4">You haven't favourited any items yet.</p>
+                    <p className="text-secondary-600 mb-4">You haven&apos;t favourited any items yet.</p>
                     <Link href="/" className="btn-primary inline-block">
                         Browse Listings
                     </Link>

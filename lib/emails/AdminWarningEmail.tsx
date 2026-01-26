@@ -32,7 +32,7 @@ export default function AdminWarningEmail({
             </Text>
 
             <Text className="text-secondary-600 text-base mb-6">
-                We're contacting you regarding your account activity on Skipped.
+                We&apos;re contacting you regarding your account activity on Skipped.
             </Text>
 
             <Section className="bg-red-50 border border-red-100 rounded-lg p-6 mb-8 text-center">

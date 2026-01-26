@@ -31,7 +31,7 @@ export default function Error({
             </h1>
 
             <p className="text-lg text-secondary-500 max-w-lg mb-10 leading-relaxed">
-                Something went wrong on our end. We've dispatched our site engineers to inspect the damage.
+                Something went wrong on our end. we&apos;ve dispatched our site engineers to inspect the damage.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md mx-auto">

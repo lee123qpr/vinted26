@@ -113,8 +113,8 @@ export async function getTopSellers(limit: number = 10) {
         const sellerId = tx.seller_id;
         if (!sellerStats[sellerId]) {
             sellerStats[sellerId] = {
-                username: (tx.seller as any)?.username || 'Unknown',
-                email: (tx.seller as any)?.email || '',
+                username: ((tx.seller as unknown) as Record<string, unknown>)?.username as string || 'Unknown',
+                email: ((tx.seller as unknown) as Record<string, unknown>)?.email as string || '',
                 revenue: 0,
                 sales: 0
             };
@@ -132,7 +132,7 @@ export async function getTopSellers(limit: number = 10) {
 /**
  * Export financial data to CSV format
  */
-export async function exportFinancialData(format: 'csv' = 'csv', filters?: any) {
+export async function exportFinancialData(format: 'csv' = 'csv', filters?: Record<string, unknown>) {
     const supabase = await createAdminClient();
 
     const { data: transactions, error } = await supabase
@@ -156,10 +156,10 @@ export async function exportFinancialData(format: 'csv' = 'csv', filters?: any) 
     const rows = transactions?.map(tx => [
         new Date(tx.created_at).toLocaleDateString(),
         tx.id.slice(0, 8),
-        (tx.buyer as any)?.username || 'Unknown',
-        (tx.seller as any)?.username || 'Unknown',
-        (tx.listing as any)?.title || 'N/A',
-        (tx.listing as any)?.category || 'N/A',
+        ((tx.buyer as unknown) as Record<string, unknown>)?.username as string || 'Unknown',
+        ((tx.seller as unknown) as Record<string, unknown>)?.username as string || 'Unknown',
+        ((tx.listing as unknown) as Record<string, unknown>)?.title as string || 'N/A',
+        ((tx.listing as unknown) as Record<string, unknown>)?.category as string || 'N/A',
         `£${tx.total_price_gbp?.toFixed(2)}`,
         `£${tx.platform_fee_gbp?.toFixed(2)}`,
         tx.payment_status

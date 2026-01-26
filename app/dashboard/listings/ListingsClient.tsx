@@ -54,7 +54,7 @@ export default function ListingsClient({ initialListings }: Props) {
 
                 {listings.length === 0 ? (
                     <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                        <p className="text-secondary-500 mb-4">You haven't listed any items yet.</p>
+                        <p className="text-secondary-500 mb-4">You haven&apos;t listed any items yet.</p>
                         <Link href="/sell" className="btn-primary">Start Selling</Link>
                     </div>
                 ) : (

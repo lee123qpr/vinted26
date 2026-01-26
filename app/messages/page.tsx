@@ -81,7 +81,7 @@ export default async function MessagesPage({ searchParams }: Props) {
 
     // Handle initialization from URL params
     if ((initListingId || initRecipientId) && user) {
-        // Construct the key depending on if it's a listing chat or general DM (null listing_id)
+        // Construct the key depending on if it&apos;s a listing chat or general DM (null listing_id)
         // If listing_id is missing, we use 'null' string in key to match client logic
         const key = `${initListingId || 'null'}-${initRecipientId}`;
 
@@ -120,7 +120,7 @@ export default async function MessagesPage({ searchParams }: Props) {
         }
     }
 
-    // Convert map to array, ensuring the new one (if created) is at the top if it's new
+    // Convert map to array, ensuring the new one (if created) is at the top if it&apos;s new
     const conversArray = Array.from(grouped.values());
 
     // Sort: New ones (no last message) or most recent message first

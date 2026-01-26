@@ -19,7 +19,7 @@ export default function ResetPasswordEmail({ resetLink = 'https://skipped.co.uk/
             </Heading>
             <Text className="text-secondary-500 text-[16px] leading-[24px]">
                 We received a request to reset your password for your Skipped account.
-                If you didn't ask for this, you can safely ignore this email.
+                If you didn&apos;t ask for this, you can safely ignore this email.
             </Text>
             <Section className="text-center my-[32px]">
                 <Button

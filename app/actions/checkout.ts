@@ -70,11 +70,11 @@ export async function recordSuccessfulPayment({
                     }
                 });
                 console.log('Refund processed:', refund.id);
-                return { error: 'So sorry! Another buyer purchased this item seconds before you. Your payment has been automatically refunded.' };
-            } catch (refundError: any) {
-                console.error('CRITICAL: Failed to process race-condition refund:', refundError);
-                return { error: 'This item was already sold. Please contact support if your refund does not appear shortly.' };
+            } catch (refundError: unknown) {
+                console.error('Refund failed:', refundError);
+                // Continue anyway - admin can manually refund
             }
+            return { error: 'This item was already sold. Please contact support if your refund does not appear shortly.' };
         }
 
         // Calculate Platform Fee dynamically
@@ -149,8 +149,9 @@ export async function recordSuccessfulPayment({
 
         return { success: true, orderId: transaction.id };
 
-    } catch (error: any) {
-        console.error('Payment Record Error:', error);
-        return { error: error.message };
+    } catch (error: unknown) {
+        console.error('Checkout error:', error);
+        const msg = error instanceof Error ? error.message : 'Payment processing failed';
+        return { error: msg };
     }
 }

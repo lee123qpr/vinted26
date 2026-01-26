@@ -14,7 +14,7 @@ interface Listing {
     condition: string | null;
     carbon_saved_kg?: number;
     include_carbon_certificate?: boolean;
-    images?: any[]; // Keep flexible as RPC returns JSON, standard select returns specific shape
+    images?: (string | { image_url: string })[]; // Keep flexible as RPC returns JSON, standard select returns specific shape
     listing_images?: { image_url: string }[]; // Alternative shape
     distance_miles?: number;
 }

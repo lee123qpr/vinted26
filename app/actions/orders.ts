@@ -27,7 +27,15 @@ export async function updateOrderStatus(orderId: string, newStatus: 'shipped' | 
     if (!isSeller && !isBuyer) return { error: 'Permission denied' };
 
     // State Machine Transitions
-    const updateData: any = { order_status: newStatus };
+    // State Machine Transitions
+    const updateData: {
+        order_status?: string;
+        payment_status?: string;
+        payout_id?: string;
+        payout_error?: string;
+        completed_at?: string;
+        delivered_at?: string;
+    } = { order_status: newStatus };
 
     if (newStatus === 'shipped') {
         if (!isSeller) return { error: 'Only seller can mark as shipped' };
@@ -102,11 +110,12 @@ export async function updateOrderStatus(orderId: string, newStatus: 'shipped' | 
                     console.log(`Payout Success: ${transfer.id} sent to ${sellerProfile.stripe_account_id}`);
                     updateData.payout_id = transfer.id;
                 }
-            } catch (stripeError: any) {
+            } catch (stripeError: unknown) {
                 console.error('Payout Failed:', stripeError);
                 // We DON'T stop the completion, we just log failure. 
                 // Admin can retry payout manually if needed.
-                updateData.payout_error = stripeError.message;
+                const errorMsg = stripeError instanceof Error ? stripeError.message : 'Unknown payout error';
+                updateData.payout_error = errorMsg;
             }
         }
 
@@ -255,7 +264,8 @@ export async function createDispute(transactionId: string, reason: string, descr
     const adminSupabase = await createAdminClient();
 
     // 2. Insert Dispute Record
-    const { data: dispute, error: insertError } = await adminSupabase
+    // 2. Insert Dispute Record
+    const { error: insertError } = await adminSupabase
         .from('disputes')
         .insert({
             transaction_id: transactionId,

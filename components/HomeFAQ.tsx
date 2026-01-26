@@ -5,15 +5,15 @@ import { useState } from 'react';
 const faqs = [
     {
         question: "Is it safe to buy from other users?",
-        answer: "Yes! We use a secure escrow payment system. This means your money is held safely by us and only released to the seller once you've received your item and are happy with it."
+        answer: "Yes! We use a secure escrow payment system. This means your money is held safely by us and only released to the seller once you&apos;ve received your item and are happy with it."
     },
     {
         question: "How do I arrange delivery?",
         answer: "You can choose between collection or delivery when buying. For delivery, sellers set their own shipping options. We recommend messaging the seller before purchase to agree on the best method for large items."
     },
     {
-        question: "What if the item isn't as described?",
-        answer: "You're covered by our Buyer Protection. If an item arrives damaged or significantly different from the description, you can report it within 48 hours for a full refund."
+        question: "What if the item isn&apos;t as described?",
+        answer: "you&apos;re covered by our Buyer Protection. If an item arrives damaged or significantly different from the description, you can report it within 48 hours for a full refund."
     },
     {
         question: "Are there any fees for selling?",
@@ -38,7 +38,7 @@ export default function HomeFAQ() {
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-secondary-900 mb-4">Frequently Asked Questions</h2>
                     <p className="text-lg text-secondary-600">
-                        Got questions? We've got answers.
+                        Got questions? we&apos;ve got answers.
                     </p>
                 </div>
 

@@ -33,8 +33,9 @@ export default function UserTable({ users }: { users: User[] }) {
         startTransition(async () => {
             try {
                 await deleteUser(userId);
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to delete user';
+                alert(msg);
             }
         });
     };
@@ -47,8 +48,9 @@ export default function UserTable({ users }: { users: User[] }) {
             try {
                 await suspendUser(userId, days, reason);
                 setOpenDropdown(null);
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to suspend user';
+                alert(msg);
             }
         });
     };
@@ -61,8 +63,9 @@ export default function UserTable({ users }: { users: User[] }) {
             try {
                 await warnUser(userId, message);
                 setOpenDropdown(null);
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to warn user';
+                alert(msg);
             }
         });
     };
@@ -73,8 +76,9 @@ export default function UserTable({ users }: { users: User[] }) {
         startTransition(async () => {
             try {
                 await unsuspendUser(userId);
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to unsuspend user';
+                alert(msg);
             }
         });
     };

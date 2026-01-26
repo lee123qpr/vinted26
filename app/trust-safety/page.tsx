@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function TrustSafetyPage() {
     return (
@@ -27,7 +26,7 @@ export default function TrustSafetyPage() {
                             </div>
                             <h3 className="text-xl font-bold text-secondary-900 mb-3">Secure Payments</h3>
                             <p className="text-secondary-600">
-                                All transactions are protected. We hold payments securely until you confirm you've received your item as described.
+                                All transactions are protected. We hold payments securely until you confirm you&apos;ve received your item as described.
                             </p>
                         </div>
 
@@ -70,14 +69,14 @@ export default function TrustSafetyPage() {
                             <h2 className="text-3xl font-bold text-secondary-900 mb-6">Buyer Protection</h2>
                             <div className="bg-white p-8 rounded-xl shadow-sm border border-secondary-100">
                                 <p className="text-lg text-secondary-700 mb-6">
-                                    We want you to shop with confidence. That's why we offer comprehensive Buyer Protection on eligible purchases.
+                                    We want you to shop with confidence. that&apos;s why we offer comprehensive Buyer Protection on eligible purchases.
                                 </p>
                                 <ul className="space-y-4">
                                     <li className="flex items-start">
                                         <svg className="w-6 h-6 text-green-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
-                                        <span className="text-secondary-600"><strong>Refund Guarantee:</strong> If your item never arrives, or is significantly different from its description, you're covered.</span>
+                                        <span className="text-secondary-600"><strong>Refund Guarantee:</strong> If your item never arrives, or is significantly different from its description, you&apos;re covered.</span>
                                     </li>
                                     <li className="flex items-start">
                                         <svg className="w-6 h-6 text-green-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +88,7 @@ export default function TrustSafetyPage() {
                                         <svg className="w-6 h-6 text-green-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
-                                        <span className="text-secondary-600"><strong>Dispute Resolution:</strong> If you can't resolve an issue with a seller, our specialized team will mediate.</span>
+                                        <span className="text-secondary-600"><strong>Dispute Resolution:</strong> If you can&apos;t resolve an issue with a seller, our specialized team will mediate.</span>
                                     </li>
                                 </ul>
                             </div>

@@ -82,9 +82,10 @@ export async function createOffer(listingId: string, amount: number) {
         revalidatePath(`/listing/${listingId}`);
         return { success: true, offer };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Create Offer Action Error:', err);
-        return { error: err.message || 'Failed to send offer.' };
+        const msg = err instanceof Error ? err.message : 'Failed to send offer.';
+        return { error: msg };
     }
 }
 
@@ -139,9 +140,6 @@ export async function updateOfferStatus(offerId: string, status: 'accepted' | 'r
 
         // Notify the OTHER party
         const targetUserId = isSeller ? offer.buyer_id : offer.listings.seller_id;
-        const actorName = isSeller
-            ? (offer.listings.profiles?.username || 'Seller')
-            : (offer.buyer_id === user.id ? 'Buyer' : 'User'); // We need buyer profile? offer doesn't join buyer profile in select above properly maybe?
 
         // We need to fetch buyer profile name if we want to be precise, or just use generic.
         // Let's rely on what we have. We selected '*, listings(seller_id)'... 
@@ -165,9 +163,10 @@ export async function updateOfferStatus(offerId: string, status: 'accepted' | 'r
         revalidatePath('/dashboard/offers');
         return { success: true };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Update Offer Error:', err);
-        return { error: err.message || 'Failed to update offer.' };
+        const msg = err instanceof Error ? err.message : 'Failed to update offer.';
+        return { error: msg };
     }
 }
 
@@ -206,7 +205,7 @@ export async function counterOffer(offerId: string, amount: number) {
             return { error: 'You are not involved in this offer.' };
         }
 
-        const updateData: any = {
+        const updateData: { expires_at: string; status?: string; counter_amount_gbp?: number } = {
             expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         };
 
@@ -277,9 +276,10 @@ export async function counterOffer(offerId: string, amount: number) {
         revalidatePath('/dashboard/offers/sent');
         return { success: true };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Counter Offer Error:', err);
-        return { error: err.message || 'Failed to counter offer.' };
+        const msg = err instanceof Error ? err.message : 'Failed to counter offer.';
+        return { error: msg };
     }
 }
 

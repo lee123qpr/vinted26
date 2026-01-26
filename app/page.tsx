@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import HomeSearchForm from '@/components/HomeSearchForm';
 import HomeNewsletter from '@/components/HomeNewsletter';
@@ -108,7 +107,7 @@ export default async function HomePage() {
               Buy and Sell Construction Materials
             </h1>
             <p className="text-xl md:text-2xl text-primary-100 mb-8 text-balance">
-              Save money, reduce waste, and track your environmental impact. The UK's marketplace for surplus building materials.
+              Save money, reduce waste, and track your environmental impact. The UK&apos;s marketplace for surplus building materials.
             </p>
 
             {/* Search Bar */}
@@ -213,7 +212,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-xl font-bold text-secondary-900 mb-3 text-center">Buy Securely</h3>
               <p className="text-secondary-600 text-center leading-relaxed">
-                Purchase with confidence using our protected escrow payment system. Funds are only released when you're happy with your item.
+                Purchase with confidence using our protected escrow payment system. Funds are only released when you&apos;re happy with your item.
               </p>
             </div>
 
@@ -332,7 +331,7 @@ export default async function HomePage() {
             <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Building a Sustainable Future</h2>
             <p className="text-xl text-green-100/90 leading-relaxed">
               Every purchase on Skipped helps reduce construction waste and carbon emissions.
-              Together, we're building a circular economy for the construction industry.
+              Together, we&apos;re building a circular economy for the construction industry.
             </p>
           </div>
 

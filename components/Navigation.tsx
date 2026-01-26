@@ -109,7 +109,7 @@ export default function Navigation({ user: initialUser, categories }: Navigation
                 if (profile?.avatar_url) setAvatarUrl(profile.avatar_url);
                 fetchUnreadCount(currentUser.id);
             } else if (!initialUser) {
-                // Only verify logged out if we weren't supposedly logged in from server
+                // Only verify logged out if we weren&apos;t supposedly logged in from server
                 // Check explicitly
                 setUser(null);
                 setUserProfile(null);

@@ -1,6 +1,4 @@
 import { createClient } from '@/lib/supabase/server';
-import Link from 'next/link';
-import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import SignOutButton from '@/components/SignOutButton';
 import DashboardSidebar from './DashboardSidebar';

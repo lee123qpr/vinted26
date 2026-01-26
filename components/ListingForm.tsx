@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,18 +10,25 @@ import { createListing, updateListing } from '@/app/actions/listings';
 
 interface ListingFormProps {
     mode: 'create' | 'edit';
-    initialData?: any; // We can refine this type based on the DB schema
+    initialData?: Record<string, any>; // We can refine this type based on the DB schema
+}
+
+interface Material {
+    id: string;
+    name: string;
+    density_kg_per_m3: number;
+    embodied_carbon_kg_per_kg: number;
 }
 
 export default function ListingForm({ mode, initialData }: ListingFormProps) {
     const router = useRouter();
-    const [categories, setCategories] = useState<any[]>([]);
-    const [subcategories, setSubcategories] = useState<any[]>([]);
-    const [subSubcategories, setSubSubcategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
+    const [subSubcategories, setSubSubcategories] = useState<SubSubCategory[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [loadingSubcategories, setLoadingSubcategories] = useState(false);
 
-    const [materials, setMaterials] = useState<any[]>([]);
+    const [materials, setMaterials] = useState<Material[]>([]);
     const [selectedMaterialId, setSelectedMaterialId] = useState('');
     const [calculatedWeight, setCalculatedWeight] = useState<number | null>(null);
     const [carbonSaved, setCarbonSaved] = useState<number | null>(null);
@@ -199,10 +207,10 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
 
     useEffect(() => {
         // Only reset subs if user is manually changing category in create mode or interacting
-        // In edit mode initialization, we don't want to wipe them immediately.
+        // In edit mode initialization, we don&apos;t want to wipe them immediately.
         // We can check if formData.categoryId matches initialData.category_id to avoid reset?
         // Simpler: Just fetch subs when categoryId changes.
-        // But we need to be careful not to reset subId if it's the initial load.
+        // But we need to be careful not to reset subId if it&apos;s the initial load.
 
         if (!formData.categoryId) { setSubcategories([]); return; }
 
@@ -286,13 +294,17 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 const weight = totalVolume * density;
 
                 setCalculatedWeight(parseFloat(weight.toFixed(2)));
-                setCarbonSaved(parseFloat((weight * carbonFactor).toFixed(2)));
+                if (carbonFactor) {
+                    setCarbonSaved(parseFloat((weight * carbonFactor).toFixed(2)));
+                }
             }
             // Fallback: Manual weight
             else if (formData.weight) {
                 const w = parseFloat(formData.weight);
                 setCalculatedWeight(w);
-                setCarbonSaved(parseFloat((w * carbonFactor).toFixed(2)));
+                if (carbonFactor) {
+                    setCarbonSaved(parseFloat((w * carbonFactor).toFixed(2)));
+                }
             } else {
                 setCalculatedWeight(null);
                 setCarbonSaved(null);
@@ -347,7 +359,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
 
             // Carbon / Weight Validation - OPTIONAL
             // We do not block listing creation if these are missing.
-            // Users just won't get the Carbon Certificate.
+            // Users just won&apos;t get the Carbon Certificate.
 
             // Geocoding
             let finalLat = coordinates.lat;
@@ -355,7 +367,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
 
             if (formData.postcode) {
                 // Try to fetch only if postcode provided (it overrides existing)
-                // or if we didn't have coords.
+                // or if we didn&apos;t have coords.
                 // Ideally if user types postcode, onBlur fires. 
                 // But if they just type and submit...
                 const fetched = await getCoordinates(formData.postcode);
@@ -414,7 +426,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
             // Dealing with mixed existing/new images in Edit mode via Server Action is complex (we'd need to tell server which existing URLs to keep).
             // For CREATE mode (which is blocking the user), we just send files.
             // Refinement: Ideally ListingForm handles image state differently. 
-            // Let's send ALL files. If it's a File object, append it. If it's a string (URL), we might need logic to keep it (Server Action doesn't support that yet).
+            // let&apos;s send ALL files. If it&apos;s a File object, append it. If it&apos;s a string (URL), we might need logic to keep it (Server Action doesn&apos;t support that yet).
             // MVP Fix for "Post Item" (Create Mode):
             if (mode === 'create') {
                 // For Create, all images in imageFiles are new Files (or should be).
@@ -446,10 +458,10 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 router.push(`/listing/${result.listingId}`);
             }
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error submitting form:', err);
-            // ... error handling ...
-            setError(err.message || 'Failed to submit.');
+            const msg = err instanceof Error ? err.message : 'Failed to submit.';
+            setError(msg);
         } finally {
             setUploading(false);
         }
@@ -679,7 +691,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                                     {hasResult
                                                         ? "Great! Your listing now includes an environmental impact certificate."
                                                         : isManualWeightRequired
-                                                            ? "We can't guess the weight of this item. Please enter the Weight below to unlock."
+                                                            ? "We can&apos;t guess the weight of this item. Please enter the Weight below to unlock."
                                                             : "Enter Dimensions (or Weight) to unlock."
                                                     }
                                                 </p>

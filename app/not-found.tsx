@@ -31,7 +31,7 @@ export default function NotFound() {
 
             <p className="text-lg md:text-xl text-secondary-500 max-w-lg mb-10 leading-relaxed">
                 Looks like this item has been skipped... or maybe it never started.
-                The page you're looking for is missing from our inventory.
+                The page you&apos;re looking for is missing from our inventory.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md mx-auto">

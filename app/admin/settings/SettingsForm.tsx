@@ -4,7 +4,14 @@
 import { useTransition, useState } from 'react';
 import { updateSetting } from '@/app/actions/admin-settings';
 
-export default function SettingsForm({ maintenanceMode, bannerText, platformFeeSetting, bannerPresets = [] }: { maintenanceMode: any, bannerText: any, platformFeeSetting: any, bannerPresets?: string[] }) {
+interface AdminSetting {
+    id: string;
+    key: string;
+    value: string;
+    is_active: boolean;
+}
+
+export default function SettingsForm({ maintenanceMode, bannerText, platformFeeSetting, bannerPresets = [] }: { maintenanceMode: AdminSetting | null, bannerText: AdminSetting | null, platformFeeSetting: AdminSetting | null, bannerPresets?: string[] }) {
     const [isPending, startTransition] = useTransition();
 
     // Local state

@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server';
-import { toggleUserVerification, toggleUserBan } from '@/app/actions/admin';
 import UserTable from './UserTable';
 import ExportUsersButton from './ExportUsersButton';
 
@@ -67,9 +66,9 @@ export default async function UserManagementPage({
 
     // Calculate Rank Map (Based on Carbon Saved, regardless of current sort)
     // We need a separate query or just sort the result in memory to determine rank?
-    // Actually, rank is usually global. Let's precise that rank = Carbon Rank.
-    // For now, let's keep rank dynamic based on current view or purely cosmetic.
-    // Let's rely on index for now, or remove rank if it's confusing.
+    // Actually, rank is usually global. let&apos;s precise that rank = Carbon Rank.
+    // For now, let&apos;s keep rank dynamic based on current view or purely cosmetic.
+    // let&apos;s rely on index for now, or remove rank if it&apos;s confusing.
     // Re-introducing simple rank based on the current list for now.
 
     // Filter for search query (client-side for flexibility)

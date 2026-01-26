@@ -94,7 +94,7 @@ export default async function RootLayout({
                 </div>
                 <h1 className="text-2xl font-black mb-2 text-slate-800">Under Maintenance</h1>
                 <p className="text-slate-500 mb-6 leading-relaxed">
-                  We're currently upgrading our platform to serve you better. We'll be back shortly.
+                  we&apos;re currently upgrading our platform to serve you better. We'll be back shortly.
                 </p>
                 <div className="text-xs font-mono text-slate-400">Error Code: 503</div>
               </div>

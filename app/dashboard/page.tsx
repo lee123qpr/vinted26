@@ -56,13 +56,13 @@ export default async function DashboardPage() {
     const recentSales = recentSalesRes.data || [];
     const recentOrders = recentOrdersRes.data || [];
 
-    // Fallback if total_earnings_gbp is not in profile (it wasn't in the snippet I saw, but total_sales was)
+    // Fallback if total_earnings_gbp is not in profile (it wasn&apos;t in the snippet I saw, but total_sales was)
     // If not in profile, we might need to sum transactions myself or rely on hardcoded for now if schema unknown.
-    // I saw total_sales (count) in ProfileClient. I didn't see total_earnings. 
-    // I'll calculate total earnings from ALL transactions if profile field doesn't exist, but that's expensive.
+    // I saw total_sales (count) in ProfileClient. I didn&apos;t see total_earnings. 
+    // I'll calculate total earnings from ALL transactions if profile field doesn&apos;t exist, but that&apos;s expensive.
     // Ideally I'd check the schema. For now, since sales page fetches transactions, I'll do a quick sum of all COMPLETED transactions if I can,
     // or just leave it placeholder if risky.
-    // Actually, let's fetch sum of sales efficiently.
+    // Actually, let&apos;s fetch sum of sales efficiently.
     const { data: earningsData } = await supabase
         .from('transactions') // Assuming transactions table has prices
         .select('total_price_gbp')

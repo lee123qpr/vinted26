@@ -48,7 +48,7 @@ export default function OfferCard({ offer }: OfferCardProps) {
 
     if (status !== 'pending') {
         // Optionally hide card or show status
-        // For now, let's just show the status
+        // For now, let&apos;s just show the status
         return (
             <div className="bg-white rounded-lg p-4 shadow-sm border border-secondary-100 flex justify-between items-center opacity-75">
                 <div>

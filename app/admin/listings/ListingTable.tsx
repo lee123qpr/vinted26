@@ -2,8 +2,6 @@
 
 import { useTransition, useState } from 'react';
 import { archiveListing, deleteListing, bulkArchiveListings, bulkDeleteListings, bulkUpdateStatus } from '@/app/actions/admin-listings';
-import Link from 'next/link';
-import Image from 'next/image';
 
 export default function ListingTable({ listings }: { listings: any[] }) {
     const [isPending, startTransition] = useTransition();
@@ -12,14 +10,14 @@ export default function ListingTable({ listings }: { listings: any[] }) {
     const handleArchive = (id: string) => {
         if (!confirm('Archive this listing? It will no longer be visible.')) return;
         startTransition(async () => {
-            try { await archiveListing(id); } catch (e: any) { alert(e.message); }
+            try { await archiveListing(id); } catch (e: unknown) { const msg = e instanceof Error ? e.message : 'Failed to archive'; alert(msg); }
         });
     };
 
     const handleDelete = (id: string) => {
         if (!confirm('PERMANENTLY DELETE this listing? This cannot be undone.')) return;
         startTransition(async () => {
-            try { await deleteListing(id); } catch (e: any) { alert(e.message); }
+            try { await deleteListing(id); } catch (e: unknown) { const msg = e instanceof Error ? e.message : 'Failed to delete'; alert(msg); }
         });
     };
 
@@ -41,8 +39,9 @@ export default function ListingTable({ listings }: { listings: any[] }) {
             try {
                 await bulkArchiveListings(selectedIds);
                 setSelectedIds([]);
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to archive listings';
+                alert(msg);
             }
         });
     };
@@ -53,8 +52,9 @@ export default function ListingTable({ listings }: { listings: any[] }) {
             try {
                 await bulkDeleteListings(selectedIds);
                 setSelectedIds([]);
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to delete listings';
+                alert(msg);
             }
         });
     };
@@ -65,8 +65,9 @@ export default function ListingTable({ listings }: { listings: any[] }) {
             try {
                 await bulkUpdateStatus(selectedIds, status);
                 setSelectedIds([]);
-            } catch (e: any) {
-                alert(e.message);
+            } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to update status';
+                alert(msg);
             }
         });
     };

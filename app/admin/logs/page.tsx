@@ -11,7 +11,7 @@ export default async function AdminLogsPage({
     params,
     searchParams,
 }: {
-    params?: Promise<any>;
+    params?: Promise<{ [key: string]: string | string[] | undefined }>;
     searchParams: Promise<{ page?: string; type?: string }>;
 }) {
     const supabase = await createClient();

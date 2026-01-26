@@ -134,9 +134,10 @@ export async function createListing(formData: FormData) {
         revalidatePath('/'); // Refresh homepage for new listings
         return { success: true, listingId };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Create Listing Server Action Failed:', err);
-        return { error: err.message || 'An unexpected error occurred.' };
+        const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
+        return { error: msg };
     }
 }
 
@@ -300,9 +301,10 @@ export async function updateListing(listingId: string, formData: FormData) {
         revalidatePath('/dashboard/listings');
         return { success: true, listingId };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Update Listing Server Action Failed:', err);
-        return { error: err.message || 'An unexpected error occurred.' };
+        const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
+        return { error: msg };
     }
 }
 

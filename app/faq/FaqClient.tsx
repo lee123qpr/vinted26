@@ -58,7 +58,7 @@ const faqs: FaqItem[] = [
     // Safety
     {
         question: "What is Buyer Protection?",
-        answer: "Buyer Protection covers you if an item doesn't arrive or is significantly different from the description. We will refund your payment.",
+        answer: "Buyer Protection covers you if an item doesn&apos;t arrive or is significantly different from the description. We will refund your payment.",
         category: 'safety'
     }
 ];
@@ -135,7 +135,7 @@ export default function FaqClient() {
                 {/* Still Stuck? */}
                 <div className="mt-20 text-center bg-secondary-900 text-white rounded-2xl p-10 shadow-xl">
                     <h2 className="text-2xl font-bold mb-4">Still have questions?</h2>
-                    <p className="text-secondary-300 mb-8">Can't find the answer you're looking for? Please chat to our friendly team.</p>
+                    <p className="text-secondary-300 mb-8">can&apos;t find the answer you&apos;re looking for? Please chat to our friendly team.</p>
                     <Link
                         href="/contact"
                         className="bg-white text-secondary-900 font-bold px-8 py-3 rounded-lg hover:bg-primary-50 transition"

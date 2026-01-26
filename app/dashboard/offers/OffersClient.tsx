@@ -239,7 +239,7 @@ export default function OffersClient({ offers, type }: OffersClientProps) {
                     </div>
                     <h3 className="text-lg font-bold text-secondary-900 capitalize">No {type} offers</h3>
                     <p className="text-secondary-500 mb-6">
-                        {type === 'sent' ? "You haven't made any offers on items yet." : "You haven't received any offers yet."}
+                        {type === 'sent' ? "You haven&apos;t made any offers on items yet." : "You haven&apos;t received any offers yet."}
                     </p>
                     {type === 'sent' && (
                         <Link href="/" className="btn-primary inline-flex items-center">

@@ -44,9 +44,10 @@ export default function AvatarUpload({ uid, url, size, onUpload }: AvatarUploadP
 
             setAvatarUrl(data.publicUrl);
             onUpload(data.publicUrl);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Upload error:', error);
-            alert(error.message || 'Error uploading avatar');
+            const msg = error instanceof Error ? error.message : 'Error uploading avatar';
+            alert(msg);
         } finally {
             setUploading(false);
         }
