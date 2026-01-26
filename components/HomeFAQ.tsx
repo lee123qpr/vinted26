@@ -51,6 +51,7 @@ export default function HomeFAQ() {
                             <button
                                 className="w-full flex items-center justify-between p-6 text-left focus:outline-none bg-white"
                                 onClick={() => toggleFAQ(index)}
+                                suppressHydrationWarning
                             >
                                 <span className="text-lg font-semibold text-secondary-900">{faq.question}</span>
                                 <span className={`ml-6 flex-shrink-0 transition-transform duration-200 ${openIndex === index ? 'rotate-180' : ''}`}>

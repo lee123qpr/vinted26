@@ -4,6 +4,7 @@ import { useTransition, useState } from 'react';
 import Link from 'next/link';
 import { deleteUser } from '@/app/actions/admin-users';
 import { suspendUser, warnUser, unsuspendUser } from '@/app/actions/admin';
+import { formatDistanceToNow } from 'date-fns';
 
 type User = {
     id: string;
@@ -19,6 +20,7 @@ type User = {
     account_status?: string;
     suspension_end_date?: string | null;
     suspension_reason?: string | null;
+    last_seen?: string | null; // Optional from migration
 };
 
 export default function UserTable({ users }: { users: User[] }) {
@@ -26,7 +28,7 @@ export default function UserTable({ users }: { users: User[] }) {
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
     const handleDelete = (userId: string) => {
-        if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return;
+        if (!confirm('Are you sure you want to PERMANENTLY delete this user? This cannot be undone.')) return;
 
         startTransition(async () => {
             try {
@@ -96,6 +98,8 @@ export default function UserTable({ users }: { users: User[] }) {
                 return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Warned</span>;
             case 'banned':
                 return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Banned</span>;
+            case 'deleted':
+                return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500 line-through">Deleted</span>;
             default:
                 return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>;
         }
@@ -105,13 +109,11 @@ export default function UserTable({ users }: { users: User[] }) {
         <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                    <th className="px-6 py-4 font-semibold text-slate-900 w-16">Rank</th>
+                    <th className="px-6 py-4 font-semibold text-slate-900 w-16">#</th>
                     <th className="px-6 py-4 font-semibold text-slate-900">User</th>
                     <th className="px-6 py-4 font-semibold text-slate-900">Status</th>
-                    <th className="px-6 py-4 font-semibold text-slate-900">Role</th>
+                    <th className="px-6 py-4 font-semibold text-slate-900">Last Seen</th>
                     <th className="px-6 py-4 font-semibold text-slate-900 text-right">Sales</th>
-                    <th className="px-6 py-4 font-semibold text-slate-900 text-right">Purchases</th>
-                    <th className="px-6 py-4 font-semibold text-slate-900 text-right">Carbon (kg)</th>
                     <th className="px-6 py-4 font-semibold text-slate-900 text-right">Joined</th>
                     <th className="px-6 py-4 font-semibold text-slate-900 text-right">Actions</th>
                 </tr>
@@ -120,7 +122,7 @@ export default function UserTable({ users }: { users: User[] }) {
                 {users.map((user) => (
                     <tr key={user.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 font-bold text-slate-400">
-                            #{user.rank}
+                            {user.rank}
                         </td>
                         <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -132,7 +134,10 @@ export default function UserTable({ users }: { users: User[] }) {
                                     )}
                                 </div>
                                 <div>
-                                    <p className="font-medium text-slate-900">{user.full_name || 'No Name'}</p>
+                                    <p className="font-medium text-slate-900">
+                                        {user.full_name || 'No Name'}
+                                        {user.is_admin && <span className="ml-2 text-xs text-purple-600 font-bold bg-purple-50 px-1 rounded">ADMIN</span>}
+                                    </p>
                                     <p className="text-xs text-slate-500">{user.email}</p>
                                 </div>
                             </div>
@@ -140,21 +145,17 @@ export default function UserTable({ users }: { users: User[] }) {
                         <td className="px-6 py-4">
                             {getStatusBadge(user)}
                         </td>
-                        <td className="px-6 py-4">
-                            {user.is_admin ? (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Admin</span>
+                        <td className="px-6 py-4 text-xs">
+                            {user.last_seen ? (
+                                <span title={new Date(user.last_seen).toLocaleString()} className="text-slate-700">
+                                    {formatDistanceToNow(new Date(user.last_seen), { addSuffix: true })}
+                                </span>
                             ) : (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">User</span>
+                                <span className="text-slate-400">Never</span>
                             )}
                         </td>
                         <td className="px-6 py-4 text-right font-mono text-slate-900">
                             {user.total_sales || 0}
-                        </td>
-                        <td className="px-6 py-4 text-right font-mono text-slate-900">
-                            {user.total_purchases || 0}
-                        </td>
-                        <td className="px-6 py-4 text-right font-mono font-bold text-green-700">
-                            {user.total_carbon_saved_kg?.toFixed(1) || '0.0'}
                         </td>
                         <td className="px-6 py-4 text-right text-xs font-mono">
                             {new Date(user.created_at).toLocaleDateString()}
@@ -185,7 +186,7 @@ export default function UserTable({ users }: { users: User[] }) {
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                                 </Link>
 
-                                {!user.is_admin && (
+                                {!user.is_admin && user.account_status !== 'deleted' && (
                                     <>
                                         {/* Suspension Dropdown */}
                                         <div className="relative">
@@ -199,7 +200,7 @@ export default function UserTable({ users }: { users: User[] }) {
                                             </button>
 
                                             {openDropdown === user.id && (
-                                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-10">
+                                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-10 text-left">
                                                     <div className="py-1">
                                                         {(user.account_status === 'suspended' || user.account_status === 'warned' || user.account_status === 'banned') && (
                                                             <button
@@ -222,18 +223,6 @@ export default function UserTable({ users }: { users: User[] }) {
                                                             Suspend 7 Days
                                                         </button>
                                                         <button
-                                                            onClick={() => handleSuspend(user.id, 14)}
-                                                            className="w-full text-left px-4 py-2 text-sm text-orange-700 hover:bg-orange-50"
-                                                        >
-                                                            Suspend 14 Days
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleSuspend(user.id, 30)}
-                                                            className="w-full text-left px-4 py-2 text-sm text-orange-700 hover:bg-orange-50"
-                                                        >
-                                                            Suspend 30 Days
-                                                        </button>
-                                                        <button
                                                             onClick={() => handleSuspend(user.id, 0)}
                                                             className="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 border-t border-slate-200"
                                                         >
@@ -243,15 +232,6 @@ export default function UserTable({ users }: { users: User[] }) {
                                                 </div>
                                             )}
                                         </div>
-
-                                        <button
-                                            onClick={() => handleDelete(user.id)}
-                                            disabled={isPending}
-                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
-                                            title="Delete User"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
                                     </>
                                 )}
                             </div>

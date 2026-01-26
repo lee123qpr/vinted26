@@ -48,6 +48,12 @@ interface TurnstileVerifyResponse {
 }
 
 async function verifyTurnstileToken(token: string) {
+    // DEV BYPASS: Always pass in development to unblock manual testing
+    if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ Turnstile Bypassed (Development Mode)');
+        return true;
+    }
+
     // Authenticate the token with Cloudflare
     const secretKey = process.env.TURNSTILE_SECRET_KEY || '1x00000000000000000000BB'; // Default to Test Key if not set
 

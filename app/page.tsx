@@ -10,35 +10,43 @@ import ListingCard from '@/components/ListingCard';
 export default async function HomePage() {
   const supabase = await createClient();
 
-  // Fetch recent listings for the feed
-  const { data: recentListings } = await supabase
-    .from('listings')
-    .select(`
-      id,
-      title,
-      price_gbp,
-      is_free,
-      postcode_area,
-      condition,
-      include_carbon_certificate,
-      created_at,
-      listing_images (
-        image_url,
-        sort_order
-      )
-    `)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(8);
+  // Fetch Data in Parallel
+  const [
+    { data: recentListings },
+    activeListingsRes,
+    usersRes,
+    impactRes
+  ] = await Promise.all([
+    // 1. Listings
+    supabase
+      .from('listings')
+      .select(`
+        id,
+        title,
+        price_gbp,
+        is_free,
+        postcode_area,
+        condition,
+        include_carbon_certificate,
+        created_at,
+        listing_images (
+          image_url,
+          sort_order
+        )
+      `)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(8),
 
-  // Fetch Live Stats
-  const statsPromise = Promise.all([
+    // 2. Active Count
     supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+
+    // 3. User Count
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
+
+    // 4. Impact Data
     supabase.from('listings').select('weight_kg, carbon_saved_kg').eq('status', 'sold')
   ]);
-
-  const [activeListingsRes, usersRes, impactRes] = await statsPromise;
 
   const activeListingsCount = activeListingsRes.count || 0;
   const usersCount = usersRes.count || 0;

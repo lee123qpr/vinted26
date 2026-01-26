@@ -10,7 +10,7 @@ export async function getRevenueData(startDate?: string, endDate?: string, granu
 
     let query = supabase
         .from('transactions')
-        .select('created_at, total_amount_gbp, platform_fee_gbp, payment_status')
+        .select('created_at, total_price_gbp, platform_fee_gbp, payment_status')
         .eq('payment_status', 'released')
         .order('created_at', { ascending: true });
 
@@ -46,7 +46,7 @@ export async function getRevenueData(startDate?: string, endDate?: string, granu
             aggregated[key] = { revenue: 0, fees: 0, count: 0 };
         }
 
-        aggregated[key].revenue += tx.total_amount_gbp || 0;
+        aggregated[key].revenue += tx.total_price_gbp || 0;
         aggregated[key].fees += tx.platform_fee_gbp || 0;
         aggregated[key].count += 1;
     });
@@ -68,7 +68,7 @@ export async function getCategoryPerformance() {
 
     const { data: listings, error } = await supabase
         .from('listings')
-        .select('category, price_gbp, status')
+        .select('price_gbp, categories(name)')
         .eq('status', 'sold');
 
     if (error) throw new Error('Failed to fetch category data: ' + error.message);
@@ -76,12 +76,14 @@ export async function getCategoryPerformance() {
     const categoryStats: Record<string, { totalSales: number, count: number, avgPrice: number }> = {};
 
     listings?.forEach(listing => {
-        const cat = listing.category || 'Uncategorized';
-        if (!categoryStats[cat]) {
-            categoryStats[cat] = { totalSales: 0, count: 0, avgPrice: 0 };
+        // @ts-ignore - Supabase type inference might be tricky here with joined table
+        const catName = listing.categories?.name || 'Uncategorized';
+
+        if (!categoryStats[catName]) {
+            categoryStats[catName] = { totalSales: 0, count: 0, avgPrice: 0 };
         }
-        categoryStats[cat].totalSales += listing.price_gbp || 0;
-        categoryStats[cat].count += 1;
+        categoryStats[catName].totalSales += listing.price_gbp || 0;
+        categoryStats[catName].count += 1;
     });
 
     return Object.entries(categoryStats).map(([category, stats]) => ({
@@ -100,7 +102,7 @@ export async function getTopSellers(limit: number = 10) {
 
     const { data: transactions, error } = await supabase
         .from('transactions')
-        .select('seller_id, total_amount_gbp, seller:profiles!seller_id(username, email)')
+        .select('seller_id, total_price_gbp, seller:profiles!seller_id(username, email)')
         .eq('payment_status', 'released');
 
     if (error) throw new Error('Failed to fetch seller data: ' + error.message);
@@ -117,7 +119,7 @@ export async function getTopSellers(limit: number = 10) {
                 sales: 0
             };
         }
-        sellerStats[sellerId].revenue += tx.total_amount_gbp || 0;
+        sellerStats[sellerId].revenue += tx.total_price_gbp || 0;
         sellerStats[sellerId].sales += 1;
     });
 
@@ -138,7 +140,7 @@ export async function exportFinancialData(format: 'csv' = 'csv', filters?: any) 
         .select(`
             id,
             created_at,
-            total_amount_gbp,
+            total_price_gbp,
             platform_fee_gbp,
             payment_status,
             buyer:profiles!buyer_id(username, email),
@@ -158,7 +160,7 @@ export async function exportFinancialData(format: 'csv' = 'csv', filters?: any) 
         (tx.seller as any)?.username || 'Unknown',
         (tx.listing as any)?.title || 'N/A',
         (tx.listing as any)?.category || 'N/A',
-        `£${tx.total_amount_gbp?.toFixed(2)}`,
+        `£${tx.total_price_gbp?.toFixed(2)}`,
         `£${tx.platform_fee_gbp?.toFixed(2)}`,
         tx.payment_status
     ]) || [];

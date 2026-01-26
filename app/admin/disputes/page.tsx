@@ -1,27 +1,18 @@
 
-import { createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDisputesPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
-    const supabase = await createAdminClient();
+    const supabase = await createClient();
     const params = await searchParams;
     const statusFilter = params?.status || '';
 
     // Fetch disputes
     let query = supabase
         .from('disputes')
-        .select(`
-            *,
-            transaction:transactions(
-                id,
-                total_amount_gbp,
-                buyer:profiles!buyer_id(username, email),
-                seller:profiles!seller_id(username, email),
-                listing:listings(title)
-            )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
     if (statusFilter) {
@@ -92,8 +83,8 @@ export default async function AdminDisputesPage({ searchParams }: { searchParams
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 text-xs font-bold rounded-full ${dispute.status === 'open' ? 'bg-orange-100 text-orange-700' :
-                                            dispute.status === 'resolved' ? 'bg-green-100 text-green-700' :
-                                                'bg-slate-100 text-slate-600'
+                                        dispute.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                                            'bg-slate-100 text-slate-600'
                                         }`}>
                                         {dispute.status}
                                     </span>

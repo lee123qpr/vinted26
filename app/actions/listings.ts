@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { listingSchema } from '@/lib/schemas/listing';
 
 export async function createListing(formData: FormData) {
     const supabase = await createClient();
@@ -13,48 +14,60 @@ export async function createListing(formData: FormData) {
     }
 
     try {
-        // 2. Extract Data
-        const listingData: any = {
+        // 2. Extract & Validate Data
+        const rawData = Object.fromEntries(formData.entries());
+
+        // Zod validation (safeParse helps return consistent errors)
+        const validation = listingSchema.safeParse(rawData);
+
+        if (!validation.success) {
+            console.error('Validation Error:', validation.error.flatten());
+            return { error: 'Validation failed. Please check your inputs.', details: validation.error.flatten() };
+        }
+
+        const data = validation.data;
+
+        const listingData = {
             seller_id: user.id,
-            category_id: formData.get('categoryId'),
-            title: formData.get('title'),
-            description: formData.get('description'),
-            condition: formData.get('condition'),
-            price_gbp: parseFloat((formData.get('price') as string).replace(/,/g, '')),
-            quantity_available: parseInt((formData.get('quantity') as string).replace(/,/g, '')) || 1,
-            is_free: formData.get('isFree') === 'true',
+            category_id: data.categoryId,
+            title: data.title,
+            description: data.description,
+            condition: data.condition,
+            price_gbp: data.price,
+            quantity_available: data.quantity,
+            is_free: data.isFree,
 
             // Optional / Nullable fields
-            subcategory_id: formData.get('subcategoryId') || null,
-            sub_subcategory_id: formData.get('subSubcategoryId') || null,
-            brand: formData.get('brand') || null,
-            collection_notes: formData.get('collectionNotes') || null,
-            listing_material_id: formData.get('materialId') || null,
+            subcategory_id: data.subcategoryId || null,
+            sub_subcategory_id: data.subSubcategoryId || null,
+            brand: data.brand || null,
+            collection_notes: data.collectionNotes || null,
+            listing_material_id: data.materialId || null,
 
             // Dimensions & Weight
-            weight_kg: formData.get('weight') ? parseFloat((formData.get('weight') as string).replace(/,/g, '')) : null,
-            dimensions_length_mm: formData.get('dimensionsLength') ? parseFloat((formData.get('dimensionsLength') as string).replace(/,/g, '')) : null,
-            dimensions_width_mm: formData.get('dimensionsWidth') ? parseFloat((formData.get('dimensionsWidth') as string).replace(/,/g, '')) : null,
-            dimensions_height_mm: formData.get('dimensionsHeight') ? parseFloat((formData.get('dimensionsHeight') as string).replace(/,/g, '')) : null,
+            weight_kg: data.weight,
+            dimensions_length_mm: data.dimensionsLength,
+            dimensions_width_mm: data.dimensionsWidth,
+            dimensions_height_mm: data.dimensionsHeight,
 
             // Carbon
-            include_carbon_certificate: formData.get('includeCarbonCertificate') === 'true',
-            carbon_saved_kg: formData.get('carbonSaved') ? parseFloat((formData.get('carbonSaved') as string).replace(/,/g, '')) : 0,
-            calculated_weight_kg: formData.get('calculatedWeight') ? parseFloat((formData.get('calculatedWeight') as string).replace(/,/g, '')) : null,
+            include_carbon_certificate: data.includeCarbonCertificate,
+            carbon_saved_kg: data.carbonSaved,
+            calculated_weight_kg: data.calculatedWeight,
 
             // Logistics
-            offers_collection: formData.get('offersCollection') === 'true',
-            offers_delivery: formData.get('offersDelivery') === 'true',
-            delivery_radius_miles: formData.get('deliveryRadius') ? parseInt((formData.get('deliveryRadius') as string).replace(/,/g, '')) : null,
-            delivery_charge_gbp: formData.get('deliveryCharge') ? parseFloat((formData.get('deliveryCharge') as string).replace(/,/g, '')) : null,
-            delivery_charge_type: formData.get('deliveryChargeType'),
-            courier_delivery_available: formData.get('courierAvailable') === 'true',
-            courier_delivery_cost_gbp: formData.get('courierCost') ? parseFloat((formData.get('courierCost') as string).replace(/,/g, '')) : null,
+            offers_collection: data.offersCollection,
+            offers_delivery: data.offersDelivery,
+            delivery_radius_miles: data.deliveryRadius,
+            delivery_charge_gbp: data.deliveryCharge,
+            delivery_charge_type: data.deliveryChargeType,
+            courier_delivery_available: data.courierAvailable,
+            courier_delivery_cost_gbp: data.courierCost,
 
             // Location
-            postcode_area: formData.get('postcodeArea'),
-            location_lat: parseFloat(formData.get('lat') as string),
-            location_lng: parseFloat(formData.get('lng') as string),
+            postcode_area: data.postcodeArea,
+            location_lat: data.lat,
+            location_lng: data.lng,
         };
 
         console.log('Server Action: Creating Listing:', listingData.title);
@@ -163,47 +176,59 @@ export async function updateListing(listingId: string, formData: FormData) {
     }
 
     try {
-        // 2. Extract Data
-        const listingData: any = {
-            category_id: formData.get('categoryId'),
-            title: formData.get('title'),
-            description: formData.get('description'),
-            condition: formData.get('condition'),
-            price_gbp: parseFloat((formData.get('price') as string).replace(/,/g, '')),
-            quantity_available: parseInt((formData.get('quantity') as string).replace(/,/g, '')) || 1,
-            is_free: formData.get('isFree') === 'true',
+        // 2. Extract & Validate Data
+        const rawData = Object.fromEntries(formData.entries());
+
+        // Zod validation
+        const validation = listingSchema.safeParse(rawData);
+
+        if (!validation.success) {
+            console.error('Validation Error (Update):', validation.error.flatten());
+            return { error: 'Validation failed.', details: validation.error.flatten() };
+        }
+
+        const data = validation.data;
+
+        const listingData = {
+            category_id: data.categoryId,
+            title: data.title,
+            description: data.description,
+            condition: data.condition,
+            price_gbp: data.price,
+            quantity_available: data.quantity,
+            is_free: data.isFree,
 
             // Optional / Nullable fields
-            subcategory_id: formData.get('subcategoryId') || null,
-            sub_subcategory_id: formData.get('subSubcategoryId') || null,
-            brand: formData.get('brand') || null,
-            collection_notes: formData.get('collectionNotes') || null,
-            listing_material_id: formData.get('materialId') || null,
+            subcategory_id: data.subcategoryId || null,
+            sub_subcategory_id: data.subSubcategoryId || null,
+            brand: data.brand || null,
+            collection_notes: data.collectionNotes || null,
+            listing_material_id: data.materialId || null,
 
             // Dimensions & Weight
-            weight_kg: formData.get('weight') ? parseFloat((formData.get('weight') as string).replace(/,/g, '')) : null,
-            dimensions_length_mm: formData.get('dimensionsLength') ? parseFloat((formData.get('dimensionsLength') as string).replace(/,/g, '')) : null,
-            dimensions_width_mm: formData.get('dimensionsWidth') ? parseFloat((formData.get('dimensionsWidth') as string).replace(/,/g, '')) : null,
-            dimensions_height_mm: formData.get('dimensionsHeight') ? parseFloat((formData.get('dimensionsHeight') as string).replace(/,/g, '')) : null,
+            weight_kg: data.weight,
+            dimensions_length_mm: data.dimensionsLength,
+            dimensions_width_mm: data.dimensionsWidth,
+            dimensions_height_mm: data.dimensionsHeight,
 
             // Carbon
-            include_carbon_certificate: formData.get('includeCarbonCertificate') === 'true',
-            carbon_saved_kg: formData.get('carbonSaved') ? parseFloat((formData.get('carbonSaved') as string).replace(/,/g, '')) : 0,
-            calculated_weight_kg: formData.get('calculatedWeight') ? parseFloat((formData.get('calculatedWeight') as string).replace(/,/g, '')) : null,
+            include_carbon_certificate: data.includeCarbonCertificate,
+            carbon_saved_kg: data.carbonSaved,
+            calculated_weight_kg: data.calculatedWeight,
 
             // Logistics
-            offers_collection: formData.get('offersCollection') === 'true',
-            offers_delivery: formData.get('offersDelivery') === 'true',
-            delivery_radius_miles: formData.get('deliveryRadius') ? parseInt((formData.get('deliveryRadius') as string).replace(/,/g, '')) : null,
-            delivery_charge_gbp: formData.get('deliveryCharge') ? parseFloat((formData.get('deliveryCharge') as string).replace(/,/g, '')) : null,
-            delivery_charge_type: formData.get('deliveryChargeType'),
-            courier_delivery_available: formData.get('courierAvailable') === 'true',
-            courier_delivery_cost_gbp: formData.get('courierCost') ? parseFloat((formData.get('courierCost') as string).replace(/,/g, '')) : null,
+            offers_collection: data.offersCollection,
+            offers_delivery: data.offersDelivery,
+            delivery_radius_miles: data.deliveryRadius,
+            delivery_charge_gbp: data.deliveryCharge,
+            delivery_charge_type: data.deliveryChargeType,
+            courier_delivery_available: data.courierAvailable,
+            courier_delivery_cost_gbp: data.courierCost,
 
             // Location
-            postcode_area: formData.get('postcodeArea'),
-            location_lat: parseFloat(formData.get('lat') as string),
-            location_lng: parseFloat(formData.get('lng') as string),
+            postcode_area: data.postcodeArea,
+            location_lat: data.lat,
+            location_lng: data.lng,
         };
 
         // 3. Update Listing

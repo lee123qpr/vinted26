@@ -85,88 +85,134 @@ export default function ListingTable({ listings }: { listings: any[] }) {
     };
 
     return (
-        <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                    <th className="px-6 py-4 font-semibold text-slate-900">Image</th>
-                    <th className="px-6 py-4 font-semibold text-slate-900">Title</th>
-                    <th className="px-6 py-4 font-semibold text-slate-900">Price</th>
-                    <th className="px-6 py-4 font-semibold text-slate-900">Status</th>
-                    <th className="px-6 py-4 font-semibold text-slate-900">Seller</th>
-                    <th className="px-6 py-4 font-semibold text-slate-900 text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-                {listings.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4">
-                            <div className="w-12 h-12 bg-slate-200 rounded overflow-hidden border border-slate-300 relative">
-                                {item.images?.[0]?.image_url ? (
-                                    <img src={item.images[0].image_url} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="flex items-center justify-center h-full text-xs text-slate-400">No Img</div>
-                                )}
-                            </div>
-                        </td>
-                        <td className="px-6 py-4 font-medium text-slate-900">
-                            <a href={`/listing/${item.id}`} target="_blank" className="hover:underline hover:text-blue-600 flex flex-col">
-                                <span>{item.title}</span>
-                                {item.description && checkSafety(item.title + ' ' + item.description) && (
-                                    <span className="flex items-center gap-1 mt-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded w-fit">
-                                        ⚠️ Review Content
-                                    </span>
-                                )}
-                                <span className="text-xs text-slate-400 font-normal">Created: {new Date(item.created_at).toLocaleDateString()}</span>
-                            </a>
-                        </td>
-                        <td className="px-6 py-4 font-mono font-bold text-emerald-600">
-                            £{item.price_gbp?.toFixed(2) || '0.00'}
-                        </td>
-                        <td className="px-6 py-4">
-                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${item.status === 'active' ? 'bg-green-100 text-green-700' :
-                                item.status === 'sold' ? 'bg-blue-100 text-blue-700' :
-                                    item.status === 'removed' ? 'bg-red-100 text-red-700' :
-                                        'bg-slate-100 text-slate-600'
-                                }`}>
-                                {item.status}
-                            </span>
-                        </td>
-                        <td className="px-6 py-4 text-xs">
-                            <div className="flex flex-col">
-                                <span className="font-semibold text-slate-700">{item.seller?.username || 'Unknown'}</span>
-                                <span className="text-slate-400 font-mono text-[10px]">{item.seller_id.slice(0, 8)}...</span>
-                            </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-2">
-                                <a
-                                    href={`/listing/${item.id}`}
-                                    target="_blank"
-                                    className="text-xs px-3 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
-                                >
-                                    View
-                                </a>
-                                {item.status === 'active' && (
-                                    <button
-                                        onClick={() => handleArchive(item.id)}
-                                        disabled={isPending}
-                                        className="text-xs px-3 py-1 rounded bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 disabled:opacity-50"
-                                    >
-                                        Archive
-                                    </button>
-                                )}
-                                <button
-                                    onClick={() => handleDelete(item.id)}
-                                    disabled={isPending}
-                                    className="text-xs px-3 py-1 rounded bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 disabled:opacity-50"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
+        <div>
+            {selectedIds.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                    <span className="font-medium text-blue-800">{selectedIds.length} listings selected</span>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => handleBulkStatus('active')}
+                            disabled={isPending}
+                            className="bg-white text-green-700 border border-green-200 px-3 py-1 rounded text-sm font-medium hover:bg-green-50"
+                        >
+                            Mark Active
+                        </button>
+                        <button
+                            onClick={handleBulkArchive}
+                            disabled={isPending}
+                            className="bg-white text-orange-700 border border-orange-200 px-3 py-1 rounded text-sm font-medium hover:bg-orange-50"
+                        >
+                            Archive Selected
+                        </button>
+                        <button
+                            onClick={handleBulkDelete}
+                            disabled={isPending}
+                            className="bg-red-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-red-700"
+                        >
+                            Delete Selected
+                        </button>
+                    </div>
+                </div>
+            )}
+            <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th className="px-6 py-4 w-12">
+                            <input
+                                type="checkbox"
+                                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                checked={listings.length > 0 && selectedIds.length === listings.length}
+                                onChange={toggleSelectAll}
+                            />
+                        </th>
+                        <th className="px-6 py-4 font-semibold text-slate-900">Image</th>
+                        <th className="px-6 py-4 font-semibold text-slate-900">Title</th>
+                        <th className="px-6 py-4 font-semibold text-slate-900">Price</th>
+                        <th className="px-6 py-4 font-semibold text-slate-900">Status</th>
+                        <th className="px-6 py-4 font-semibold text-slate-900">Seller</th>
+                        <th className="px-6 py-4 font-semibold text-slate-900 text-right">Actions</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                    {listings.map((item) => (
+                        <tr key={item.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.includes(item.id) ? 'bg-blue-50' : ''}`}>
+                            <td className="px-6 py-4">
+                                <input
+                                    type="checkbox"
+                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                    checked={selectedIds.includes(item.id)}
+                                    onChange={() => toggleSelect(item.id)}
+                                />
+                            </td>
+                            <td className="px-6 py-4">
+                                <div className="w-12 h-12 bg-slate-200 rounded overflow-hidden border border-slate-300 relative">
+                                    {item.images?.[0]?.image_url ? (
+                                        <img src={item.images[0].image_url} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-xs text-slate-400">No Img</div>
+                                    )}
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 font-medium text-slate-900">
+                                <a href={`/listing/${item.id}`} target="_blank" className="hover:underline hover:text-blue-600 flex flex-col">
+                                    <span>{item.title}</span>
+                                    {item.description && checkSafety(item.title + ' ' + item.description) && (
+                                        <span className="flex items-center gap-1 mt-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded w-fit">
+                                            ⚠️ Review Content
+                                        </span>
+                                    )}
+                                    <span className="text-xs text-slate-400 font-normal">Created: {new Date(item.created_at).toLocaleDateString()}</span>
+                                </a>
+                            </td>
+                            <td className="px-6 py-4 font-mono font-bold text-emerald-600">
+                                £{item.price_gbp?.toFixed(2) || '0.00'}
+                            </td>
+                            <td className="px-6 py-4">
+                                <span className={`px-2 py-1 text-xs font-bold rounded-full ${item.status === 'active' ? 'bg-green-100 text-green-700' :
+                                    item.status === 'sold' ? 'bg-blue-100 text-blue-700' :
+                                        item.status === 'removed' ? 'bg-red-100 text-red-700' :
+                                            'bg-slate-100 text-slate-600'
+                                    }`}>
+                                    {item.status}
+                                </span>
+                            </td>
+                            <td className="px-6 py-4 text-xs">
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-slate-700">{item.seller?.username || 'Unknown'}</span>
+                                    <span className="text-slate-400 font-mono text-[10px]">{item.seller_id.slice(0, 8)}...</span>
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                                <div className="flex justify-end gap-2">
+                                    <a
+                                        href={`/listing/${item.id}`}
+                                        target="_blank"
+                                        className="text-xs px-3 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                                    >
+                                        View
+                                    </a>
+                                    {item.status === 'active' && (
+                                        <button
+                                            onClick={() => handleArchive(item.id)}
+                                            disabled={isPending}
+                                            className="text-xs px-3 py-1 rounded bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 disabled:opacity-50"
+                                        >
+                                            Archive
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => handleDelete(item.id)}
+                                        disabled={isPending}
+                                        className="text-xs px-3 py-1 rounded bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 disabled:opacity-50"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 }

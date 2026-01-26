@@ -41,7 +41,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
         }
 
-        let updates: any = {};
+        const updates: any = {};
 
         if (action === 'accept') {
             updates.status = 'accepted';

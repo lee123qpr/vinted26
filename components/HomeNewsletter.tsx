@@ -58,11 +58,13 @@ export default function HomeNewsletter() {
                             disabled={status === 'loading' || status === 'success'}
                             className="flex-1 px-4 py-3 rounded-lg bg-white text-secondary-900 focus:outline-none focus:ring-2 focus:ring-white disabled:opacity-80"
                             required
+                            suppressHydrationWarning
                         />
                         <button
                             type="submit"
                             disabled={status === 'loading' || status === 'success'}
                             className="bg-white text-primary-700 font-semibold px-6 py-3 rounded-lg hover:bg-primary-50 transition-colors whitespace-nowrap disabled:opacity-80 disabled:cursor-not-allowed"
+                            suppressHydrationWarning
                         >
                             {status === 'loading' ? '...' : status === 'success' ? 'Joined!' : 'Subscribe'}
                         </button>

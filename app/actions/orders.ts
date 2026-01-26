@@ -27,16 +27,88 @@ export async function updateOrderStatus(orderId: string, newStatus: 'shipped' | 
     if (!isSeller && !isBuyer) return { error: 'Permission denied' };
 
     // State Machine Transitions
-    let updateData: any = { order_status: newStatus };
+    const updateData: any = { order_status: newStatus };
 
     if (newStatus === 'shipped') {
         if (!isSeller) return { error: 'Only seller can mark as shipped' };
-        if (order.order_status !== 'pending') return { error: 'Order must be pending to ship' };
+        if (order.order_status !== 'pending' && order.order_status !== 'held_in_escrow') {
+            console.error(`Mark Shipped Failed: Status is '${order.order_status}' (ID: ${orderId})`);
+            return { error: `Order must be pending (is ${order.order_status}) to ship` };
+        }
         // No extra fields for now, maybe tracking number later
     }
     else if (newStatus === 'completed') {
         if (!isBuyer) return { error: 'Only buyer can confirm delivery' };
-        if (order.order_status !== 'shipped') return { error: 'Order must be shipped before confirmation' };
+
+        // Idempotency: If already completed, return success
+        if (order.order_status === 'completed') {
+            return { success: true };
+        }
+
+        if (order.order_status !== 'shipped') return { error: `Order must be shipped before confirmation (is ${order.order_status})` };
+
+        // 1. Fetch Seller's Payout Info
+        // We know seller_id from the order object
+        const { data: sellerProfile } = await adminSupabase
+            .from('profiles')
+            .select('stripe_account_id, stripe_charges_enabled')
+            .eq('id', order.seller_id)
+            .single();
+
+        // 2. Execute Payout Logic
+        if (sellerProfile?.stripe_account_id && sellerProfile.stripe_charges_enabled) {
+            try {
+                // Calculate Net Payout
+                // Total collected - Platform Fee - Delivery Fee (if held in escrow but owed to platform/courier)
+                // Assuming Delivery Fee goes to Platform if we organize delivery, or Seller if they do.
+                // For now: Payout = Total Price - Platform Fee - Delivery Fee (platform holds delivery cost to pay courier)
+                // If "Local Delivery" (seller managed), Seller keeps delivery fee.
+
+                // Simplified Logic: 
+                // Seller gets: (Price of Item - Platform Fee) + (Delivery Fee IF 'local')
+                // Platform keeps: Platform Fee + (Delivery Fee IF 'courier')
+
+                let payoutAmount = order.total_price_gbp - (order.platform_fee_gbp || 0);
+
+                // If courier, we keep the delivery fee to pay the courier service (hypothetically)
+                if (order.delivery_method === 'delivery' && order.delivery_fee_gbp > 0) {
+                    // Check if it was "local" or "courier" - Schema might not store 'delivery_type' directly in transaction?
+                    // We stored 'delivery_method'='delivery'. 
+                    // Let's check the listing or stored address hints. 
+                    // Safe bet: If delivery fee > £5 it's likely courier? No, insecure.
+                    // The logic in checkout.ts stored `delivery_fee_gbp`.
+                    // For V1, let's assume Platform takes Delivery Fee if it's NOT cash-on-delivery (which it isn't here).
+                    // Actually, if it's "Local Delivery by Seller", they need that money for petrol.
+                    // If it's "Nationwide Courier", we bought the label, so we keep the money.
+
+                    // FIXME: We need to know who provided delivery. 
+                    // For now, let's assume ALL delivery fees go to the seller (Simple Marketplace Model)
+                    // except Platform Fee.
+                }
+
+                // Final Check: Payout = Total - Platform Fee.
+                // (Seller covers delivery cost out of their pocket/earnings if we payout full amount)
+                const payoutAmountPence = Math.round((payoutAmount) * 100);
+
+                if (payoutAmountPence > 0) {
+                    const { stripe } = await import('@/lib/stripe');
+                    const transfer = await stripe.transfers.create({
+                        amount: payoutAmountPence,
+                        currency: 'gbp',
+                        destination: sellerProfile.stripe_account_id,
+                        transfer_group: order.id,
+                        description: `Payout for Order #${order.id.slice(0, 8)}`
+                    });
+                    console.log(`Payout Success: ${transfer.id} sent to ${sellerProfile.stripe_account_id}`);
+                    updateData.payout_id = transfer.id;
+                }
+            } catch (stripeError: any) {
+                console.error('Payout Failed:', stripeError);
+                // We DON'T stop the completion, we just log failure. 
+                // Admin can retry payout manually if needed.
+                updateData.payout_error = stripeError.message;
+            }
+        }
 
         // Finalize transaction
         updateData.payment_status = 'released'; // Release escrow
@@ -187,7 +259,7 @@ export async function createDispute(transactionId: string, reason: string, descr
         .from('disputes')
         .insert({
             transaction_id: transactionId,
-            raised_by: user.id,
+            opened_by_id: user.id,
             reason: reason,
             description: description,
             evidence_urls: evidenceUrls, // Save evidence
@@ -205,8 +277,7 @@ export async function createDispute(transactionId: string, reason: string, descr
     const { error: updateError } = await adminSupabase
         .from('transactions')
         .update({
-            order_status: 'disputed',
-            dispute_id: dispute.id
+            order_status: 'disputed'
         })
         .eq('id', transactionId);
 

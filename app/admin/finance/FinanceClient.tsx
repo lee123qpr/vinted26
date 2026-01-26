@@ -1,9 +1,10 @@
 'use client';
+// Admin Finance Client Component
 
 import { useState, useEffect } from 'react';
 import { getRevenueData, getCategoryPerformance, getTopSellers, exportFinancialData } from '@/app/actions/admin-finance';
 
-export default function FinanceClient({ totalRevenue, totalFees, transactionCount, recentTransactions }: any) {
+export default function FinanceClient({ totalRevenue, totalFees, totalPending, transactionCount, recentTransactions }: any) {
     const [timeRange, setTimeRange] = useState('30');
     const [revenueData, setRevenueData] = useState<any[]>([]);
     const [categoryData, setCategoryData] = useState<any[]>([]);
@@ -54,31 +55,30 @@ export default function FinanceClient({ totalRevenue, totalFees, transactionCoun
 
     return (
         <div className="p-8">
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-slate-800">Financial Reports</h1>
-                <button
-                    onClick={handleExport}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
-                >
-                    📊 Export to CSV
-                </button>
-            </div>
+            {/* Header ... */}
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <p className="text-sm font-medium text-slate-500 mb-1">Total Revenue</p>
-                    <h3 className="text-3xl font-bold text-slate-900">£{totalRevenue.toFixed(2)}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{transactionCount} transactions</p>
+                    <h3 className="text-3xl font-bold text-slate-900">£{totalRevenue?.toFixed(2) || '0.00'}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{transactionCount} completed sales</p>
+                </div>
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <p className="text-sm font-medium text-slate-500 mb-1">Funds in Escrow</p>
+                    <h3 className="text-3xl font-bold text-amber-500">£{totalPending?.toFixed(2) || '0.00'}</h3>
+                    <p className="text-xs text-slate-500 mt-1">Pending completion</p>
                 </div>
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <p className="text-sm font-medium text-slate-500 mb-1">Platform Fees</p>
-                    <h3 className="text-3xl font-bold text-green-600">£{totalFees.toFixed(2)}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{((totalFees / totalRevenue) * 100).toFixed(1)}% of revenue</p>
+                    <h3 className="text-3xl font-bold text-green-600">£{totalFees?.toFixed(2) || '0.00'}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{totalRevenue > 0 ? ((totalFees / totalRevenue) * 100).toFixed(1) : '0.0'}% of revenue</p>
                 </div>
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <p className="text-sm font-medium text-slate-500 mb-1">Avg Transaction</p>
-                    <h3 className="text-3xl font-bold text-blue-600">£{(totalRevenue / transactionCount).toFixed(2)}</h3>
+                    <h3 className="text-3xl font-bold text-blue-600">
+                        £{transactionCount > 0 ? (totalRevenue / transactionCount).toFixed(2) : '0.00'}
+                    </h3>
                     <p className="text-xs text-slate-500 mt-1">Per completed sale</p>
                 </div>
             </div>
@@ -91,6 +91,7 @@ export default function FinanceClient({ totalRevenue, totalFees, transactionCoun
                         value={timeRange}
                         onChange={(e) => setTimeRange(e.target.value)}
                         className="px-4 py-2 border border-slate-300 rounded-lg text-sm"
+                        suppressHydrationWarning
                     >
                         <option value="7">Last 7 days</option>
                         <option value="30">Last 30 days</option>
@@ -164,36 +165,43 @@ export default function FinanceClient({ totalRevenue, totalFees, transactionCoun
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mt-6">
                 <h2 className="text-lg font-semibold text-slate-800 mb-4">Recent Transactions</h2>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 border-b border-slate-200">
-                            <tr>
-                                <th className="px-4 py-3 font-semibold text-slate-900">Date</th>
-                                <th className="px-4 py-3 font-semibold text-slate-900">Buyer</th>
-                                <th className="px-4 py-3 font-semibold text-slate-900">Seller</th>
-                                <th className="px-4 py-3 font-semibold text-slate-900">Listing</th>
-                                <th className="px-4 py-3 font-semibold text-slate-900 text-right">Amount</th>
-                                <th className="px-4 py-3 font-semibold text-slate-900 text-right">Fee</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {recentTransactions.map((tx: any) => (
-                                <tr key={tx.id} className="hover:bg-slate-50">
-                                    <td className="px-4 py-3 text-xs text-slate-600">
-                                        {new Date(tx.created_at).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-4 py-3 text-slate-900">{tx.buyer?.username || 'Unknown'}</td>
-                                    <td className="px-4 py-3 text-slate-900">{tx.seller?.username || 'Unknown'}</td>
-                                    <td className="px-4 py-3 text-slate-700">{tx.listing?.title || 'N/A'}</td>
-                                    <td className="px-4 py-3 text-right font-semibold text-slate-900">
-                                        £{tx.total_amount_gbp?.toFixed(2)}
-                                    </td>
-                                    <td className="px-4 py-3 text-right font-semibold text-green-600">
-                                        £{tx.platform_fee_gbp?.toFixed(2)}
-                                    </td>
+                    {recentTransactions.length > 0 ? (
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th className="px-4 py-3 font-semibold text-slate-900">Date</th>
+                                    <th className="px-4 py-3 font-semibold text-slate-900">Buyer</th>
+                                    <th className="px-4 py-3 font-semibold text-slate-900">Seller</th>
+                                    <th className="px-4 py-3 font-semibold text-slate-900">Listing</th>
+                                    <th className="px-4 py-3 font-semibold text-slate-900 text-right">Amount</th>
+                                    <th className="px-4 py-3 font-semibold text-slate-900 text-right">Fee</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {recentTransactions.map((tx: any) => (
+                                    <tr key={tx.id} className="hover:bg-slate-50">
+                                        <td className="px-4 py-3 text-xs text-slate-600">
+                                            {new Date(tx.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-900">{tx.buyer?.username || 'Unknown'}</td>
+                                        <td className="px-4 py-3 text-slate-900">{tx.seller?.username || 'Unknown'}</td>
+                                        <td className="px-4 py-3 text-slate-700">{tx.listing?.title || 'N/A'}</td>
+                                        <td className="px-4 py-3 text-right font-semibold text-slate-900">
+                                            £{tx.total_amount_gbp?.toFixed(2) || '0.00'}
+                                        </td>
+                                        <td className="px-4 py-3 text-right font-semibold text-green-600">
+                                            £{tx.platform_fee_gbp?.toFixed(2) || '0.00'}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-lg">
+                            <p className="font-medium">No completed transactions yet</p>
+                            <p className="text-sm mt-1">Once sales are made, they will appear here.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

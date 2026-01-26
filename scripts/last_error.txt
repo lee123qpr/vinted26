@@ -1,0 +1,6 @@
+Dispute Error: {
+  "code": "PGRST204",
+  "details": null,
+  "hint": null,
+  "message": "Could not find the 'raised_by' column of 'disputes' in the schema cache"
+}

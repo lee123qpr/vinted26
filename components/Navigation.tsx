@@ -7,7 +7,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Category, SubCategory, SubSubCategory } from '@/types';
 import { sortByOrder } from '@/lib/utils';
 import NotificationBell from './NotificationBell';
-import { createClient } from '@/lib/supabase/client'; // Check this import
 
 const fetchAdminStatus = async (uid: string) => {
     try {
@@ -18,12 +17,27 @@ const fetchAdminStatus = async (uid: string) => {
     }
 };
 
-export default function Navigation() {
+interface NavigationProps {
+    user?: any;
+    categories: any[];
+}
+
+export default function Navigation({ user: initialUser, categories }: NavigationProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
-    const [activeCategory, setActiveCategory] = useState<Category | null>(null);
-    const [navCategories, setNavCategories] = useState<Category[]>([]);
-    const [user, setUser] = useState<any>(null);
+
+    // Sort the incoming categories
+    const sortedCategories = categories.map((cat: any) => ({
+        ...cat,
+        subcategories: sortByOrder(cat.subcategories || []).map((sub: any) => ({
+            ...sub,
+            sub_subcategories: sortByOrder(sub.sub_subcategories || [])
+        }))
+    }));
+
+    const [activeCategory, setActiveCategory] = useState<Category | null>(sortedCategories.length > 0 ? sortedCategories[0] : null);
+    const [navCategories] = useState<Category[]>(sortedCategories);
+    const [user, setUser] = useState<any>(initialUser || null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [userProfile, setUserProfile] = useState<any>(null);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -31,17 +45,19 @@ export default function Navigation() {
     const pathname = usePathname();
 
     const handleSignOut = async () => {
+        // Optimistically clear local state
+        setUser(null);
+        setUserProfile(null);
+        setAvatarUrl(null);
+        setUnreadCount(0);
+        setIsMenuOpen(false);
+
         try {
-            await supabase.auth.signOut();
-            setUser(null);
-            setUserProfile(null);
-            setAvatarUrl(null);
-            setUnreadCount(0);
-            setIsMenuOpen(false);
-            window.location.href = '/';
+            const { signOutAction } = await import('@/app/actions/auth');
+            await signOutAction();
         } catch (error) {
-            console.error('Error signing out:', error);
-            router.push('/');
+            console.error('Logout error:', error);
+            window.location.href = '/'; // Fallback
         }
     };
 
@@ -69,51 +85,45 @@ export default function Navigation() {
 
         // 1. Fetch User & Profile
         const getUser = async () => {
-            const { data: { user }, error } = await supabase.auth.getUser();
-            console.log('Navigation: getUser result:', user, error);
+            // First check if we have a session on client
+            const { data: { session }, error } = await supabase.auth.getSession();
 
-            setUser(user);
+            // If session exists, use it. If not, fallback to getUser() or respect initialUser
+            let currentUser = session?.user ?? null;
 
-            if (user) {
+            if (!currentUser) {
+                const { data: { user: fetchedUser } } = await supabase.auth.getUser();
+                currentUser = fetchedUser;
+            }
+
+            // Sync state if different
+            if (currentUser) {
+                setUser(currentUser);
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('avatar_url, full_name, username, is_admin')
-                    .eq('id', user.id)
+                    .eq('id', currentUser.id)
                     .single();
 
                 setUserProfile(profile);
-                if (profile?.avatar_url) {
-                    setAvatarUrl(profile.avatar_url);
-                }
-
-                // Initial fetch
-                fetchUnreadCount(user.id);
-
-                // Realtime subscription for unread count
-                messageSubscription = supabase
-                    .channel('nav_messages')
-                    .on(
-                        'postgres_changes',
-                        {
-                            event: '*',
-                            schema: 'public',
-                            table: 'messages',
-                            filter: `recipient_id=eq.${user.id}`,
-                        },
-                        () => {
-                            // On any change (insert new msg, or update to read), re-fetch count
-                            fetchUnreadCount(user.id);
-                        }
-                    )
-                    .subscribe();
+                if (profile?.avatar_url) setAvatarUrl(profile.avatar_url);
+                fetchUnreadCount(currentUser.id);
+            } else if (!initialUser) {
+                // Only verify logged out if we weren't supposedly logged in from server
+                // Check explicitly
+                setUser(null);
+                setUserProfile(null);
+                setAvatarUrl(null);
             }
         };
         getUser();
 
-        const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            console.log('Navigation: onAuthStateChange:', _event, session?.user);
-            setUser(session?.user ?? null);
+        const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Navigation: Auth Change:', event, session?.user?.email);
+
+            // Update user state on specific events or if session is provided
             if (session?.user) {
+                setUser(session.user);
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('avatar_url, full_name, username, is_admin')
@@ -122,53 +132,13 @@ export default function Navigation() {
                 setUserProfile(profile);
                 setAvatarUrl(profile?.avatar_url || null);
                 fetchUnreadCount(session.user.id);
-            } else {
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
                 setUserProfile(null);
                 setAvatarUrl(null);
                 setUnreadCount(0);
             }
         });
-
-        // 2. Fetch Categories, Subcategories & Sub-Subcategories
-        const fetchCategories = async () => {
-            const { data, error } = await supabase
-                .from('categories')
-                .select(`
-                    id, 
-                    name, 
-                    slug, 
-                    icon, 
-                    sort_order,
-                    subcategories (
-                        id, 
-                        name, 
-                        slug, 
-                        sort_order,
-                        sub_subcategories (
-                            id, 
-                            name, 
-                            slug, 
-                            sort_order
-                        )
-                    )
-                `)
-                .order('sort_order');
-
-            if (data) {
-                // Sort subcategories and sub-subcategories strictly
-                const sortedData = data.map((cat: any) => ({
-                    ...cat,
-                    subcategories: sortByOrder(cat.subcategories).map((sub: any) => ({
-                        ...sub,
-                        sub_subcategories: sortByOrder(sub.sub_subcategories || [])
-                    }))
-                }));
-                setNavCategories(sortedData);
-                // Set first category as default active for Mega Menu
-                if (sortedData.length > 0) setActiveCategory(sortedData[0]);
-            }
-        };
-        fetchCategories();
 
         return () => {
             authSubscription.unsubscribe();

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { format } from 'date-fns';
 import { formatCurrency } from '@/lib/format';
 import { redirect } from 'next/navigation';
@@ -12,17 +12,25 @@ export default async function SalesPage() {
         redirect('/auth/login');
     }
 
+    // Use Admin Client to ensure Seller can see their sales even if RLS is strict
+    const adminSupabase = await createAdminClient();
+
     // Fetch Sold Items
-    const { data: sales } = await supabase
+    const { data: sales } = await adminSupabase
         .from('transactions')
         .select(`
             id,
             total_price_gbp,
             order_status,
             created_at,
-            listings:listing_id (title),
-            buyer_id, // Needed for review
-            buyer:buyer_id (username)
+            listings:listings!listing_id (
+                id,
+                title,
+                listing_images (image_url)
+            ),
+            buyer_id, 
+            buyer:profiles!buyer_id (username),
+            reviews:reviews!transaction_id(id)
         `)
         .eq('seller_id', user.id)
         .order('created_at', { ascending: false });

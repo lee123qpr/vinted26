@@ -77,6 +77,21 @@ export async function recordSuccessfulPayment({
             }
         }
 
+        // Calculate Platform Fee dynamically
+        const { data: feeSetting } = await adminSupabase
+            .from('system_settings')
+            .select('value')
+            .eq('key', 'platform_fee_percent')
+            .single();
+
+        const feePercent = feeSetting ? parseFloat(feeSetting.value) : 5;
+
+        // Fee is deducted from seller payout but tracked here as platform revenue
+        const itemPrice = totalAmount - deliveryFee;
+        const calculatedPlatformFee = Number((itemPrice * (feePercent / 100)).toFixed(2));
+
+        console.log(`DEBUG: Applying ${feePercent}% fee: £${calculatedPlatformFee} on £${itemPrice} item.`);
+
         // 4. Create Transaction
         // We use adminSupabase for transaction to ensure it works even if complex RLS matches fail, 
         // though regular user RLS should allow inserting own 'buy' transaction.
@@ -90,7 +105,7 @@ export async function recordSuccessfulPayment({
                 quantity: 1,
                 total_price_gbp: totalAmount,
                 // initial_price_gbp was not in schema, removed to fix error
-                platform_fee_gbp: platformFee,
+                platform_fee_gbp: calculatedPlatformFee,
                 delivery_fee_gbp: deliveryFee,
                 delivery_method: deliveryMethod,
                 delivery_address: deliveryAddress,

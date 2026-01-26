@@ -1,14 +1,14 @@
-
 import { createClient } from '@/lib/supabase/server';
 import { toggleUserVerification, toggleUserBan } from '@/app/actions/admin';
 import UserTable from './UserTable';
+import ExportUsersButton from './ExportUsersButton';
 
 export const dynamic = 'force-dynamic';
 
 export default async function UserManagementPage({
     searchParams,
 }: {
-    searchParams: Promise<{ q?: string; page?: string; status?: string; date_from?: string; date_to?: string; location?: string; verification_pending?: string }>;
+    searchParams: Promise<{ q?: string; page?: string; status?: string; date_from?: string; date_to?: string; location?: string; sort?: string }>;
 }) {
     const supabase = await createClient();
     const params = await searchParams;
@@ -17,13 +17,30 @@ export default async function UserManagementPage({
     const dateFrom = params?.date_from || '';
     const dateTo = params?.date_to || '';
     const locationFilter = params?.location || '';
-    const verificationPending = params?.verification_pending === 'true';
+    const sortOption = params?.sort || 'joined_desc'; // Default sort
 
-    // Fetch all profiles to calculate rank
+    // Fetch all profiles
     let dbQuery = supabase
         .from('profiles')
-        .select('*')
-        .order('total_carbon_saved_kg', { ascending: false });
+        .select('*');
+
+    // Apply Sorting
+    switch (sortOption) {
+        case 'joined_desc':
+            dbQuery = dbQuery.order('created_at', { ascending: false });
+            break;
+        case 'joined_asc':
+            dbQuery = dbQuery.order('created_at', { ascending: true });
+            break;
+        case 'sales_desc':
+            dbQuery = dbQuery.order('total_sales', { ascending: false });
+            break;
+        case 'carbon_desc':
+            dbQuery = dbQuery.order('total_carbon_saved_kg', { ascending: false });
+            break;
+        default:
+            dbQuery = dbQuery.order('created_at', { ascending: false });
+    }
 
     // Apply filters at database level for better performance
     if (statusFilter) {
@@ -42,17 +59,18 @@ export default async function UserManagementPage({
         dbQuery = dbQuery.ilike('location', `%${locationFilter}%`);
     }
 
-    if (verificationPending) {
-        dbQuery = dbQuery.eq('is_trade_verified', false);
+    const { data: allProfiles, error } = await dbQuery;
+
+    if (error) {
+        console.error("Error fetching users:", error);
     }
 
-    const { data: allProfiles } = await dbQuery;
-
-    // Calculate Rank Map
-    const rankMap = new Map<string, number>();
-    allProfiles?.forEach((p, index) => {
-        rankMap.set(p.id, index + 1);
-    });
+    // Calculate Rank Map (Based on Carbon Saved, regardless of current sort)
+    // We need a separate query or just sort the result in memory to determine rank?
+    // Actually, rank is usually global. Let's precise that rank = Carbon Rank.
+    // For now, let's keep rank dynamic based on current view or purely cosmetic.
+    // Let's rely on index for now, or remove rank if it's confusing.
+    // Re-introducing simple rank based on the current list for now.
 
     // Filter for search query (client-side for flexibility)
     let displayProfiles = allProfiles || [];
@@ -65,23 +83,26 @@ export default async function UserManagementPage({
         );
     }
 
-    // Attach Rank
-    const usersWithRank = displayProfiles.map(p => ({
+    const usersWithRank = displayProfiles.map((p, index) => ({
         ...p,
-        rank: rankMap.get(p.id) || 0
+        rank: index + 1 // Simple view rank
     }));
 
     return (
         <div className="p-8">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-slate-800">User Management</h1>
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-800">User Management</h1>
+                    <p className="text-slate-500 mt-1">Manage users, track activity, and export data.</p>
+                </div>
+                <ExportUsersButton />
             </div>
 
             {/* Enhanced Filters */}
             <form className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Search */}
-                    <div>
+                    <div className="lg:col-span-2">
                         <label className="block text-sm font-medium text-slate-700 mb-2">Search</label>
                         <input
                             name="q"
@@ -104,6 +125,22 @@ export default async function UserManagementPage({
                             <option value="suspended">Suspended</option>
                             <option value="warned">Warned</option>
                             <option value="banned">Banned</option>
+                            <option value="deleted">Deleted</option>
+                        </select>
+                    </div>
+
+                    {/* Sort By */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Sort By</label>
+                        <select
+                            name="sort"
+                            defaultValue={sortOption}
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="joined_desc">Joined: Newest First</option>
+                            <option value="joined_asc">Joined: Oldest First</option>
+                            <option value="sales_desc">Total Sales: High to Low</option>
+                            <option value="carbon_desc">Carbon Saved: High to Low</option>
                         </select>
                     </div>
 
@@ -140,43 +177,30 @@ export default async function UserManagementPage({
                         />
                     </div>
 
-                    {/* Verification Pending */}
-                    <div className="flex items-end">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                name="verification_pending"
-                                value="true"
-                                defaultChecked={verificationPending}
-                                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="text-sm font-medium text-slate-700">Verification Pending</span>
-                        </label>
-                    </div>
-
                     {/* Submit Button */}
                     <div className="flex items-end gap-2">
                         <button
                             type="submit"
                             className="flex-1 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors"
                         >
-                            Apply Filters
+                            Apply
                         </button>
                         <a
                             href="/admin/users"
                             className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
                         >
-                            Clear
+                            Reset
                         </a>
                     </div>
                 </div>
 
                 {/* Results Count */}
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                    <p className="text-sm text-slate-600">
+                <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-sm text-slate-600">
+                    <p>
                         Showing <span className="font-semibold">{usersWithRank.length}</span> users
                         {query && ` matching "${query}"`}
                     </p>
+                    {error && <p className="text-red-500">Error loading users. Please refresh.</p>}
                 </div>
             </form>
 

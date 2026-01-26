@@ -31,6 +31,7 @@ export async function deleteAccount() {
                 bio: null,
                 location: null,
                 postcode_area: null,
+                account_status: 'deleted', // Explicitly mark as deleted
                 // We keep the ID, so reviews still link to this 'Deleted User'
             })
             .eq('id', user.id);

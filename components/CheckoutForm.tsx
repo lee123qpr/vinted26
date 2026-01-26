@@ -11,12 +11,13 @@ export default function CheckoutForm({ listing, totals, deliveryMethod, delivery
     const elements = useElements();
     const [message, setMessage] = useState<string | null>(null);
     const [processing, setProcessing] = useState(false);
+    const [isReady, setIsReady] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!stripe || !elements) return;
+        if (!stripe || !elements || !isReady) return;
 
         setProcessing(true);
 
@@ -67,7 +68,7 @@ export default function CheckoutForm({ listing, totals, deliveryMethod, delivery
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <PaymentElement />
+            <PaymentElement onReady={() => setIsReady(true)} options={{ layout: 'tabs' }} />
             {message && <div className="text-red-500 text-sm">{message}</div>}
 
             {/* Totals Review inside Form */}
@@ -79,8 +80,8 @@ export default function CheckoutForm({ listing, totals, deliveryMethod, delivery
 
                 <button
                     type="submit"
-                    disabled={!stripe || processing}
-                    className="w-full btn-primary py-3 text-lg shadow-lg"
+                    disabled={!stripe || processing || !isReady}
+                    className="w-full btn-primary py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {processing ? 'Processing...' : `Pay ${formatCurrency(totals.total)}`}
                 </button>

@@ -206,7 +206,7 @@ export async function counterOffer(offerId: string, amount: number) {
             return { error: 'You are not involved in this offer.' };
         }
 
-        let updateData: any = {
+        const updateData: any = {
             expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         };
 

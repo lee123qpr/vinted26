@@ -44,10 +44,38 @@ export default async function RootLayout({
   const maintenanceMode = settings.find(s => s.key === 'maintenance_mode');
   const bannerText = settings.find(s => s.key === 'global_banner_text');
 
+  // Fetch user for Navigation and Maintenance check
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Fetch Categories for Navigation (Server Side)
+  const { data: categoriesRaw } = await supabase
+    .from('categories')
+    .select(`
+        id, 
+        name, 
+        slug, 
+        icon, 
+        sort_order,
+        subcategories (
+            id, 
+            name, 
+            slug, 
+            sort_order,
+            sub_subcategories (
+                id, 
+                name, 
+                slug, 
+                sort_order
+            )
+        )
+    `)
+    .order('sort_order');
+
+  const categories = categoriesRaw || [];
+
   // Maintenance Mode Logic
   // Skip check for Admin paths and Auth paths (login/signup) and API routes
   if (maintenanceMode?.is_active && !pathname.startsWith('/admin') && !pathname.startsWith('/auth') && !pathname.startsWith('/api') && pathname !== '/favicon.ico') {
-    const { data: { user } } = await supabase.auth.getUser();
     // Only check profile if user exists, to see if admin
     let isAdmin = false;
     if (user) {
@@ -78,10 +106,11 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en-GB">
+    <html lang="en-GB" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <GlobalBanner text={bannerText?.is_active ? bannerText.value : null} />
-        <Navigation />
+        <Navigation user={user} categories={categories} />
+        {/* Waiting for next step to implement full fetch logic properly */}
         <main className="min-h-screen">
           {children}
         </main>

@@ -6,8 +6,8 @@ const generateEmail = () => `test${Date.now()}@example.com`;
 test.describe('Complete App E2E Tests - All Features', () => {
     let buyerEmail: string;
     let sellerEmail: string;
-    let buyerPassword = 'TestPassword123!';
-    let sellerPassword = 'TestPassword123!';
+    const buyerPassword = 'TestPassword123!';
+    const sellerPassword = 'TestPassword123!';
     let listingId: string;
 
     test.describe('1. Authentication Flow', () => {

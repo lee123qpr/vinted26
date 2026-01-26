@@ -94,209 +94,160 @@ export default function OffersClient({ offers, type }: OffersClientProps) {
             <h1 className="text-2xl font-bold text-secondary-900 capitalize">{type} Offers</h1>
 
             {/* Content */}
-            <div className="space-y-4">
-                {offers.length > 0 ? (
-                    offers.map((offer) => {
-                        const isBuyer = type === 'sent';
-                        const isSeller = type === 'received';
+            {offers.length > 0 ? (
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-secondary-200">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-secondary-50 text-secondary-600 border-b border-secondary-200">
+                                <tr>
+                                    <th className="px-6 py-4 w-[40%] text-xs font-semibold uppercase tracking-wider">Item</th>
+                                    <th className="px-6 py-4 w-[15%] text-xs font-semibold uppercase tracking-wider">
+                                        {type === 'sent' ? 'Seller' : 'Buyer'}
+                                    </th>
+                                    <th className="px-6 py-4 w-[15%] text-xs font-semibold uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 w-[15%] text-xs font-semibold uppercase tracking-wider">Price</th>
+                                    <th className="px-6 py-4 w-[15%] text-right text-xs font-semibold uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-secondary-100">
+                                {offers.map((offer) => {
+                                    const isBuyer = type === 'sent';
+                                    const isSeller = type === 'received';
+                                    const needsAction = (isSeller && offer.status === 'pending') || (isBuyer && offer.status === 'countered');
 
-                        // Determine who needs to act based on status
-                        // Pending: Seller needs to act
-                        // Countered: Buyer needs to act
-                        const needsAction = (isSeller && offer.status === 'pending') || (isBuyer && offer.status === 'countered');
-                        const waitingForOther = (isBuyer && offer.status === 'pending') || (isSeller && offer.status === 'countered');
-
-                        if (offer.status === 'accepted') {
-                            // console.log(`Offer ${offer.id} accepted. Listing status: ${offer.listings.status}`, offer.listings);
-                        }
-
-                        // RPC Fallback for status
-                        const [verifiedStatus, setVerifiedStatus] = useState<string | null>(offer.listings.status || null);
-
-                        useEffect(() => {
-                            if (offer.status === 'accepted' && !verifiedStatus) {
-                                // Use Server Action (Admin Client) to bypass RLS
-                                getListingStatusAdmin(offer.listing_id)
-                                    .then((status: string | null) => {
-                                        if (status) {
-                                            console.log('Admin Status Success:', status);
-                                            setVerifiedStatus(status);
-                                        } else {
-                                            console.error('Admin Status returned null');
-                                            setVerifiedStatus('error');
+                                    // RPC Fallback for status
+                                    // Keeping the logic inline but simplified for table
+                                    const [verifiedStatus, setVerifiedStatus] = useState<string | null>(offer.listings.status || null);
+                                    useEffect(() => {
+                                        if (offer.status === 'accepted' && !verifiedStatus) {
+                                            getListingStatusAdmin(offer.listing_id).then((s: string | null) => s && setVerifiedStatus(s));
                                         }
-                                    })
-                                    .catch((err: any) => {
-                                        console.error('Admin Status Action Error:', err);
-                                        setVerifiedStatus('error');
-                                    });
-                            }
-                        }, [offer.listing_id, offer.status, verifiedStatus]);
+                                    }, [offer.listing_id, offer.status, verifiedStatus]);
 
-                        return (
-                            <div key={offer.id} className="bg-white rounded-xl shadow-sm border border-secondary-200 p-4 flex flex-col md:flex-row gap-4 items-start md:items-center hover:shadow-md transition-shadow">
-
-                                {/* Listing Image */}
-                                <div className="w-20 h-20 bg-secondary-100 rounded-lg overflow-hidden flex-shrink-0 relative border border-secondary-100">
-                                    {offer.listings?.listing_images?.[0]?.image_url ? (
-                                        <Image
-                                            src={offer.listings.listing_images[0].image_url}
-                                            alt={offer.listings.title}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    ) : (
-                                        <div className="flex items-center justify-center h-full text-secondary-400">
-                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Offer Details */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-start">
-                                        <Link href={`/listing/${offer.listing_id}`} className="font-bold text-lg text-secondary-900 hover:text-primary-600 truncate block mb-1">
-                                            {offer.listings.title}
-                                        </Link>
-                                        {offer.status !== 'accepted' && offer.status !== 'rejected' && (
-                                            // Timer moved to badges section
-                                            null
-                                        )}
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-sm text-secondary-500 mb-2">
-                                        <div className="flex items-center gap-1">
-                                            {type === 'sent' ? (
-                                                <>
-                                                    <span>Seller:</span>
-                                                    <span className="font-semibold text-secondary-700">{offer.listings.profiles?.username || 'Unknown'}</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <span>Buyer:</span>
-                                                    <span className="font-semibold text-secondary-700">{offer.buyer_profiles?.username || 'Unknown'}</span>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-3">
-                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${statusColors[offer.status] || 'bg-gray-100 text-gray-800'}`}>
-                                            {offer.status}
-                                        </span>
-                                        {offer.status !== 'accepted' && offer.status !== 'rejected' && offer.expires_at && (
-                                            <CountdownTimer expiresAt={offer.expires_at} />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Price & Actions */}
-                                <div className="flex flex-col items-end gap-3 w-full md:w-auto mt-2 md:mt-0">
-                                    <div className="text-right">
-                                        {offer.counter_amount_gbp ? (
-                                            <>
-                                                <p className="text-xs text-secondary-500 mb-0.5 font-medium uppercase tracking-wider">Counter Offer</p>
-                                                <p className="text-3xl font-black text-blue-600 tracking-tight">{formatCurrency(offer.counter_amount_gbp)}</p>
-                                                <p className="text-xs text-secondary-400 mt-1">Initial Offer: <span className="line-through">{formatCurrency(offer.amount_gbp)}</span></p>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <p className="text-xs text-secondary-500 mb-0.5 font-medium uppercase tracking-wider">Offer Price</p>
-                                                <p className="text-3xl font-black text-secondary-900 tracking-tight">{formatCurrency(offer.amount_gbp)}</p>
-                                                <p className="text-xs text-secondary-400 mt-1">Listed: <span className="line-through">{formatCurrency(offer.listings.price_gbp)}</span></p>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    {needsAction ? (
-                                        <div className="flex flex-wrap justify-end gap-2">
-                                            <button
-                                                onClick={() => handleRespond(offer.id, 'accepted')}
-                                                disabled={loadingMap[offer.id]}
-                                                className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition disabled:opacity-50"
-                                            >
-                                                {offer.counter_amount_gbp ? 'Accept Counter' : 'Accept'}
-                                            </button>
-                                            <button
-                                                onClick={() => setSelectedOfferForCounter(offer)}
-                                                disabled={loadingMap[offer.id]}
-                                                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50"
-                                            >
-                                                Counter
-                                            </button>
-                                            <button
-                                                onClick={() => handleRespond(offer.id, 'rejected')}
-                                                disabled={loadingMap[offer.id]}
-                                                className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-50 transition disabled:opacity-50"
-                                            >
-                                                Decline
-                                            </button>
-                                            <Link
-                                                href={`/messages?listing_id=${offer.listing_id}&recipient_id=${isBuyer ? offer.listings.seller_id : offer.buyer_id}`}
-                                                className="px-3 py-1.5 border border-secondary-300 text-secondary-700 rounded-lg text-sm font-semibold hover:bg-secondary-50 transition"
-                                            >
-                                                Chat
-                                            </Link>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-row items-center gap-2">
-                                            {/* Accepted Offer Actions */}
-                                            {offer.status === 'accepted' && isBuyer ? (
-                                                (verifiedStatus?.toLowerCase() === 'active') ? (
-                                                    <Link
-                                                        href={`/checkout/${offer.listing_id}?offerId=${offer.id}`}
-                                                        className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-bold hover:bg-primary-700 transition shadow-sm hover:shadow-md animate-pulse-slow w-full md:w-auto text-center"
-                                                    >
-                                                        Checkout Now
-                                                    </Link>
-                                                ) : (
-                                                    <span className="px-4 py-2 bg-secondary-100 text-secondary-500 rounded-lg text-sm font-bold border border-secondary-200 w-full md:w-auto text-center cursor-not-allowed">
-                                                        {verifiedStatus === 'sold' ? 'Sold' : `Unavailable (${verifiedStatus ?? 'Loading'})`}
+                                    return (
+                                        <tr key={offer.id} className="hover:bg-primary-50/10 transition group">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="relative w-12 h-12 bg-secondary-100 rounded-lg overflow-hidden flex-shrink-0 border border-secondary-200">
+                                                        {offer.listings?.listing_images?.[0]?.image_url ? (
+                                                            <Image src={offer.listings.listing_images[0].image_url} alt={offer.listings.title} fill className="object-cover" />
+                                                        ) : (
+                                                            <div className="flex items-center justify-center h-full text-secondary-400">
+                                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-sm font-medium text-secondary-900 group-hover:text-primary-600 transition-colors">
+                                                        <Link href={`/listing/${offer.listing_id}`}>
+                                                            {offer.listings.title}
+                                                        </Link>
                                                     </span>
-                                                )
-                                            ) : offer.status === 'accepted' && isSeller ? (
-                                                <span className={`text-sm font-semibold px-3 py-1 rounded-full border ${verifiedStatus === 'sold'
-                                                    ? 'text-green-600 bg-green-50 border-green-100'
-                                                    : 'text-yellow-600 bg-yellow-50 border-yellow-100'
-                                                    }`}>
-                                                    {verifiedStatus === 'sold' ? 'Sold via Offer' : 'Awaiting Payment'}
-                                                </span>
-                                            ) : null}
-
-                                            <Link
-                                                href={`/messages?listing_id=${offer.listing_id}&recipient_id=${isBuyer ? offer.listings.seller_id : offer.buyer_id}`}
-                                                className="btn-outline px-4 py-2 text-sm w-full md:w-auto text-center"
-                                            >
-                                                Chat
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-
-                            </div>
-                        );
-                    })
-                ) : (
-                    <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-secondary-200 border-dashed">
-                        <div className="w-16 h-16 bg-secondary-50 text-secondary-300 rounded-full flex items-center justify-center mx-auto mb-4">
-                            {type === 'sent' ? (
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-                            ) : (
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
-                            )}
-                        </div>
-                        <h3 className="text-lg font-bold text-secondary-900 capitalize">No {type} offers</h3>
-                        <p className="text-secondary-500 mb-6">
-                            {type === 'sent' ? "You haven't made any offers on items yet." : "You haven't received any offers yet."}
-                        </p>
-                        {type === 'sent' && (
-                            <Link href="/" className="btn-primary inline-flex items-center">
-                                Browse Listings
-                            </Link>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-medium text-secondary-600">
+                                                {type === 'sent'
+                                                    ? offer.listings.profiles?.username || 'Unknown'
+                                                    : offer.buyer_profiles?.username || 'Unknown'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1 items-start">
+                                                    <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize border ${statusColors[offer.status] || 'bg-gray-100 text-gray-800'}`}>
+                                                        {offer.status}
+                                                    </span>
+                                                    {offer.status !== 'accepted' && offer.status !== 'rejected' && offer.expires_at && (
+                                                        <div className="text-xs text-secondary-500">
+                                                            <CountdownTimer expiresAt={offer.expires_at} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {offer.counter_amount_gbp ? (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-blue-600">{formatCurrency(offer.counter_amount_gbp)}</span>
+                                                        <span className="text-xs text-secondary-400 line-through">{formatCurrency(offer.amount_gbp)}</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-medium text-secondary-900">{formatCurrency(offer.amount_gbp)}</span>
+                                                        <span className="text-xs text-secondary-400 line-through">{formatCurrency(offer.listings.price_gbp)}</span>
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    {needsAction ? (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleRespond(offer.id, 'accepted')}
+                                                                disabled={loadingMap[offer.id]}
+                                                                className="px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold hover:bg-green-700 transition disabled:opacity-50"
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setSelectedOfferForCounter(offer)}
+                                                                disabled={loadingMap[offer.id]}
+                                                                className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+                                                            >
+                                                                Counter
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRespond(offer.id, 'rejected')}
+                                                                disabled={loadingMap[offer.id]}
+                                                                className="px-2 py-1 border border-red-200 text-red-600 rounded text-xs font-semibold hover:bg-red-50 transition disabled:opacity-50"
+                                                            >
+                                                                Decline
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {/* Checkout Button if Accepted & Buyer */}
+                                                            {offer.status === 'accepted' && isBuyer && verifiedStatus?.toLowerCase() === 'active' && (
+                                                                <Link
+                                                                    href={`/checkout/${offer.listing_id}?offerId=${offer.id}`}
+                                                                    className="px-3 py-1 bg-primary-600 text-white rounded text-xs font-bold hover:bg-primary-700 transition shadow-sm"
+                                                                >
+                                                                    Checkout
+                                                                </Link>
+                                                            )}
+                                                            <Link
+                                                                href={`/messages?listing_id=${offer.listing_id}&recipient_id=${isBuyer ? offer.listings.seller_id : offer.buyer_id}`}
+                                                                className="px-3 py-1 border border-secondary-300 text-secondary-700 rounded text-xs font-semibold hover:bg-secondary-50 transition"
+                                                            >
+                                                                Chat
+                                                            </Link>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ) : (
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-secondary-200 border-dashed">
+                    <div className="w-16 h-16 bg-secondary-50 text-secondary-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                        {type === 'sent' ? (
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+                        ) : (
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
                         )}
                     </div>
-                )}
-            </div>
+                    <h3 className="text-lg font-bold text-secondary-900 capitalize">No {type} offers</h3>
+                    <p className="text-secondary-500 mb-6">
+                        {type === 'sent' ? "You haven't made any offers on items yet." : "You haven't received any offers yet."}
+                    </p>
+                    {type === 'sent' && (
+                        <Link href="/" className="btn-primary inline-flex items-center">
+                            Browse Listings
+                        </Link>
+                    )}
+                </div>
+            )}
 
             {/* Counter Offer Modal */}
             {

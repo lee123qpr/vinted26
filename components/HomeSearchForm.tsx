@@ -27,6 +27,7 @@ export default function HomeSearchForm() {
                     name="q"
                     placeholder="What are you looking for?"
                     className="w-full px-4 py-3 text-secondary-900 rounded-lg focus:outline-none"
+                    suppressHydrationWarning
                 />
             </div>
             <div className="relative">
@@ -35,6 +36,7 @@ export default function HomeSearchForm() {
                     name="location"
                     placeholder="Location or postcode"
                     className="w-full md:w-64 px-4 py-3 text-secondary-900 rounded-lg focus:outline-none"
+                    suppressHydrationWarning
                 />
                 <svg className="absolute right-3 top-3.5 w-5 h-5 text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

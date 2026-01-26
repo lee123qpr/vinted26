@@ -4,12 +4,19 @@
 import { useTransition, useState } from 'react';
 import { updateSetting } from '@/app/actions/admin-settings';
 
-export default function SettingsForm({ maintenanceMode, bannerText, bannerPresets = [] }: { maintenanceMode: any, bannerText: any, bannerPresets?: string[] }) {
+export default function SettingsForm({ maintenanceMode, bannerText, platformFeeSetting, bannerPresets = [] }: { maintenanceMode: any, bannerText: any, platformFeeSetting: any, bannerPresets?: string[] }) {
     const [isPending, startTransition] = useTransition();
 
-    // Local state for banner text input
+    // Local state
     const [bannerInput, setBannerInput] = useState(bannerText?.value || '');
+    const [platformFee, setPlatformFee] = useState(platformFeeSetting?.value || '5');
     const [presets, setPresets] = useState<string[]>(bannerPresets);
+
+    const handleSaveFee = () => {
+        startTransition(async () => {
+            await updateSetting('platform_fee_percent', platformFee, true);
+        });
+    };
 
     const handleToggleMaintenance = (checked: boolean) => {
         startTransition(async () => {
@@ -43,6 +50,30 @@ export default function SettingsForm({ maintenanceMode, bannerText, bannerPreset
 
     return (
         <div className="space-y-8">
+            {/* Platform Fee */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 className="font-bold text-slate-900">Platform Fee</h3>
+                        <p className="text-sm text-slate-500">Percentage taken from seller's payout.</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            value={platformFee}
+                            onChange={(e) => setPlatformFee(e.target.value)}
+                            onBlur={handleSaveFee}
+                            disabled={isPending}
+                            className="w-20 px-3 py-2 border rounded-lg text-right font-mono"
+                        />
+                        <span className="font-bold text-slate-500">%</span>
+                    </div>
+                </div>
+            </div>
+
             {/* Maintenance Mode */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>

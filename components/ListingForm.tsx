@@ -345,12 +345,9 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
             if (mode === 'create' && !formData.postcode) throw new Error("Postcode is required");
             if (mode === 'edit' && !coordinates.lat && !formData.postcode) throw new Error("Postcode/Location is required");
 
-            // Carbon / Weight Validation
-            if (!calculatedWeight && !formData.isFree) {
-                if (!formData.dimensionsLength && !formData.weight) {
-                    throw new Error("Please enter Dimensions OR manual Weight.");
-                }
-            }
+            // Carbon / Weight Validation - OPTIONAL
+            // We do not block listing creation if these are missing.
+            // Users just won't get the Carbon Certificate.
 
             // Geocoding
             let finalLat = coordinates.lat;
@@ -781,7 +778,6 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
 
                             <div className="space-y-2 pt-2">
                                 <label className="flex items-center space-x-2 text-sm">
-// ... (unchanged checkboxes omitted for brevity, but tool requires contiguous block. I'll include them)
                                     <input type="checkbox" checked={formData.offersCollection} onChange={e => setFormData({ ...formData, offersCollection: e.target.checked })} className="rounded border-secondary-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Collection Available</span>
                                 </label>

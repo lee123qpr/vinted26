@@ -14,17 +14,22 @@ export default async function OrdersPage() {
 
     // Use Admin Client as a "Server-Side Secure Filter"
     // This bypasses RLS flakes but maintains security by strictly filtering for the current user
-    const adminSupabase = await createAdminClient();
-
-    const { data: orders, error } = await adminSupabase
+    // Use standard client with RLS for security
+    const { data: orders, error } = await supabase
         .from('transactions')
         .select(`
             id,
             total_price_gbp,
             order_status,
             created_at,
-            listings:listing_id (title, ),
-            seller:seller_id (username)
+            listings:listings!listing_id (
+                id, 
+                title, 
+                listing_images (image_url),
+                carbon_saved_kg
+            ),
+            seller:profiles!seller_id (username),
+            reviews:reviews!transaction_id(id)
         `)
         .eq('buyer_id', user.id)
         .order('created_at', { ascending: false });

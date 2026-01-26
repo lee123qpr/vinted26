@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/format';
@@ -61,63 +61,87 @@ export default function ListingsClient({ initialListings }: Props) {
                     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-secondary-50 text-secondary-600 font-medium border-b border-secondary-200">
+                                <thead className="bg-secondary-50 text-secondary-600 border-b border-secondary-200">
                                     <tr>
-                                        <th className="px-6 py-4">Item</th>
-                                        <th className="px-6 py-4">Price</th>
-                                        <th className="px-6 py-4">Status</th>
-                                        <th className="px-6 py-4">Views</th>
-                                        <th className="px-6 py-4">Actions</th>
+                                        <th className="px-6 py-4 w-[40%] text-xs font-semibold uppercase tracking-wider">Item</th>
+                                        <th className="px-6 py-4 w-[15%] text-xs font-semibold uppercase tracking-wider">Price</th>
+                                        <th className="px-6 py-4 w-[15%] text-xs font-semibold uppercase tracking-wider">Status</th>
+                                        <th className="px-6 py-4 w-[15%] text-xs font-semibold uppercase tracking-wider">Views</th>
+                                        <th className="px-6 py-4 w-[15%] text-xs font-semibold uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-secondary-100">
                                     {listings.map((item) => (
-                                        <tr key={item.id} className="hover:bg-primary-50/10 transition">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="relative w-12 h-12 bg-secondary-100 rounded-lg overflow-hidden flex-shrink-0">
-                                                        {item.listing_images?.[0]?.image_url ? (
-                                                            <Image src={item.listing_images[0].image_url} alt={item.title} fill className="object-cover" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-secondary-400">
-                                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                                                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                        <Fragment key={item.id}>
+                                            <tr className={`hover:bg-primary-50/10 transition ${item.status === 'flagged' ? 'bg-red-50/50' : ''}`}>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="relative w-12 h-12 bg-secondary-100 rounded-lg overflow-hidden flex-shrink-0 border border-secondary-200">
+                                                            {item.listing_images?.[0]?.image_url ? (
+                                                                <Image src={item.listing_images[0].image_url} alt={item.title} fill className="object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-secondary-400">
+                                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm font-medium text-secondary-900">{item.title}</span>
+                                                            {item.status === 'flagged' && (
+                                                                <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                                                 </svg>
-                                                            </div>
-                                                        )}
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <span className="font-medium text-secondary-900">{item.title}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 font-medium text-secondary-900">
-                                                {item.is_free ? (
-                                                    <span className="text-green-600 font-bold">FREE</span>
-                                                ) : (
-                                                    formatCurrency(item.price_gbp)
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 text-xs rounded-full capitalize ${item.status === 'active' ? 'bg-green-100 text-green-700' :
-                                                    item.status === 'sold' ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-secondary-100 text-secondary-700'
-                                                    }`}>
-                                                    {item.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-secondary-600">{item.view_count || 0}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center space-x-3">
-                                                    <Link href={`/listing/${item.id}`} className="text-primary-600 hover:underline text-sm">View</Link>
-                                                    <Link href={`/listing/${item.id}/edit`} className="text-secondary-600 hover:underline text-sm">Edit</Link>
-                                                    <button
-                                                        onClick={() => openDeleteModal(item.id, item.title)}
-                                                        className="text-red-500 hover:text-red-700 text-sm font-medium"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-medium text-secondary-900 align-top">
+                                                    {item.is_free ? (
+                                                        <span className="text-green-600 font-bold">FREE</span>
+                                                    ) : (
+                                                        formatCurrency(item.price_gbp)
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 align-top">
+                                                    <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${item.status === 'active' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                        item.status === 'sold' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                                            item.status === 'flagged' ? 'bg-red-100 text-red-700 border border-red-200 font-bold' :
+                                                                'bg-secondary-100 text-secondary-700 border border-secondary-200'
+                                                        }`}>
+                                                        {item.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-medium text-secondary-600 align-top">{item.view_count || 0}</td>
+                                                <td className="px-6 py-4 align-top">
+                                                    <div className="flex items-center space-x-3">
+                                                        <Link href={`/listing/${item.id}`} className="text-primary-600 hover:text-primary-700 text-sm font-medium">View</Link>
+                                                        <Link href={`/listing/${item.id}/edit`} className="text-secondary-600 hover:text-secondary-800 text-sm font-medium">Edit</Link>
+                                                        <button
+                                                            onClick={() => openDeleteModal(item.id, item.title)}
+                                                            className="text-red-500 hover:text-red-700 text-sm font-medium"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {item.status === 'flagged' && (
+                                                <tr className="bg-red-50/50">
+                                                    <td colSpan={5} className="px-6 pb-4 pt-0 border-b border-red-100/50">
+                                                        <div className="bg-orange-50 border border-orange-100 rounded-md p-3 flex items-start gap-3 mt-2">
+                                                            <svg className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                            </svg>
+                                                            <p className="text-sm text-orange-800 leading-relaxed">
+                                                                <strong>Action Required:</strong> This listing has been flagged by our automated system (likely for prohibited contact details) and is hidden from buyers. Please edit the description to resolve this issue and restore your listing.
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </Fragment>
                                     ))}
                                 </tbody>
                             </table>

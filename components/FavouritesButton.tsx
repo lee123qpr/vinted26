@@ -41,7 +41,7 @@ export default function FavouritesButton({ listingId, initialIsFavourited = fals
                 const { error } = await supabase
                     .from('favourites')
                     .insert({ user_id: user.id, listing_id: listingId });
-                
+
                 if (error) throw error;
             } else {
                 // Remove from favourites
@@ -53,7 +53,7 @@ export default function FavouritesButton({ listingId, initialIsFavourited = fals
 
                 if (error) throw error;
             }
-            
+
             router.refresh(); // Refresh server components to update counts etc if needed
         } catch (error) {
             console.error('Error toggling favourite:', error);
@@ -69,6 +69,7 @@ export default function FavouritesButton({ listingId, initialIsFavourited = fals
             onClick={toggleFavourite}
             className={`p-2 rounded-full bg-white/80 hover:bg-white shadow-sm transition-all duration-200 group ${className}`}
             aria-label={isFavourited ? "Remove from favourites" : "Add to favourites"}
+            suppressHydrationWarning
         >
             <svg
                 className={`w-5 h-5 transition-colors duration-200 ${isFavourited ? 'text-red-500 fill-current' : 'text-secondary-600 group-hover:text-red-500'}`}

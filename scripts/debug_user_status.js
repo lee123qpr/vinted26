@@ -44,4 +44,5 @@ async function debugUser(email) {
     }
 }
 
-debugUser('leeking1@live.co.uk');
+const targetEmail = process.argv[2] || 'leeking1@live.co.uk';
+debugUser(targetEmail);

@@ -11,6 +11,7 @@ export default async function AdminSettingsPage() {
     const maintenanceMode = settings?.find(s => s.key === 'maintenance_mode');
     const bannerText = settings?.find(s => s.key === 'global_banner_text');
     const bannerPresets = settings?.find(s => s.key === 'banner_presets');
+    const platformFeeSetting = settings?.find(s => s.key === 'platform_fee_percent');
 
     return (
         <div className="p-8">
@@ -20,6 +21,7 @@ export default async function AdminSettingsPage() {
                 <SettingsForm
                     maintenanceMode={maintenanceMode}
                     bannerText={bannerText}
+                    platformFeeSetting={platformFeeSetting}
                     bannerPresets={bannerPresets ? JSON.parse(bannerPresets.value) : []}
                 />
             </div>

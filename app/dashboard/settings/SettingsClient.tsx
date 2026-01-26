@@ -216,14 +216,40 @@ export default function SettingsClient({ user, initialProfile }: Props) {
                                 <div>
                                     <h3 className="font-semibold text-secondary-900">Stripe Connect</h3>
                                     <p className="text-sm text-secondary-500">Secure payments and payouts via Stripe.</p>
+                                    {initialProfile?.stripe_charges_enabled && (
+                                        <p className="text-xs text-green-600 font-bold mt-1">✅ Payouts Active</p>
+                                    )}
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => alert('In this test environment, payments are simulated. In production, this would open Stripe onboarding.')}
-                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition"
-                                >
-                                    Connect Bank
-                                </button>
+
+                                {initialProfile?.stripe_charges_enabled ? (
+                                    <button
+                                        type="button"
+                                        disabled
+                                        className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold cursor-default"
+                                    >
+                                        Connected
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            try {
+                                                setSaving(true);
+                                                const res = await fetch('/api/stripe/connect', { method: 'POST' });
+                                                const data = await res.json();
+                                                if (data.url) window.location.href = data.url;
+                                                else throw new Error(data.error);
+                                            } catch (err: any) {
+                                                alert('Connect failed: ' + err.message);
+                                                setSaving(false);
+                                            }
+                                        }}
+                                        disabled={saving}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50"
+                                    >
+                                        {saving ? 'Connecting...' : 'Connect Bank'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

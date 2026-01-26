@@ -1,3 +1,10 @@
 Test failed: Buyer & Seller Flow: Register, List, Search
-Error: [31mTest timeout of 90000ms exceeded.[39m
-Stack: [31mTest timeout of 90000ms exceeded.[39m
+Error: Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/auth/signup
+Call log:
+[2m  - navigating to "http://localhost:3000/auth/signup", waiting until "load"[22m
+
+Stack: Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/auth/signup
+Call log:
+[2m  - navigating to "http://localhost:3000/auth/signup", waiting until "load"[22m
+
+    at C:\Users\Lee Kilcoyne\OneDrive\Desktop\vinted26\tests\e2e\user_journey.spec.ts:24:24

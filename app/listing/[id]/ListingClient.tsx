@@ -20,7 +20,7 @@ import OfferModal from '@/components/OfferModal';
 
 // ... other imports ...
 
-export default function ListingClient({ listing, relatedListings, user }: { listing: any, relatedListings: any[], user: any }) {
+export default function ListingClient({ listing, user }: { listing: any, user: any }) {
     const router = useRouter();
     const [isFavourite, setIsFavourite] = useState(false);
     const [favLoading, setFavLoading] = useState(false);
@@ -339,13 +339,7 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                                         <div>
                                             <h3 className="font-bold text-secondary-900 flex items-center">
                                                 {listing.profiles.username}
-                                                {listing.profiles.is_trade_verified && (
-                                                    <span className="ml-1 text-blue-500" title="Verified Trade Seller">
-                                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                        </svg>
-                                                    </span>
-                                                )}
+                                                {/* Verified Trade Seller badge removed */}
                                             </h3>
                                             <div className="flex items-center text-sm text-secondary-600 space-x-2 mt-1">
                                                 <div className="flex text-yellow-400">
@@ -438,23 +432,7 @@ export default function ListingClient({ listing, relatedListings, user }: { list
                 </div>
             </div>
 
-            {
-                relatedListings.length > 0 && (
-                    <div className="container-custom pt-8 pb-12 border-t border-secondary-200">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-secondary-900">More from {listing.profiles?.username || 'this seller'}</h2>
-                            <Link href={`/profile/${listing.seller_id}`} className="text-primary-600 font-semibold hover:text-primary-700">
-                                View all items
-                            </Link>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {relatedListings.map((item) => (
-                                <ListingCard key={item.id} listing={item} />
-                            ))}
-                        </div>
-                    </div>
-                )
-            }
+
             {/* Offer Modal */}
             <OfferModal
                 isOpen={isOfferModalOpen}

@@ -91,6 +91,8 @@ export default function CheckoutClient({ listing, currentUser, offer }: Props) {
             if (!res.ok) throw new Error(data.error || 'Failed to initialize payment');
 
             setClientSecret(data.clientSecret);
+            console.log('DEBUG: Client Secret received:', data.clientSecret?.substring(0, 10) + '...');
+            console.log('DEBUG: Publishable Key prefix:', process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.substring(0, 10) + '...');
         } catch (err: any) {
             console.error('Payment Init Error:', err);
             setError(err.message);
@@ -203,8 +205,15 @@ export default function CheckoutClient({ listing, currentUser, offer }: Props) {
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-secondary-200">
                                 <h2 className="text-lg font-semibold text-secondary-900 mb-4">Payment</h2>
 
-                                {clientSecret ? (
-                                    <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+                                {clientSecret && stripePromise ? (
+                                    <Elements
+                                        stripe={stripePromise}
+                                        options={{
+                                            clientSecret,
+                                            appearance: { theme: 'stripe' },
+                                        }}
+                                        key={clientSecret} // Force re-render when secret changes
+                                    >
                                         <CheckoutForm
                                             listing={listing}
                                             totals={totals}

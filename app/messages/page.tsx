@@ -121,7 +121,7 @@ export default async function MessagesPage({ searchParams }: Props) {
     }
 
     // Convert map to array, ensuring the new one (if created) is at the top if it's new
-    let conversArray = Array.from(grouped.values());
+    const conversArray = Array.from(grouped.values());
 
     // Sort: New ones (no last message) or most recent message first
     conversArray.sort((a, b) => {

@@ -1,0 +1,165 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e5]:
+      - link "S Skipped." [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: S
+        - generic [ref=e9]: Skipped.
+      - link "How it Works" [ref=e11] [cursor=pointer]:
+        - /url: /how-it-works
+      - button "Shop by Category" [ref=e13]:
+        - img [ref=e14]
+        - text: Shop by Category
+      - generic [ref=e17]:
+        - textbox "Search for materials" [ref=e18]:
+          - /placeholder: Search for materials (e.g. bricks, timber, insulation)...
+        - button "Submit search" [ref=e19]:
+          - img [ref=e20]
+      - generic [ref=e22]:
+        - link "List Item" [ref=e23] [cursor=pointer]:
+          - /url: /sell
+          - img [ref=e24]
+          - text: List Item
+        - generic [ref=e26]:
+          - link "Log in" [ref=e27] [cursor=pointer]:
+            - /url: /auth/login
+          - link "Sign up" [ref=e28] [cursor=pointer]:
+            - /url: /auth/signup
+  - main [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e34]: S
+        - heading "Create a Skipped account" [level=2] [ref=e35]
+        - paragraph [ref=e36]:
+          - text: Already have an account?
+          - link "Sign in" [ref=e37] [cursor=pointer]:
+            - /url: /auth/login
+      - generic [ref=e39]:
+        - paragraph [ref=e40]: "* Indicates mandatory field"
+        - generic [ref=e41]:
+          - generic [ref=e42]: Please verify you are human
+          - generic [ref=e43]:
+            - generic [ref=e44]: Full Name *
+            - textbox "Full Name *" [ref=e46]: Automation Tester
+          - generic [ref=e47]:
+            - generic [ref=e48]: Username *
+            - generic [ref=e49]:
+              - textbox "Username *" [ref=e50]: verify_1769259971859
+              - generic:
+                - img
+            - paragraph [ref=e51]: Username available
+          - generic [ref=e52]:
+            - generic [ref=e53]: Email address *
+            - textbox "Email address *" [ref=e55]: verify_1769259971859@example.com
+          - generic [ref=e56]:
+            - generic [ref=e57]: Password *
+            - textbox "Password *" [ref=e59]: StrongPassword123!
+          - generic [ref=e60]:
+            - generic [ref=e61]: Confirm Password *
+            - textbox "Confirm Password *" [ref=e63]: StrongPassword123!
+          - generic [ref=e67]:
+            - text: By clicking "Create Account", you agree to our
+            - link "Terms of Service" [ref=e68] [cursor=pointer]:
+              - /url: /legal/terms
+            - text: and
+            - link "Privacy Policy" [ref=e69] [cursor=pointer]:
+              - /url: /legal/privacy
+            - text: .
+          - button "Create Account" [active] [ref=e71]
+  - contentinfo [ref=e72]:
+    - generic [ref=e73]:
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - link "S Skipped." [ref=e76] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e78]: S
+            - generic [ref=e79]: Skipped.
+          - paragraph [ref=e80]: The UK's marketplace for reclaimed construction materials. Stop waste, save money, and build better.
+          - generic [ref=e81]:
+            - link [ref=e82] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e83]
+            - link [ref=e85] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e86]
+            - link [ref=e88] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e89]
+            - link [ref=e91] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e92]
+        - generic [ref=e94]:
+          - heading "Shop" [level=4] [ref=e95]
+          - list [ref=e96]:
+            - listitem [ref=e97]:
+              - link "Bricks & Blocks" [ref=e98] [cursor=pointer]:
+                - /url: /category/building-materials?subcategory=bricks-blocks
+            - listitem [ref=e99]:
+              - link "Timber & Joinery" [ref=e100] [cursor=pointer]:
+                - /url: /category/timber-joinery
+            - listitem [ref=e101]:
+              - link "Insulation" [ref=e102] [cursor=pointer]:
+                - /url: /category/building-materials?subcategory=insulation
+            - listitem [ref=e103]:
+              - link "Roofing" [ref=e104] [cursor=pointer]:
+                - /url: /category/building-materials?subcategory=roofing
+            - listitem [ref=e105]:
+              - link "View All Categories" [ref=e106] [cursor=pointer]:
+                - /url: /search
+        - generic [ref=e107]:
+          - heading "Support" [level=4] [ref=e108]
+          - list [ref=e109]:
+            - listitem [ref=e110]:
+              - link "Help Centre" [ref=e111] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e112]:
+              - link "FAQ" [ref=e113] [cursor=pointer]:
+                - /url: /faq
+            - listitem [ref=e114]:
+              - link "Trust & Safety" [ref=e115] [cursor=pointer]:
+                - /url: /trust-safety
+            - listitem [ref=e116]:
+              - link "Contact Us" [ref=e117] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=e118]:
+              - link "About Us" [ref=e119] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e120]:
+              - link "News & Articles" [ref=e121] [cursor=pointer]:
+                - /url: /articles
+            - listitem [ref=e122]:
+              - link "How it Works" [ref=e123] [cursor=pointer]:
+                - /url: /how-it-works
+        - generic [ref=e124]:
+          - heading "Stay Updated" [level=4] [ref=e125]
+          - paragraph [ref=e126]: Get the latest updates on new materials and sustainability tips.
+          - generic [ref=e127]:
+            - textbox "Enter your email" [ref=e128]
+            - button "Subscribe" [ref=e129]
+      - generic [ref=e130]:
+        - paragraph [ref=e131]: © 2026 Skipped Ltd. All rights reserved.
+        - generic [ref=e132]:
+          - link "Privacy Policy" [ref=e133] [cursor=pointer]:
+            - /url: /legal/privacy
+          - link "Terms of Service" [ref=e134] [cursor=pointer]:
+            - /url: /legal/terms
+          - link "Cookies" [ref=e135] [cursor=pointer]:
+            - /url: /legal/cookies
+  - button "Open Next.js Dev Tools" [ref=e141] [cursor=pointer]:
+    - img [ref=e142]
+  - alert [ref=e145]
+  - generic [ref=e147]:
+    - generic [ref=e148]:
+      - heading "We value your privacy" [level=3] [ref=e149]
+      - paragraph [ref=e150]:
+        - text: We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies in accordance with UK law. Read our
+        - link "Cookie Policy" [ref=e151] [cursor=pointer]:
+          - /url: /legal/cookies
+        - text: .
+    - generic [ref=e152]:
+      - button "Necessary Only" [ref=e153]
+      - button "Accept All" [ref=e154]
+```

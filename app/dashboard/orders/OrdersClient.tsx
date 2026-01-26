@@ -14,8 +14,7 @@ interface Props {
     initialOrders: any[];
 }
 
-export default function OrdersClient({ initialOrders }: Props) {
-    const [orders] = useState<any[]>(initialOrders);
+export default function OrdersClient({ initialOrders: orders }: Props) {
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [disputeModalOpen, setDisputeModalOpen] = useState(false);
     const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -74,14 +73,14 @@ export default function OrdersClient({ initialOrders }: Props) {
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-secondary-50 text-secondary-600 font-medium border-b border-secondary-200">
+                            <thead className="bg-secondary-50 text-secondary-600 border-b border-secondary-200">
                                 <tr>
-                                    <th className="px-6 py-4">Item</th>
-                                    <th className="px-6 py-4">Seller</th>
-                                    <th className="px-6 py-4">Date</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4">Next Step</th>
-                                    <th className="px-6 py-4 text-right">Actions</th>
+                                    <th className="px-6 py-4 w-[40%] text-xs font-semibold uppercase tracking-wider">Item</th>
+                                    <th className="px-6 py-4 w-[15%] text-xs font-semibold uppercase tracking-wider">Seller</th>
+                                    <th className="px-6 py-4 w-[12%] text-xs font-semibold uppercase tracking-wider">Date</th>
+                                    <th className="px-6 py-4 w-[10%] text-xs font-semibold uppercase tracking-wider">Total Cost</th>
+                                    <th className="px-6 py-4 w-[10%] text-xs font-semibold uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 w-[13%] text-right text-xs font-semibold uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-secondary-100">
@@ -89,10 +88,12 @@ export default function OrdersClient({ initialOrders }: Props) {
                                     const isPending = order.order_status === 'pending' || order.order_status === 'held_in_escrow';
                                     const isShipped = order.order_status === 'shipped';
                                     const isCompleted = order.order_status === 'completed';
+                                    const hasReview = order.reviews && order.reviews.length > 0;
+                                    const hasCertificate = order.listings?.carbon_saved_kg > 0;
 
                                     return (
                                         <tr key={order.id} className="hover:bg-primary-50/10 transition group">
-                                            <td className="px-6 py-4 font-medium text-secondary-900 group-hover:text-primary-600 transition">
+                                            <td className="px-6 py-4">
                                                 <Link href={`/listing/${order.listings?.id}`} className="flex items-center space-x-4">
                                                     <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-secondary-200 bg-secondary-50 flex-shrink-0">
                                                         {order.listings?.listing_images?.[0]?.image_url ? (
@@ -113,44 +114,53 @@ export default function OrdersClient({ initialOrders }: Props) {
                                                         )}
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span>{order.listings?.title || <span className="text-red-500 italic">Unknown Item</span>}</span>
+                                                        <span className="text-sm font-medium text-secondary-900 group-hover:text-primary-600 transition">{order.listings?.title || <span className="text-red-500 italic">Unknown Item</span>}</span>
+                                                        {hasCertificate && (
+                                                            <span className="flex items-center gap-1 text-[10px] text-green-600 font-bold uppercase tracking-wider bg-green-50 px-1.5 py-0.5 rounded-full w-fit mt-1 border border-green-100">
+                                                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                                                                Verified Impact
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </Link>
                                             </td>
-                                            <td className="px-6 py-4 text-secondary-700 font-bold">{order.seller?.username || 'Unknown'}</td>
-                                            <td className="px-6 py-4 text-secondary-500 text-sm">
+                                            <td className="px-6 py-4 text-sm font-medium text-secondary-600">{order.seller?.username || 'Unknown'}</td>
+                                            <td className="px-6 py-4 text-sm font-medium text-secondary-900">
                                                 {format(new Date(order.created_at), 'MMM d, yyyy')}
                                             </td>
+                                            <td className="px-6 py-4 text-sm font-medium text-secondary-900">
+                                                {formatCurrency(order.total_price_gbp)}
+                                            </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 text-xs rounded-full capitalize ${isCompleted ? 'bg-green-100 text-green-700 border border-green-200' :
-                                                        isShipped ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                                            order.order_status === 'cancelled' ? 'bg-red-100 text-red-700 border border-red-200' :
-                                                                'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${isCompleted ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                    isShipped ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                                        order.order_status === 'cancelled' ? 'bg-red-100 text-red-700 border border-red-200' :
+                                                            'bg-yellow-100 text-yellow-700 border border-yellow-200'
                                                     }`}>
                                                     {order.order_status?.replace(/_/g, ' ')}
                                                 </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-secondary-600">
-                                                {isPending && "Waiting for seller to ship"}
-                                                {isShipped && <span className="text-primary-600 font-medium">Confirm delivery to release funds</span>}
-                                                {isCompleted && "Complete"}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end space-x-2">
                                                     {isCompleted && (
                                                         <>
-                                                            <Link
-                                                                href={`/dashboard/orders/${order.id}/certificate`}
-                                                                className="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-md border border-green-200 hover:bg-green-100 transition whitespace-nowrap"
-                                                            >
-                                                                Certificate
-                                                            </Link>
-                                                            <button
-                                                                onClick={() => openReviewModal(order)}
-                                                                className="text-xs bg-secondary-50 text-secondary-600 px-3 py-1.5 rounded-md border border-secondary-200 hover:bg-secondary-100 transition"
-                                                            >
-                                                                Review
-                                                            </button>
+                                                            {hasCertificate && (
+                                                                <Link
+                                                                    href={`/dashboard/orders/${order.id}/certificate`}
+                                                                    className="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-md border border-green-200 hover:bg-green-100 transition whitespace-nowrap flex items-center gap-1"
+                                                                >
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                                    Certificate
+                                                                </Link>
+                                                            )}
+                                                            {!hasReview && (
+                                                                <button
+                                                                    onClick={() => openReviewModal(order)}
+                                                                    className="text-xs bg-secondary-50 text-secondary-600 px-3 py-1.5 rounded-md border border-secondary-200 hover:bg-secondary-100 transition"
+                                                                >
+                                                                    Leave Feedback
+                                                                </button>
+                                                            )}
                                                         </>
                                                     )}
                                                     {isShipped && (
@@ -171,7 +181,7 @@ export default function OrdersClient({ initialOrders }: Props) {
                                                         </div>
                                                     )}
                                                     {isPending && (
-                                                        <span className="text-xs text-secondary-400 italic">No actions yet</span>
+                                                        <span className="text-xs text-secondary-400 italic">Waiting...</span>
                                                     )}
                                                 </div>
                                             </td>
