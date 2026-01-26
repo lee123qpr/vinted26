@@ -48,7 +48,8 @@ export default function ExportUsersButton() {
 
         } catch (err: unknown) {
             console.error('Export failed:', err);
-            alert('Failed to export users: ' + err.message);
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+            alert('Failed to export users: ' + errorMessage);
         } finally {
             setLoading(false);
         }

@@ -31,7 +31,7 @@ export default function DebugCategoriesPage() {
                 setCategories(data);
             } catch (err: unknown) {
                 console.error("Raw Error", err);
-                setError((prev: any) => ({ ...prev, raw: err.message }));
+                setError((prev: any) => ({ ...prev, raw: err instanceof Error ? err.message : String(err) }));
             }
 
             // Test 3: Server Action (Categories)
@@ -50,7 +50,7 @@ export default function DebugCategoriesPage() {
                 }
 
             } catch (err: unknown) {
-                setError((prev: any) => ({ ...prev, server: err.message }));
+                setError((prev: any) => ({ ...prev, server: err instanceof Error ? err.message : String(err) }));
             } finally {
                 setLoading(false);
             }

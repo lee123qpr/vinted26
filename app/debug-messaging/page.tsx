@@ -21,7 +21,7 @@ export default async function DebugMessagingPage() {
             if (data) serverMessages = data;
             if (error) serverError = error.message;
         } catch (e: unknown) {
-            serverError = e.message;
+            serverError = e instanceof Error ? e.message : String(e);
         }
     }
 

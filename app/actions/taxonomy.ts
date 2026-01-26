@@ -10,7 +10,7 @@ export async function getCategories() {
         return { data, error: null };
     } catch (err: unknown) {
         console.error('Error fetching categories:', err);
-        return { error: 'Failed to load categories' };
+        return { data: null, error: 'Failed to load categories' };
     }
 }
 
@@ -22,7 +22,7 @@ export async function getMaterials() {
         return { data, error: null };
     } catch (err: unknown) {
         console.error('Error fetching materials:', err);
-        return { error: 'Failed to load materials' };
+        return { data: null, error: 'Failed to load materials' };
     }
 }
 
@@ -38,7 +38,7 @@ export async function getSubcategories(categoryId: string) {
         return { data, error: null };
     } catch (err: unknown) {
         console.error('Error fetching subcategories:', err);
-        return { error: 'Failed to load subcategories' };
+        return { data: null, error: 'Failed to load subcategories' };
     }
 }
 
@@ -52,8 +52,8 @@ export async function getSubSubcategories(subcategoryId: string) {
 
         if (error) throw error;
         return { data, error: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Server Action Error (SubSubcategories):', err);
-        return { data: null, error: err.message };
+        return { data: null, error: err instanceof Error ? err.message : 'An unknown error occurred' };
     }
 }

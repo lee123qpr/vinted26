@@ -41,7 +41,7 @@ export default function DebugMessagingClient({ user }: { user: any }) {
             setMessages(data || []);
         } catch (err: unknown) {
             console.error('Fetch error:', err);
-            setError(err.message || 'Unknown error');
+            setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);
         }
@@ -81,7 +81,7 @@ export default function DebugMessagingClient({ user }: { user: any }) {
             });
             alert(`Raw Fetch Status: ${res.status} ${res.statusText}`);
         } catch (e: unknown) {
-            alert(`Raw Fetch Error: ${e.message}`);
+            alert(`Raw Fetch Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
         }
     };
 
