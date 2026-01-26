@@ -81,7 +81,8 @@ export default async function AdminLogsPage({
                                             {format(new Date(log.created_at), 'dd MMM yyyy, HH:mm')}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-slate-900 font-medium">
-                                            {log.admin?.username || log.admin?.email || 'Unknown'}
+                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                            {(log.admin as any)?.username || (log.admin as any)?.email || 'Unknown'}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize 
