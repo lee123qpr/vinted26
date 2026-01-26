@@ -55,7 +55,15 @@ async function verifyTurnstileToken(token: string) {
     }
 
     // Authenticate the token with Cloudflare
-    const secretKey = process.env.TURNSTILE_SECRET_KEY || '1x00000000000000000000BB'; // Default to Test Key if not set
+    const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+    if (!secretKey) {
+        if (process.env.NODE_ENV === 'production') {
+            console.error('❌ CRITICAL: TURNSTILE_SECRET_KEY is missing in production!');
+        }
+        // In non-dev, if key is missing, we must fail safe
+        return false;
+    }
 
     // Note: Cloudflare expects x-www-form-urlencoded body
     const formData = new URLSearchParams();
