@@ -453,7 +453,18 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 }
 
                 const result = await createListing(payload);
-                if (result.error) throw new Error(result.error);
+                if (result.error) {
+                    if (result.details) {
+                        const fieldErrors: Record<string, string> = {};
+                        Object.entries(result.details.fieldErrors).forEach(([key, val]) => {
+                            if (Array.isArray(val) && val.length > 0) {
+                                fieldErrors[key] = val[0];
+                            }
+                        });
+                        setValidationErrors(fieldErrors);
+                    }
+                    throw new Error(result.error);
+                }
                 router.push(`/listing/${result.listingId}`);
             } else {
                 // EDIT MODE
@@ -467,7 +478,18 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 for (const file of newFiles) payload.append('images', file);
 
                 const result = await updateListing(initialData.id, payload);
-                if (result.error) throw new Error(result.error);
+                if (result.error) {
+                    if (result.details) {
+                        const fieldErrors: Record<string, string> = {};
+                        Object.entries(result.details.fieldErrors).forEach(([key, val]) => {
+                            if (Array.isArray(val) && val.length > 0) {
+                                fieldErrors[key] = val[0];
+                            }
+                        });
+                        setValidationErrors(fieldErrors);
+                    }
+                    throw new Error(result.error);
+                }
 
                 router.refresh();
                 router.push(`/listing/${result.listingId}`);
@@ -738,7 +760,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                                     {hasResult
                                                         ? "Great! Your listing now includes an environmental impact certificate."
                                                         : isManualWeightRequired
-                                                            ? "We can&apos;t guess the weight of this item. Please enter the Weight below to unlock."
+                                                            ? "We can't guess the weight of this item. Please enter the Weight below to unlock."
                                                             : "Enter Dimensions (or Weight) to unlock."
                                                     }
                                                 </p>
@@ -783,6 +805,8 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                             <div className="relative">
                                                 <input
                                                     type="text"
+                                                    name="weight"
+                                                    id="weight"
                                                     inputMode="decimal"
                                                     value={formData.weight}
                                                     onChange={e => {
