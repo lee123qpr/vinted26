@@ -121,22 +121,30 @@ export default function Navigation({ user: initialUser, categories }: Navigation
         const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('Navigation: Auth Change:', event, session?.user?.email);
 
-            // Update user state on specific events or if session is provided
-            if (session?.user) {
-                setUser(session.user);
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || (event === 'INITIAL_SESSION' && session?.user)) {
+                const currentUser = session?.user;
+                if (!currentUser) return;
+
+                setUser(currentUser);
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('avatar_url, full_name, username, is_admin')
-                    .eq('id', session.user.id)
+                    .eq('id', currentUser.id)
                     .single();
                 setUserProfile(profile);
                 setAvatarUrl(profile?.avatar_url || null);
-                fetchUnreadCount(session.user.id);
+                fetchUnreadCount(currentUser.id);
+
+                // If it's a sign-in event, we want the server components to re-run
+                if (event === 'SIGNED_IN') {
+                    router.refresh();
+                }
             } else if (event === 'SIGNED_OUT') {
                 setUser(null);
                 setUserProfile(null);
                 setAvatarUrl(null);
                 setUnreadCount(0);
+                router.refresh();
             }
         });
 

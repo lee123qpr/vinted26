@@ -36,8 +36,12 @@ export default function LoginPage() {
                 setTurnstileToken(''); // Reset token
                 setLoading(false);
             }
-            // If success, it redirects, so we don&apos;t need to setLoading(false) necessarily
-        } catch (err: unknown) {
+        } catch (err: any) {
+            // Next.js redirects throw errors that should not be caught as "unexpected"
+            if (err?.digest?.includes('NEXT_REDIRECT')) {
+                throw err;
+            }
+            console.error('Login error:', err);
             setError('An unexpected error occurred');
             setLoading(false);
         }
