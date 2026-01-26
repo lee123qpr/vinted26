@@ -6,73 +6,86 @@ export async function middleware(request: NextRequest) {
         request,
     });
 
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return request.cookies.getAll();
-                },
-                setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        request.cookies.set(name, value)
-                    );
-                    supabaseResponse = NextResponse.next({
-                        request,
-                    });
-                    supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        supabaseResponse.cookies.set(name, value, options)
-                    );
-                },
-            },
+    try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            console.error('Middleware Error: Missing Supabase Environment Variables');
+            return NextResponse.next({ request });
         }
-    );
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+        const supabase = createServerClient(
+            supabaseUrl,
+            supabaseKey,
+            {
+                cookies: {
+                    getAll() {
+                        return request.cookies.getAll();
+                    },
+                    setAll(cookiesToSet) {
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            request.cookies.set(name, value)
+                        );
+                        supabaseResponse = NextResponse.next({
+                            request,
+                        });
+                        supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            supabaseResponse.cookies.set(name, value, options)
+                        );
+                    },
+                },
+            }
+        );
 
-    // Protected routes
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        if (!user) {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        // Protected routes
+        if (request.nextUrl.pathname.startsWith('/admin')) {
+            if (!user) {
+                const url = request.nextUrl.clone();
+                url.pathname = '/auth/login';
+                url.searchParams.set('redirectTo', request.nextUrl.pathname);
+                return NextResponse.redirect(url);
+            }
+
+            // Check Admin Status using simple query that matches "Users can view own profile" RLS
+            // We select 'id' as well to ensure it matches the typical policy pattern if any
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', user.id)
+                .single();
+
+            // If profile exists but is_admin is false (or null), deny access.
+            if (!profile || !profile.is_admin) {
+                const url = request.nextUrl.clone();
+                url.pathname = '/'; // Go home
+                return NextResponse.redirect(url);
+            }
+        }
+
+        if (
+            !user &&
+            (request.nextUrl.pathname.startsWith('/sell') ||
+                request.nextUrl.pathname.startsWith('/dashboard') ||
+                request.nextUrl.pathname.startsWith('/messages') ||
+                request.nextUrl.pathname.startsWith('/checkout'))
+        ) {
             const url = request.nextUrl.clone();
             url.pathname = '/auth/login';
             url.searchParams.set('redirectTo', request.nextUrl.pathname);
             return NextResponse.redirect(url);
         }
 
-        // Check Admin Status using simple query that matches "Users can view own profile" RLS
-        // We select 'id' as well to ensure it matches the typical policy pattern if any
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', user.id)
-            .single();
-
-        // If profile exists but is_admin is false (or null), deny access.
-        if (!profile || !profile.is_admin) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/'; // Go home
-            return NextResponse.redirect(url);
-        }
+        return supabaseResponse;
+    } catch (error) {
+        console.error('Middleware Error:', error);
+        return NextResponse.next({ request });
     }
-
-    if (
-        !user &&
-        (request.nextUrl.pathname.startsWith('/sell') ||
-            request.nextUrl.pathname.startsWith('/dashboard') ||
-            request.nextUrl.pathname.startsWith('/messages') ||
-            request.nextUrl.pathname.startsWith('/checkout'))
-    ) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/auth/login';
-        url.searchParams.set('redirectTo', request.nextUrl.pathname);
-        return NextResponse.redirect(url);
-    }
-
-    return supabaseResponse;
 }
 
 export const config = {
