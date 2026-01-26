@@ -6,13 +6,18 @@ export async function middleware(request: NextRequest) {
         request,
     });
 
+    const pathname = request.nextUrl.pathname;
+
+    // Always set x-pathname for layout/component usage
+    supabaseResponse.headers.set('x-pathname', pathname);
+
     try {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!supabaseUrl || !supabaseKey) {
             console.error('Middleware Error: Missing Supabase Environment Variables');
-            return NextResponse.next({ request });
+            return supabaseResponse;
         }
 
         const supabase = createServerClient(
@@ -27,10 +32,12 @@ export async function middleware(request: NextRequest) {
                         cookiesToSet.forEach(({ name, value, options }) =>
                             request.cookies.set(name, value)
                         );
+                        // Create a NEW response if cookies are changed to ensure headers/cookies are synced
                         supabaseResponse = NextResponse.next({
                             request,
                         });
-                        supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
+                        // Re-set x-pathname on the NEW response
+                        supabaseResponse.headers.set('x-pathname', pathname);
                         cookiesToSet.forEach(({ name, value, options }) =>
                             supabaseResponse.cookies.set(name, value, options)
                         );
@@ -43,48 +50,63 @@ export async function middleware(request: NextRequest) {
             data: { user },
         } = await supabase.auth.getUser();
 
-        // Protected routes
-        if (request.nextUrl.pathname.startsWith('/admin')) {
+        // 1. Handle "Suspended/Banned" Status (Security Block)
+        if (user && !pathname.startsWith('/auth/suspended') && !pathname.startsWith('/auth/callback')) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('account_status')
+                .eq('id', user.id)
+                .single();
+
+            if (profile && (profile.account_status === 'suspended' || profile.account_status === 'banned')) {
+                const url = request.nextUrl.clone();
+                url.pathname = '/auth/suspended';
+                return NextResponse.redirect(url);
+            }
+        }
+
+        // 2. Redirect Authenticated Users away from Auth pages
+        if (user && (pathname === '/auth/login' || pathname === '/auth/signup')) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/dashboard';
+            return NextResponse.redirect(url);
+        }
+
+        // 3. Admin Route Protection
+        if (pathname.startsWith('/admin')) {
             if (!user) {
                 const url = request.nextUrl.clone();
                 url.pathname = '/auth/login';
-                url.searchParams.set('redirectTo', request.nextUrl.pathname);
+                url.searchParams.set('redirectTo', pathname);
                 return NextResponse.redirect(url);
             }
 
-            // Check Admin Status using simple query that matches "Users can view own profile" RLS
-            // We select 'id' as well to ensure it matches the typical policy pattern if any
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('is_admin')
                 .eq('id', user.id)
                 .single();
 
-            // If profile exists but is_admin is false (or null), deny access.
             if (!profile || !profile.is_admin) {
                 const url = request.nextUrl.clone();
-                url.pathname = '/'; // Go home
+                url.pathname = '/';
                 return NextResponse.redirect(url);
             }
         }
 
-        if (
-            !user &&
-            (request.nextUrl.pathname.startsWith('/sell') ||
-                request.nextUrl.pathname.startsWith('/dashboard') ||
-                request.nextUrl.pathname.startsWith('/messages') ||
-                request.nextUrl.pathname.startsWith('/checkout'))
-        ) {
+        // 4. General Protected Routes
+        const protectedPrefixes = ['/sell', '/dashboard', '/messages', '/checkout'];
+        if (!user && protectedPrefixes.some(prefix => pathname.startsWith(prefix))) {
             const url = request.nextUrl.clone();
             url.pathname = '/auth/login';
-            url.searchParams.set('redirectTo', request.nextUrl.pathname);
+            url.searchParams.set('redirectTo', pathname);
             return NextResponse.redirect(url);
         }
 
         return supabaseResponse;
     } catch (error) {
         console.error('Middleware Error:', error);
-        return NextResponse.next({ request });
+        return supabaseResponse;
     }
 }
 
