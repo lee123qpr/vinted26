@@ -65,10 +65,32 @@ export default function Navigation({ user: initialUser, categories }: Navigation
     useEffect(() => {
         setIsMenuOpen(false);
         setIsMegaMenuOpen(false);
-        if (user) {
-            fetchUnreadCount(user.id);
-        }
-    }, [pathname, user]);
+
+        // Eager session sync: Double check auth status on navigation
+        // to remove delay in header updates
+        const syncSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const currentUser = session?.user ?? null;
+
+            if (currentUser && !user) {
+                setUser(currentUser);
+                // Also fetch profile if not exists
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('avatar_url, full_name, username, is_admin')
+                    .eq('id', currentUser.id)
+                    .single();
+                setUserProfile(profile);
+                if (profile?.avatar_url) setAvatarUrl(profile.avatar_url);
+            }
+
+            if (currentUser) {
+                fetchUnreadCount(currentUser.id);
+            }
+        };
+
+        syncSession();
+    }, [pathname]);
 
     // Fetch unread count helper
     const fetchUnreadCount = async (userId: string) => {
