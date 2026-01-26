@@ -8,12 +8,15 @@ export const metadata = {
 };
 
 export default async function AdminLogsPage({
+    params,
     searchParams,
 }: {
-    searchParams: { page?: string, type?: string };
+    params?: Promise<any>;
+    searchParams: Promise<{ page?: string; type?: string }>;
 }) {
     const supabase = await createClient();
-    const page = Number(searchParams.page) || 1;
+    const resolvedSearchParams = await searchParams;
+    const page = Number(resolvedSearchParams.page) || 1;
     const pageSize = 20;
     const start = (page - 1) * pageSize;
     const end = start + pageSize - 1;
@@ -38,8 +41,8 @@ export default async function AdminLogsPage({
         .order('created_at', { ascending: false })
         .range(start, end);
 
-    if (searchParams.type) {
-        query = query.eq('action_type', searchParams.type);
+    if (resolvedSearchParams.type) {
+        query = query.eq('action_type', resolvedSearchParams.type);
     }
 
     const { data: logs, count, error } = await query;
