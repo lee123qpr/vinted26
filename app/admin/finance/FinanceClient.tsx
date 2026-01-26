@@ -49,7 +49,8 @@ export default function FinanceClient({ totalRevenue, totalFees, totalPending, t
             a.click();
             window.URL.revokeObjectURL(url);
         } catch (e: unknown) {
-            alert(e.message);
+            const msg = e instanceof Error ? e.message : 'Export failed';
+            alert(msg);
         }
     };
 
