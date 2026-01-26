@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import ListingForm from '@/components/ListingForm';
 
-export default async function EditListingPage({ params }: { params: { id: string } }) {
+export default async function EditListingPage({ params }: { params: Promise<{ id: string }> }) {
     // Await params as required in Next.js 15+ (if using that, but here params is usually accessible directly in page components in 14. In 15 it's async props, but let's assume valid access for now or await if needed)
     // Actually, in standard NextJS data fetching inside component:
 

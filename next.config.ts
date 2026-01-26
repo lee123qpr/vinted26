@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '50mb',
     },
   },
+  serverExternalPackages: [
+    '@react-email/components',
+    '@react-email/render',
+  ],
 };
 
 export default nextConfig;
