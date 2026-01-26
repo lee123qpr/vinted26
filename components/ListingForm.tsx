@@ -328,6 +328,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
 
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     const handleSubmit = async () => {
         try {
@@ -344,18 +345,32 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
             // }
 
             // Validation
-            if (!formData.categoryId) throw new Error("Please select a category");
-            // Validation
-            if (!formData.categoryId) throw new Error("Please select a category");
-            if (!formData.title || formData.title.length < 5) throw new Error("Title must be at least 5 characters long");
-            if (!formData.description) throw new Error("Description is required");
-            if (!formData.description) throw new Error("Description is required");
-            if (!formData.isFree && !formData.price) throw new Error("Price is required (or list as Free)");
-            if (!formData.condition) throw new Error("Condition is required");
+            const errors: Record<string, string> = {};
+            if (!formData.categoryId) errors.categoryId = "Please select a category";
+            if (!formData.title || formData.title.length < 5) errors.title = "Title must be at least 5 characters long";
+            if (!formData.description) errors.description = "Description is required";
+            if (!formData.condition) errors.condition = "Condition is required";
+            if (!formData.isFree && !formData.price) errors.price = "Price is required (or list as Free)";
 
-            // Allow empty postcode in edit mode if coordinates are already set (from DB)
-            if (mode === 'create' && !formData.postcode) throw new Error("Postcode is required");
-            if (mode === 'edit' && !coordinates.lat && !formData.postcode) throw new Error("Postcode/Location is required");
+            if (mode === 'create' && !formData.postcode) errors.postcode = "Postcode is required";
+            if (mode === 'edit' && !coordinates.lat && !formData.postcode) errors.postcode = "Postcode/Location is required";
+
+            if (Object.keys(errors).length > 0) {
+                setValidationErrors(errors);
+                setError("Please fix the errors highlighted below.");
+                setUploading(false);
+
+                // Scroll to the first error
+                const firstErrorField = Object.keys(errors)[0];
+                const element = document.getElementsByName(firstErrorField)[0] || document.getElementById(firstErrorField);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.focus();
+                }
+                return;
+            }
+
+            setValidationErrors({});
 
             // Carbon / Weight Validation - OPTIONAL
             // We do not block listing creation if these are missing.
@@ -511,12 +526,31 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2">
                                     <label className="label text-xs">Title <span className="text-red-500">*</span></label>
-                                    <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="input-field" placeholder="e.g. 50x Red Bricks" maxLength={100} />
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        id="title"
+                                        value={formData.title}
+                                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                        className={`input-field ${validationErrors.title ? 'border-red-500 focus:ring-red-200' : ''}`}
+                                        placeholder="e.g. 50x Red Bricks"
+                                        maxLength={100}
+                                    />
+                                    {validationErrors.title && <p className="text-red-500 text-[10px] mt-1 font-bold">{validationErrors.title}</p>}
                                     <p className="text-[10px] text-secondary-500 mt-1">Minimum 5 characters. Be descriptive!</p>
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="label text-xs">Description <span className="text-red-500">*</span></label>
-                                    <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="input-field h-24 text-sm" placeholder="Describe condition, history..." maxLength={2000} />
+                                    <textarea
+                                        name="description"
+                                        id="description"
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        className={`input-field h-24 text-sm ${validationErrors.description ? 'border-red-500 focus:ring-red-200' : ''}`}
+                                        placeholder="Describe condition, history..."
+                                        maxLength={2000}
+                                    />
+                                    {validationErrors.description && <p className="text-red-500 text-[10px] mt-1 font-bold">{validationErrors.description}</p>}
                                     <p className="text-[10px] text-secondary-500 mt-1">Include details about condition, age, and any defects.</p>
                                 </div>
 
@@ -524,14 +558,17 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                 <div>
                                     <label className="label text-xs">Category <span className="text-red-500">*</span></label>
                                     <select
+                                        name="categoryId"
+                                        id="categoryId"
                                         value={formData.categoryId}
                                         onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
-                                        className="input-field text-sm"
+                                        className={`input-field text-sm ${validationErrors.categoryId ? 'border-red-500 focus:ring-red-200' : ''}`}
                                         disabled={loadingCategories}
                                     >
                                         <option value="">{loadingCategories ? 'Loading...' : 'Select Category...'}</option>
                                         {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                                     </select>
+                                    {validationErrors.categoryId && <p className="text-red-500 text-[10px] mt-1 font-bold">{validationErrors.categoryId}</p>}
                                 </div>
                                 <div>
                                     <label className="label text-xs">Subcategory</label>
@@ -571,10 +608,17 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                 </div>
                                 <div>
                                     <label className="label text-xs">Condition <span className="text-red-500">*</span></label>
-                                    <select value={formData.condition} onChange={e => setFormData({ ...formData, condition: e.target.value })} className="input-field text-sm">
+                                    <select
+                                        name="condition"
+                                        id="condition"
+                                        value={formData.condition}
+                                        onChange={e => setFormData({ ...formData, condition: e.target.value })}
+                                        className={`input-field text-sm ${validationErrors.condition ? 'border-red-500 focus:ring-red-200' : ''}`}
+                                    >
                                         <option value="">Select...</option>
                                         {conditions.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                                     </select>
+                                    {validationErrors.condition && <p className="text-red-500 text-[10px] mt-1 font-bold">{validationErrors.condition}</p>}
                                 </div>
                             </div>
                         </div>
@@ -633,6 +677,8 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                     <span className={`absolute left-3 top-1/2 -translate-y-1/2 font-bold ${formData.isFree ? 'text-secondary-300' : 'text-primary-800'}`}>£</span>
                                     <input
                                         type="text"
+                                        name="price"
+                                        id="price"
                                         inputMode="decimal"
                                         value={formData.price}
                                         disabled={formData.isFree}
@@ -654,9 +700,10 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                                 }));
                                             }
                                         }}
-                                        className={`input-field text-lg pl-7 font-bold ${formData.isFree ? 'bg-secondary-100 text-secondary-400' : 'text-primary-900 border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'}`}
+                                        className={`input-field text-lg pl-7 font-bold ${formData.isFree ? 'bg-secondary-100 text-secondary-400' : 'text-primary-900 border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'} ${validationErrors.price ? 'border-red-500 ring-2 ring-red-100' : ''}`}
                                         placeholder="0.00"
                                     />
+                                    {validationErrors.price && <p className="text-red-500 text-[10px] mt-1 font-bold">{validationErrors.price}</p>}
                                 </div>
                             </div>
                         </div>
@@ -776,12 +823,15 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                 <label className="label text-xs">Location Postcode <span className="text-red-500">*</span></label>
                                 <input
                                     type="text"
+                                    name="postcode"
+                                    id="postcode"
                                     value={formData.postcode}
                                     onChange={e => setFormData({ ...formData, postcode: e.target.value.toUpperCase() })}
                                     onBlur={(e) => handlePostcodeBlur(e.target.value)}
-                                    className={`input-field text-sm pr-10 ${locationVerified ? 'border-green-500 focus:ring-green-500' : ''}`}
+                                    className={`input-field text-sm pr-10 ${locationVerified ? 'border-green-500 focus:ring-green-500' : ''} ${validationErrors.postcode ? 'border-red-500 focus:ring-red-200' : ''}`}
                                     placeholder={mode === 'edit' && !formData.postcode ? 'Confirmed (Change to update)' : 'SW1A 1AA'}
                                 />
+                                {validationErrors.postcode && <p className="text-red-500 text-[10px] mt-1 font-bold">{validationErrors.postcode}</p>}
                                 <div className="absolute right-3 top-7 pointer-events-none">
                                     {isLocating && <div className="animate-spin h-4 w-4 border-2 border-primary-500 border-t-transparent rounded-full"></div>}
                                     {locationVerified && !isLocating && <span className="text-green-500 font-bold">✓</span>}
