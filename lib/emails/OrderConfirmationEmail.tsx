@@ -65,7 +65,7 @@ export default function OrderConfirmationEmail({
             <Section className="text-center">
                 <Button
                     className="bg-secondary-900 rounded-lg text-white text-base font-semibold px-8 py-3.5 block w-full hover:bg-black"
-                    href={`https://skipped.co.uk/dashboard/purchases`}
+                    href={`https://www.skipped-uk.com/dashboard/purchases`}
                 >
                     View Order Details
                 </Button>

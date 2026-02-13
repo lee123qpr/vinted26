@@ -14,7 +14,7 @@ export default function PrivacyPage() {
                 <h2>2. Data Controller</h2>
                 <p>Skipped Ltd is the data controller responsible for your personal data. <br />
                     Registered Address: [Your Registered Business Address] <br />
-                    Contact Email: <a href="mailto:privacy@skipped.co.uk">privacy@skipped.co.uk</a></p>
+                    Contact Email: <a href="mailto:privacy@skipped-uk.com">privacy@skipped-uk.com</a></p>
 
                 <h2>3. Information We Collect</h2>
                 <p>We may collect and process the following data about you:</p>
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
                     <li>Request transfer of your personal data.</li>
                     <li>Withdraw consent at any time where we are relying on consent to process your personal data.</li>
                 </ul>
-                <p>If you wish to exercise any of the rights set out above, please contact us at <a href="mailto:privacy@skipped.co.uk">privacy@skipped.co.uk</a>.</p>
+                <p>If you wish to exercise any of the rights set out above, please contact us at <a href="mailto:privacy@skipped-uk.com">privacy@skipped-uk.com</a>.</p>
 
                 <h2>8. Cookies</h2>
                 <p>You can set your browser to refuse all or some browser cookies, or to alert you when websites set or access cookies. For more information about the cookies we use, please see our <Link href="/legal/cookies">Cookie Policy</Link>.</p>

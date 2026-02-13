@@ -48,7 +48,7 @@ export default function AdminWarningEmail({
             <Section className="text-center">
                 <Button
                     className="bg-white border-2 border-red-600 text-red-600 rounded-lg text-base font-bold px-8 py-3 block w-full hover:bg-red-50"
-                    href="https://skipped.co.uk/terms"
+                    href="https://www.skipped-uk.com/terms"
                 >
                     Review Terms of Service
                 </Button>

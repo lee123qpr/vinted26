@@ -43,8 +43,8 @@ async function seedDispute() {
 
     // 1. Ensure we have users
     console.log('   Ensuring test users exist...');
-    const buyer = await createTestUser('buyer_test@skipped.co.uk', 'password123', 'TestBuyer');
-    const seller = await createTestUser('seller_test@skipped.co.uk', 'password123', 'TestSeller');
+    const buyer = await createTestUser('buyer_test@skipped-uk.com', 'password123', 'TestBuyer');
+    const seller = await createTestUser('seller_test@skipped-uk.com', 'password123', 'TestSeller');
 
     if (!buyer || !seller) {
         console.error('❌ Could not get/create buyer or seller users.');

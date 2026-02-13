@@ -63,7 +63,7 @@ export default function NewListingsEmail({
                             </Text>
                             <Button
                                 className="text-xs font-semibold text-secondary-500 bg-secondary-100 px-3 py-1.5 rounded hover:bg-secondary-200 no-underline"
-                                href={`https://skipped.co.uk/listing/${item.id}`}
+                                href={`https://www.skipped-uk.com/listing/${item.id}`}
                             >
                                 View Details
                             </Button>
@@ -75,7 +75,7 @@ export default function NewListingsEmail({
             <Section className="text-center">
                 <Button
                     className="bg-secondary-900 rounded-lg text-white text-base font-semibold px-8 py-3.5 block w-full hover:bg-black"
-                    href="https://skipped.co.uk/search"
+                    href="https://www.skipped-uk.com/search"
                 >
                     Browse All New Items
                 </Button>

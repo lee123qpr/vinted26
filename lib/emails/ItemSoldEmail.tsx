@@ -47,7 +47,7 @@ export default function ItemSoldEmail({
             <Section className="text-center mt-[32px]">
                 <Button
                     className="bg-primary-600 rounded text-white text-[16px] font-semibold no-underline text-center px-6 py-3 block w-full max-w-[200px] mx-auto"
-                    href="https://skipped.co.uk/dashboard/sales"
+                    href="https://www.skipped-uk.com/dashboard/sales"
                 >
                     View Order
                 </Button>

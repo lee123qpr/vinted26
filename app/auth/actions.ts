@@ -131,7 +131,7 @@ export async function forgotPassword(formData: FormData) {
 
     const email = formData.get('email') as string;
     const token = formData.get('turnstileToken') as string;
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.skipped-uk.com';
 
     if (!token) {
         return { error: 'Please verify you are human.' };

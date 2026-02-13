@@ -34,14 +34,14 @@ export default function WelcomeEmail({ username = 'Builder' }: WelcomeEmailProps
             <Section className="text-center mb-8">
                 <Button
                     className="bg-primary-600 rounded-lg text-white text-[16px] font-semibold no-underline text-center px-8 py-3.5 block w-full shadow-sm hover:bg-primary-700"
-                    href="https://skipped.co.uk/sell"
+                    href="https://www.skipped-uk.com/sell"
                 >
                     List Your First Item
                 </Button>
             </Section>
 
             <Text className="text-secondary-500 text-[14px] leading-[24px] text-center">
-                Looking to buy instead? <a href="https://skipped.co.uk/search" className="text-primary-600 font-medium hover:underline">Browse listings near you</a>.
+                Looking to buy instead? <a href="https://www.skipped-uk.com/search" className="text-primary-600 font-medium hover:underline">Browse listings near you</a>.
             </Text>
         </EmailLayout>
     );

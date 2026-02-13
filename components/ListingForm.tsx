@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ImageDropzone from './ImageDropzone';
 import { supabase } from '@/lib/supabase/client';
 import { Category, SubCategory, SubSubCategory } from '@/types';
 import { getCategories, getSubcategories, getSubSubcategories, getMaterials } from '@/app/actions/taxonomy';
@@ -314,17 +315,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
     }, [formData.dimensionsLength, formData.dimensionsWidth, formData.dimensionsHeight, formData.quantity, formData.weight, formData.subcategoryId, selectedMaterialId, subcategories, materials]);
 
 
-    // --- Handlers ---
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newImages = Array.from(e.target.files);
-            setImageFiles(prev => [...prev, ...newImages].slice(0, 8));
-        }
-    };
 
-    const removeImage = (index: number) => {
-        setImageFiles(prev => prev.filter((_, i) => i !== index));
-    };
 
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -521,26 +512,16 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                         {/* 1. Photos */}
                         <div className="bg-white rounded-xl shadow-sm p-6">
                             <h2 className="text-lg font-semibold mb-3">Photos</h2>
-                            <div className="flex flex-wrap gap-3">
-                                {imageFiles.map((img, index) => (
-                                    <div key={index} className="relative w-24 h-24 bg-secondary-100 rounded-lg overflow-hidden border border-secondary-200">
-                                        <img
-                                            src={typeof img === 'string' ? img : URL.createObjectURL(img)}
-                                            alt="Preview"
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <button onClick={() => removeImage(index)} className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 text-xs">×</button>
-                                    </div>
-                                ))}
-                                {imageFiles.length < 8 && (
-                                    <label className="w-24 h-24 border-2 border-dashed border-secondary-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 bg-secondary-50 text-secondary-500 hover:text-primary-600 transition-colors">
-                                        <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                                        <span className="text-xs font-medium">Add Photo</span>
-                                        <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
-                                    </label>
-                                )}
-                            </div>
-                            <p className="text-xs text-secondary-500 mt-2">First photo is cover. Max 8 photos. Supports JPG, PNG.</p>
+
+                            {/* Dropzone Area */}
+                            <ImageDropzone
+                                images={imageFiles}
+                                onImagesChange={setImageFiles}
+                            />
+
+                            <p className="text-xs text-secondary-500 mt-2">
+                                First photo is the cover. Max 8 photos. Auto-optimized.
+                            </p>
                         </div>
 
                         {/* 2. Details */}

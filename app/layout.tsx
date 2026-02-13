@@ -17,11 +17,11 @@ export const metadata: Metadata = {
     default: 'Skipped - Construction Materials Marketplace'
   },
   description: "Buy and sell surplus construction materials. Save money, reduce waste, and track your environmental impact.",
-  metadataBase: new URL('https://skipped.co.uk'), // Replace with actual domain
+  metadataBase: new URL('https://www.skipped-uk.com'),
   openGraph: {
     title: 'Skipped - Construction Materials Marketplace',
     description: 'Buy and sell surplus construction materials. Save money, reduce waste, and track your environmental impact.',
-    url: 'https://skipped.co.uk',
+    url: 'https://www.skipped-uk.com',
     siteName: 'Skipped',
     locale: 'en_GB',
     type: 'website',

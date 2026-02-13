@@ -52,6 +52,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             await page.waitForURL(/.*dashboard.*/);
@@ -171,6 +172,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
             await page.waitForURL(/.*dashboard.*/);
         });
@@ -224,6 +226,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
             await page.waitForURL(/.*dashboard.*/);
         });
@@ -276,6 +279,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             // Go to orders/purchases
@@ -303,6 +307,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             await page.goto('http://localhost:3000/dashboard');
@@ -324,6 +329,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             // Go to profile
@@ -344,6 +350,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             await page.goto('http://localhost:3000/settings');
@@ -366,6 +373,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             await page.goto('http://localhost:3000/dashboard');
@@ -379,6 +387,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             await page.goto('http://localhost:3000/dashboard');
@@ -394,6 +403,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             await page.goto('http://localhost:3000/dashboard');
@@ -423,6 +433,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             await page.goto('http://localhost:3000/category/clothing');
@@ -438,6 +449,7 @@ test.describe('Complete App E2E Tests - All Features', () => {
             await page.goto('http://localhost:3000/auth/login');
             await page.fill('input[name="email"]', buyerEmail);
             await page.fill('input[name="password"]', buyerPassword);
+
             await page.click('button[type="submit"]');
 
             await page.goto('http://localhost:3000/favorites');

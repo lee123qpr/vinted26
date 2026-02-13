@@ -18,7 +18,7 @@ interface EmailLayoutProps {
     children: React.ReactNode;
 }
 
-export const baseUrl = 'https://skipped.co.uk';
+export const baseUrl = 'https://www.skipped-uk.com';
 
 export default function EmailLayout({ preview, children }: EmailLayoutProps) {
     return (
@@ -60,7 +60,7 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
                         {/* Header: Logo centered on white */}
                         <Section className="py-6 px-6 text-center border-b border-secondary-100">
                             <Img
-                                src={`https://skipped.co.uk/logo.png`}
+                                src={`https://www.skipped-uk.com/logo.png`}
                                 width="48"
                                 height="48"
                                 alt="Skipped Logo"
@@ -80,10 +80,10 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
                         <Section className="bg-secondary-50 py-6 px-8 border-t border-secondary-100">
                             <div className="text-center mb-4">
                                 <Link href="https://instagram.com/skipped_uk" className="inline-block mx-2">
-                                    <Img src="https://skipped.co.uk/icons/instagram.png" alt="Instagram" width="20" height="20" className="opacity-60 hover:opacity-100" />
+                                    <Img src="https://www.skipped-uk.com/icons/instagram.png" alt="Instagram" width="20" height="20" className="opacity-60 hover:opacity-100" />
                                 </Link>
                                 <Link href="https://twitter.com/skipped_uk" className="inline-block mx-2">
-                                    <Img src="https://skipped.co.uk/icons/twitter.png" alt="Twitter" width="20" height="20" className="opacity-60 hover:opacity-100" />
+                                    <Img src="https://www.skipped-uk.com/icons/twitter.png" alt="Twitter" width="20" height="20" className="opacity-60 hover:opacity-100" />
                                 </Link>
                             </div>
 
@@ -94,14 +94,14 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
 
                             <div className="text-center">
                                 <Link
-                                    href="https://skipped.co.uk/settings/notifications"
+                                    href="https://www.skipped-uk.com/settings/notifications"
                                     className="text-secondary-400 text-xs underline hover:text-secondary-600"
                                 >
                                     Unsubscribe
                                 </Link>
                                 <span className="text-secondary-300 mx-2">|</span>
                                 <Link
-                                    href="https://skipped.co.uk/privacy"
+                                    href="https://www.skipped-uk.com/privacy"
                                     className="text-secondary-400 text-xs underline hover:text-secondary-600"
                                 >
                                     Privacy Policy

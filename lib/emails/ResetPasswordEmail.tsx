@@ -11,7 +11,7 @@ interface ResetPasswordEmailProps {
     resetLink?: string;
 }
 
-export default function ResetPasswordEmail({ resetLink = 'https://skipped.co.uk/reset-password?token=123' }: ResetPasswordEmailProps) {
+export default function ResetPasswordEmail({ resetLink = 'https://www.skipped-uk.com/reset-password?token=123' }: ResetPasswordEmailProps) {
     return (
         <EmailLayout preview="Reset your Skipped password">
             <Heading className="text-secondary-900 text-[24px] font-bold text-center p-0 my-[30px] mx-0">

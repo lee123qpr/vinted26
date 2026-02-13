@@ -9,7 +9,7 @@ export default function TermsPage() {
                 <p>Last updated: {new Date().toLocaleDateString('en-GB')}</p>
 
                 <h2>1. Introduction</h2>
-                <p>Welcome to Skipped. By using our website (www.skipped.co.uk) and services, you agree to comply with and be bound by the following terms and conditions of use, which together with our <Link href="/legal/privacy">Privacy Policy</Link> and <Link href="/legal/cookies">Cookie Policy</Link> govern Skipped Ltd's relationship with you in relation to this website.</p>
+                <p>Welcome to Skipped. By using our website (www.skipped-uk.com) and services, you agree to comply with and be bound by the following terms and conditions of use, which together with our <Link href="/legal/privacy">Privacy Policy</Link> and <Link href="/legal/cookies">Cookie Policy</Link> govern Skipped Ltd's relationship with you in relation to this website.</p>
 
                 <h2>2. Marketplace Nature</h2>
                 <p>Skipped is a platform that connects buyers and sellers of construction materials. We are not a party to any transaction between buyers and sellers, nor do we take possession of any items listed. We do not transfer legal ownership of items from the seller to the buyer.</p>
@@ -38,7 +38,7 @@ export default function TermsPage() {
                 <p>These terms and conditions are governed by and construed in accordance with the laws of England and Wales. Any disputes relating to these terms shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
 
                 <h2>10. Contact Us</h2>
-                <p>For any questions regarding these Terms, please contact us at <a href="mailto:support@skipped.co.uk">support@skipped.co.uk</a>.</p>
+                <p>For any questions regarding these Terms, please contact us at <a href="mailto:support@skipped-uk.com">support@skipped-uk.com</a>.</p>
             </div>
             <div className="mt-8">
                 <Link href="/" className="btn-primary">Return Home</Link>

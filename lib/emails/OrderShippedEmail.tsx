@@ -50,7 +50,7 @@ export default function OrderShippedEmail({
             <Section className="text-center">
                 <Button
                     className="bg-primary-600 rounded-lg text-white text-base font-semibold px-8 py-3.5 block w-full hover:bg-primary-700"
-                    href="https://skipped.co.uk/dashboard/purchases"
+                    href="https://www.skipped-uk.com/dashboard/purchases"
                 >
                     Track Status
                 </Button>

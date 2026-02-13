@@ -29,7 +29,7 @@ export default function CookiesPage() {
                 <p>When you first visit our site, you will see a cookie banner allowing you to accept or decline non-essential cookies. You can change your preferences at any time by clearing your browser cookies for this domain, which will re-trigger the consent banner.</p>
 
                 <h2>4. Contact</h2>
-                <p>If you have any questions about our use of cookies, please email us at <a href="mailto:privacy@skipped.co.uk">privacy@skipped.co.uk</a>.</p>
+                <p>If you have any questions about our use of cookies, please email us at <a href="mailto:privacy@skipped-uk.com">privacy@skipped-uk.com</a>.</p>
             </div>
             <div className="mt-8">
                 <Link href="/" className="btn-primary">Return Home</Link>
