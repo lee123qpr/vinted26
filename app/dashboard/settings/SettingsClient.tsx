@@ -202,57 +202,6 @@ export default function SettingsClient({ user, initialProfile }: Props) {
                             </div>
                         </div>
 
-                        {/* Payments Section */}
-                        <div className="pt-6 border-t border-secondary-100">
-                            <div className="border-b border-secondary-100 pb-2 mb-4">
-                                <h2 className="text-xl font-bold text-secondary-900 flex items-center gap-2">
-                                    <span className="text-xl">💳</span>
-                                    Seller Payouts
-                                </h2>
-                                <p className="text-sm text-secondary-500">Connect your bank account to receive funds from sales.</p>
-                            </div>
-
-                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center">
-                                <div>
-                                    <h3 className="font-semibold text-secondary-900">Stripe Connect</h3>
-                                    <p className="text-sm text-secondary-500">Secure payments and payouts via Stripe.</p>
-                                    {initialProfile?.stripe_charges_enabled && (
-                                        <p className="text-xs text-green-600 font-bold mt-1">✅ Payouts Active</p>
-                                    )}
-                                </div>
-
-                                {initialProfile?.stripe_charges_enabled ? (
-                                    <button
-                                        type="button"
-                                        disabled
-                                        className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold cursor-default"
-                                    >
-                                        Connected
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={async () => {
-                                            try {
-                                                setSaving(true);
-                                                const res = await fetch('/api/stripe/connect', { method: 'POST' });
-                                                const data = await res.json();
-                                                if (data.url) window.location.href = data.url;
-                                                else throw new Error(data.error);
-                                            } catch (err: unknown) {
-                                                const msg = err instanceof Error ? err.message : 'Connect failed';
-                                                alert('Connect failed: ' + msg);
-                                                setSaving(false);
-                                            }
-                                        }}
-                                        disabled={saving}
-                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50"
-                                    >
-                                        {saving ? 'Connecting...' : 'Connect Bank'}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
                     </div>
 
                     {/* Message Area */}
@@ -279,6 +228,58 @@ export default function SettingsClient({ user, initialProfile }: Props) {
                         </button>
                     </div>
                 </form>
+
+                {/* Payments Section */}
+                <div className="pt-10 mb-12">
+                    <div className="border-b border-secondary-100 pb-2 mb-4">
+                        <h2 className="text-xl font-bold text-secondary-900 flex items-center gap-2">
+                            <span className="text-xl">💳</span>
+                            Seller Payouts
+                        </h2>
+                        <p className="text-sm text-secondary-500">Connect your bank account to receive funds from sales.</p>
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                            <h3 className="font-semibold text-secondary-900">Stripe Connect</h3>
+                            <p className="text-sm text-secondary-500">Secure payments and payouts via Stripe.</p>
+                            {initialProfile?.stripe_charges_enabled && (
+                                <p className="text-xs text-green-600 font-bold mt-1">✅ Payouts Active</p>
+                            )}
+                        </div>
+
+                        {initialProfile?.stripe_charges_enabled ? (
+                            <button
+                                type="button"
+                                disabled
+                                className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold cursor-default"
+                            >
+                                Connected
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    try {
+                                        setSaving(true);
+                                        const res = await fetch('/api/stripe/connect', { method: 'POST' });
+                                        const data = await res.json();
+                                        if (data.url) window.location.href = data.url;
+                                        else throw new Error(data.error);
+                                    } catch (err: unknown) {
+                                        const msg = err instanceof Error ? err.message : 'Connect failed';
+                                        alert('Connect failed: ' + msg);
+                                        setSaving(false);
+                                    }
+                                }}
+                                disabled={saving}
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50"
+                            >
+                                {saving ? 'Connecting...' : 'Connect Bank'}
+                            </button>
+                        )}
+                    </div>
+                </div>
 
                 {/* Danger Zone */}
                 <div className="border border-red-200 rounded-xl overflow-hidden mt-12">

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import SignOutButton from '@/components/SignOutButton';
 
 interface DashboardSidebarProps {
@@ -11,6 +12,7 @@ interface DashboardSidebarProps {
         username: string | null;
         full_name: string | null;
         avatar_url: string | null;
+        stripe_charges_enabled: boolean | null;
     } | null;
     displayInitial: string;
     displayName: string;
@@ -18,6 +20,11 @@ interface DashboardSidebarProps {
 
 export default function DashboardSidebar({ profile, displayInitial, displayName }: DashboardSidebarProps) {
     const pathname = usePathname();
+
+    useEffect(() => {
+        // Force scroll to top when navigating within the dashboard or arriving from auth
+        window.scrollTo(0, 0);
+    }, [pathname]);
 
     const isActive = (path: string) => pathname === path;
 
@@ -29,6 +36,23 @@ export default function DashboardSidebar({ profile, displayInitial, displayName 
 
     return (
         <aside className="w-full md:w-64 flex-shrink-0">
+            {profile && !profile.stripe_charges_enabled && (
+                <div className="bg-amber-50 border border-amber-200 shadow-sm rounded-xl p-4 mb-6">
+                    <div className="flex items-start gap-3">
+                        <div className="text-amber-500 mt-0.5">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-amber-800">Action Required</h3>
+                            <p className="text-xs text-amber-700 mt-1 mb-3">You must connect your bank to receive payouts for your sales.</p>
+                            <Link href="/dashboard/settings" className="inline-block text-xs font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-3 py-1.5 rounded transition">
+                                Connect Now
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="bg-white rounded-xl shadow-sm p-4 sticky top-24">
                 <div className="flex items-center space-x-3 mb-6 p-2">
                     <Link href={profile?.id ? `/profile/${profile.id}` : '#'} className="block relative group">

@@ -14,7 +14,7 @@ export async function updateOrderStatus(orderId: string, newStatus: 'shipped' | 
     const adminSupabase = await createAdminClient();
     const { data: order, error: fetchError } = await adminSupabase
         .from('transactions')
-        .select('*')
+        .select('*, listings:listings!listing_id(title)')
         .eq('id', orderId)
         .single();
 
@@ -109,6 +109,9 @@ export async function updateOrderStatus(orderId: string, newStatus: 'shipped' | 
                     });
                     console.log(`Payout Success: ${transfer.id} sent to ${sellerProfile.stripe_account_id}`);
                     updateData.payout_id = transfer.id;
+                    updateData.payment_status = 'released'; // Release escrow immediately
+                } else {
+                     updateData.payment_status = 'released'; // Nothing to payout, but consider it fully released
                 }
             } catch (stripeError: unknown) {
                 console.error('Payout Failed:', stripeError);
@@ -116,11 +119,18 @@ export async function updateOrderStatus(orderId: string, newStatus: 'shipped' | 
                 // Admin can retry payout manually if needed.
                 const errorMsg = stripeError instanceof Error ? stripeError.message : 'Unknown payout error';
                 updateData.payout_error = errorMsg;
+                // If the stripe transfer fails, keep it in escrow so we don't lose track of the money
+                updateData.payment_status = 'held_in_escrow';
             }
+        } else {
+            console.log(`Order ${orderId} completed but Seller ${order.seller_id} is not fully connected to Stripe. Funds held in escrow.`);
+             // Do not process payout. Leave payment_status as 'held_in_escrow'.
+             // Note: It defaulted to 'held_in_escrow' when the buyer paid. We just don't change it here.
+             // We do want to make sure it definitely stays in escrow.
+             updateData.payment_status = 'held_in_escrow';
         }
 
-        // Finalize transaction
-        updateData.payment_status = 'released'; // Release escrow
+        // Finalize transaction timestamps
         updateData.completed_at = new Date().toISOString();
         updateData.delivered_at = new Date().toISOString();
     }
@@ -316,4 +326,97 @@ export async function createDispute(transactionId: string, reason: string, descr
     revalidatePath('/dashboard/orders');
     revalidatePath('/dashboard/sales'); // Seller needs to see it's disputed
     return { success: true };
+}
+
+/**
+ * Searches for completed orders where funds are still held in escrow for a given seller,
+ * and attempts to process payouts for them. This is intended to be called right after
+ * a seller finishes their Stripe Connect onboarding.
+ */
+export async function processPendingPayouts(sellerId: string) {
+    const adminSupabase = await createAdminClient();
+
+    // Find all completed orders belonging to this seller where payment is still held in escrow
+    const { data: pendingOrders, error: fetchError } = await adminSupabase
+        .from('transactions')
+        .select('*')
+        .eq('seller_id', sellerId)
+        .eq('order_status', 'completed')
+        .eq('payment_status', 'held_in_escrow');
+
+    if (fetchError) {
+        console.error('Failed to fetch pending payouts for seller:', sellerId, fetchError);
+        return { error: 'Failed to fetch pending payouts' };
+    }
+
+    if (!pendingOrders || pendingOrders.length === 0) {
+        console.log(`No pending payouts found for newly connected seller: ${sellerId}`);
+        return { success: true, count: 0 };
+    }
+
+    console.log(`Found ${pendingOrders.length} pending payouts for seller ${sellerId}. Processing now...`);
+
+    let processedCount = 0;
+    const errors = [];
+    
+    // 1. Double check the seller is actually ready
+    const { data: sellerProfile } = await adminSupabase
+        .from('profiles')
+        .select('stripe_account_id, stripe_charges_enabled')
+        .eq('id', sellerId)
+        .single();
+
+    if (!sellerProfile?.stripe_account_id || !sellerProfile?.stripe_charges_enabled) {
+        return { error: 'Seller is still not fully connected to Stripe' };
+    }
+
+    const { stripe } = await import('@/lib/stripe');
+
+    for (const order of pendingOrders) {
+        try {
+            let payoutAmount = order.total_price_gbp - (order.platform_fee_gbp || 0);
+            const payoutAmountPence = Math.round(payoutAmount * 100);
+
+            if (payoutAmountPence > 0) {
+                const transfer = await stripe.transfers.create({
+                    amount: payoutAmountPence,
+                    currency: 'gbp',
+                    destination: sellerProfile.stripe_account_id,
+                    transfer_group: order.id,
+                    description: `Delayed Payout for Order #${order.id.slice(0, 8)}`
+                });
+
+                console.log(`Delayed Payout Success: ${transfer.id} sent to ${sellerProfile.stripe_account_id} for order ${order.id}`);
+                
+                // Update DB to released
+                await adminSupabase
+                    .from('transactions')
+                    .update({ 
+                        payout_id: transfer.id,
+                        payment_status: 'released',
+                        payout_error: null 
+                    })
+                    .eq('id', order.id);
+            } else {
+                 await adminSupabase
+                    .from('transactions')
+                    .update({ payment_status: 'released' })
+                    .eq('id', order.id);
+            }
+            processedCount++;
+        } catch (err: any) {
+             console.error(`Failed to process delayed payout for order ${order.id}:`, err);
+             errors.push(`Order ${order.id}: ${err.message}`);
+             await adminSupabase
+                .from('transactions')
+                .update({ payout_error: err.message })
+                .eq('id', order.id);
+        }
+    }
+
+    return { 
+        success: true, 
+        count: processedCount, 
+        errors: errors.length > 0 ? errors : undefined 
+    };
 }

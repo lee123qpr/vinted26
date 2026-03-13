@@ -210,8 +210,8 @@ export default function NotificationBell({ userId }: { userId: string }) {
                         )}
                     </div>
                     <div className="p-2 border-t border-secondary-100 text-center bg-secondary-50/30">
-                        <Link href="/dashboard/offers/received" onClick={() => setIsOpen(false)} className="text-xs font-semibold text-primary-600 hover:text-primary-700">
-                            View all offers
+                        <Link href="/dashboard" onClick={() => setIsOpen(false)} className="text-xs font-semibold text-primary-600 hover:text-primary-700">
+                            View Dashboard
                         </Link>
                     </div>
                 </div>

@@ -18,7 +18,7 @@ export default async function DashboardLayout({
     let profile = null;
     const { data } = await supabase
         .from('profiles')
-        .select('id, username, full_name, avatar_url')
+        .select('id, username, full_name, avatar_url, stripe_charges_enabled')
         .eq('id', user.id)
         .single();
 
