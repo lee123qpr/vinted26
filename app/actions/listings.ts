@@ -45,7 +45,7 @@ export async function createListing(formData: FormData) {
             listing_material_id: data.materialId || null,
 
             // Dimensions & Weight
-            weight_kg: data.weight,
+            weight_kg: data.weight || data.calculatedWeight,
             dimensions_length_mm: data.dimensionsLength,
             dimensions_width_mm: data.dimensionsWidth,
             dimensions_height_mm: data.dimensionsHeight,
@@ -207,7 +207,7 @@ export async function updateListing(listingId: string, formData: FormData) {
             listing_material_id: data.materialId || null,
 
             // Dimensions & Weight
-            weight_kg: data.weight,
+            weight_kg: data.weight || data.calculatedWeight,
             dimensions_length_mm: data.dimensionsLength,
             dimensions_width_mm: data.dimensionsWidth,
             dimensions_height_mm: data.dimensionsHeight,

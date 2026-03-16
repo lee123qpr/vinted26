@@ -188,10 +188,10 @@ export default function ListingClient({ listing, user }: { listing: any, user: a
                                             <span className="font-medium">{listing.dimensions_length_mm} x {listing.dimensions_width_mm} x {listing.dimensions_height_mm} mm</span>
                                         </div>
                                     )}
-                                    {listing.weight_kg && (
+                                    {(listing.weight_kg || listing.calculated_weight_kg) && (
                                         <div>
                                             <span className="text-secondary-500 block">Weight</span>
-                                            <span className="font-medium">{listing.weight_kg?.toFixed(2)}kg</span>
+                                            <span className="font-medium">{(listing.weight_kg || listing.calculated_weight_kg)?.toFixed(2)}kg</span>
                                         </div>
                                     )}
                                     <div>
@@ -217,7 +217,7 @@ export default function ListingClient({ listing, user }: { listing: any, user: a
                                     <div>
                                         <h4 className="font-semibold text-green-900">Carbon Certificate Included</h4>
                                         <p className="text-sm text-green-800 mt-1">
-                                            Buying this item prevents <span className="font-bold">{listing.carbon_saved_kg?.toFixed(2)}kg</span> of CO₂ emissions and diverts <span className="font-bold">{listing.weight_kg?.toFixed(2)}kg</span> from landfill. You will receive a verified certificate with your purchase.
+                                            Buying this item prevents <span className="font-bold">{listing.carbon_saved_kg?.toFixed(2)}kg</span> of CO₂ emissions and diverts <span className="font-bold">{(listing.weight_kg || listing.calculated_weight_kg)?.toFixed(2)}kg</span> from landfill. You will receive a verified certificate with your purchase.
                                         </p>
                                     </div>
                                 </div>
