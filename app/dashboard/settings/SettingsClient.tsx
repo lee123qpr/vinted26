@@ -11,7 +11,8 @@ interface Props {
 }
 
 export default function SettingsClient({ user, initialProfile }: Props) {
-    const [saving, setSaving] = useState(false);
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [connectingStripe, setConnectingStripe] = useState(false);
 
     // Form State
     const [username, setUsername] = useState(initialProfile?.username || '');
@@ -55,7 +56,7 @@ export default function SettingsClient({ user, initialProfile }: Props) {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        setSaving(true);
+        setSavingProfile(true);
         setMessage(null);
 
         try {
@@ -84,7 +85,7 @@ export default function SettingsClient({ user, initialProfile }: Props) {
             console.error('Error updating profile:', err);
             setMessage({ type: 'error', text: 'Failed to update profile.' });
         } finally {
-            setSaving(false);
+            setSavingProfile(false);
         }
     };
 
@@ -221,10 +222,10 @@ export default function SettingsClient({ user, initialProfile }: Props) {
                     <div className="flex justify-end pt-4 border-t border-secondary-100 mb-12">
                         <button
                             type="submit"
-                            disabled={saving}
-                            className={`btn-primary px-8 ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            disabled={savingProfile}
+                            className={`btn-primary px-8 ${savingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            {saving ? 'Saving...' : 'Save Changes'}
+                            {savingProfile ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>
                 </form>
@@ -261,7 +262,7 @@ export default function SettingsClient({ user, initialProfile }: Props) {
                                 type="button"
                                 onClick={async () => {
                                     try {
-                                        setSaving(true);
+                                        setConnectingStripe(true);
                                         const res = await fetch('/api/stripe/connect', { method: 'POST' });
                                         const data = await res.json();
                                         if (data.url) window.location.href = data.url;
@@ -269,13 +270,13 @@ export default function SettingsClient({ user, initialProfile }: Props) {
                                     } catch (err: unknown) {
                                         const msg = err instanceof Error ? err.message : 'Connect failed';
                                         alert('Connect failed: ' + msg);
-                                        setSaving(false);
+                                        setConnectingStripe(false);
                                     }
                                 }}
-                                disabled={saving}
+                                disabled={connectingStripe}
                                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50"
                             >
-                                {saving ? 'Connecting...' : 'Connect Bank'}
+                                {connectingStripe ? 'Connecting...' : 'Connect Bank'}
                             </button>
                         )}
                     </div>
