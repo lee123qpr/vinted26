@@ -284,8 +284,8 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 }
             }
 
-            // Calculate Volume (mm -> m)
-            if (formData.dimensionsLength && formData.dimensionsWidth && formData.dimensionsHeight && density) {
+            // Calculate Volume (mm -> m) if valid for this shape
+            if (sub.is_volumetric_calculation_valid !== false && formData.dimensionsLength && formData.dimensionsWidth && formData.dimensionsHeight && density) {
                 const l = parseFloat(formData.dimensionsLength) / 1000;
                 const w = parseFloat(formData.dimensionsWidth) / 1000;
                 const h = parseFloat(formData.dimensionsHeight) / 1000;
@@ -724,7 +724,9 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                             {/* Dynamic Guidance Logic */}
                             {(() => {
                                 const selectedSub = subcategories.find(s => s.id === formData.subcategoryId);
-                                const isManualWeightRequired = selectedSub && !selectedSub.default_density_kg_per_m3 && !selectedSub.is_material_ambiguous;
+                                const isVolumetricInvalid = selectedSub?.is_volumetric_calculation_valid === false;
+                                const isManualWeightRequired = selectedSub && 
+                                    (isVolumetricInvalid || (!selectedSub.default_density_kg_per_m3 && !selectedSub.is_material_ambiguous));
                                 const hasResult = calculatedWeight !== null;
 
                                 return (
@@ -741,7 +743,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                                     {hasResult
                                                         ? "Great! Your listing now includes an environmental impact certificate."
                                                         : isManualWeightRequired
-                                                            ? "We can't guess the weight of this item. Please enter the Weight below to unlock."
+                                                            ? (isVolumetricInvalid ? "Please enter a Manual Weight to unlock (dimensions cannot be used to estimate this item)." : "We can't guess the weight of this item. Please enter the Weight below to unlock.")
                                                             : "Enter Dimensions (or Weight) to unlock."
                                                     }
                                                 </p>

@@ -30,9 +30,18 @@ export async function getSubcategories(categoryId: string) {
     try {
         const supabase = await createClient();
         const { data, error } = await supabase.from('subcategories')
-            .select('*')
+            .select(`
+                id,
+                name,
+                slug,
+                sort_order,
+                default_density_kg_per_m3,
+                embodied_carbon_kg_per_kg,
+                is_material_ambiguous,
+                is_volumetric_calculation_valid
+            `)
             .eq('category_id', categoryId)
-            .order('name');
+            .order('sort_order', { ascending: true });
 
         if (error) throw error;
         return { data, error: null };

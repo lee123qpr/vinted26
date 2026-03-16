@@ -1,0 +1,630 @@
+[
+  {
+    "id": "de59ad6a-38b5-4cca-ba7c-58b5f84ebe7f",
+    "name": "Building Materials",
+    "subcategories": [
+      {
+        "id": "99aefc16-70a5-4ca8-826f-8ef4f6c724df",
+        "name": "Bricks & Blocks",
+        "is_material_ambiguous": false,
+        "default_density_kg_per_m3": 1900,
+        "embodied_carbon_kg_per_kg": 0.24
+      },
+      {
+        "id": "02d884c0-5446-4c1f-bbd2-0642ec0e44f6",
+        "name": "Cement Products",
+        "is_material_ambiguous": false,
+        "default_density_kg_per_m3": 2400,
+        "embodied_carbon_kg_per_kg": 0.12
+      },
+      {
+        "id": "f47df175-8e6e-41d0-947d-0a943195c911",
+        "name": "Insulation",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": null
+      },
+      {
+        "id": "51ddecd3-267d-4a73-9b4f-c4efbf11144e",
+        "name": "Building Aggregates",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.24
+      },
+      {
+        "id": "9b8c63f4-12de-41d1-bdb2-17237aaf0d1f",
+        "name": "Lintels",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.12
+      },
+      {
+        "id": "085ed35f-17dc-43e1-9ca3-5d27542c1c50",
+        "name": "Cladding",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.45
+      },
+      {
+        "id": "97fe4117-527c-4963-91b6-c6cf64fee20d",
+        "name": "Weather & Waterproofing",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "65ab40ef-d298-4071-9834-df47b07bb450",
+        "name": "Floor Levelling Compounds",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "1836968b-0c9c-45ca-b61b-21418fceaa7d",
+        "name": "Building Sealants",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "d7a73025-fd63-46ce-962d-3be5f71cd3d6",
+        "name": "Render",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "67a86a60-c42e-4fa6-8648-6e319fdabfc4",
+        "name": "Builders Metalwork",
+        "is_material_ambiguous": false,
+        "default_density_kg_per_m3": 7850,
+        "embodied_carbon_kg_per_kg": 1.55
+      },
+      {
+        "id": "562dc185-f98b-41e7-8268-1de6bbe4cdb4",
+        "name": "Roofing",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": null
+      }
+    ]
+  },
+  {
+    "id": "9a7b87e3-28de-4761-b8dc-6e6e39d317d7",
+    "name": "Electrical & Lighting",
+    "subcategories": [
+      {
+        "id": "50291c04-b6c9-4236-93ce-c1468f9bf171",
+        "name": "Electrical",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "9371a5ad-7d5f-4dbf-b958-076ae106a9d7",
+        "name": "Lighting",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "25b04c26-72c6-4da5-af37-b364a16e574f",
+        "name": "Ventilation",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "7ff39910-3c00-41e0-80f1-d4aba087dae1",
+    "name": "Fixings & Adhesives",
+    "subcategories": [
+      {
+        "id": "b12dd32d-84fd-416d-aff5-d643f32e53dd",
+        "name": "Screws",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "39e3a53d-1f2a-40b4-bfc2-f148009e8403",
+        "name": "Nails",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "b8c911cf-e7c6-4192-8d7d-12b73d6c281c",
+        "name": "Fixings",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "117dfdf4-0629-4e7b-a506-da012150a4a6",
+        "name": "Adhesives & Tapes",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "43cb95c1-856c-44d8-9691-9924278a2a43",
+    "name": "Flooring & Tiling",
+    "subcategories": [
+      {
+        "id": "0acf0567-a92a-4c3d-bfab-e2ec53c6b05d",
+        "name": "Tiling",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "8edf965d-02cb-44cb-a1a1-b2a98dd7a5db",
+        "name": "Flooring",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "d7c95dac-7001-475a-a6e0-a76c133d4690",
+    "name": "Kitchens & Bathrooms",
+    "subcategories": [
+      {
+        "id": "198bd212-5bed-4ca8-aa00-b19a08c650b6",
+        "name": "Bathrooms",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "8bfe2d1d-f579-4048-aa58-750771bf5ea5",
+        "name": "Kitchens",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "2d76de5f-4d57-47af-9d36-158837b76991",
+        "name": "Self Assembly Kitchens",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "0fd0d3b8-d8d8-452b-a32c-b22b6440bdaa",
+    "name": "Landscaping & Fencing",
+    "subcategories": [
+      {
+        "id": "ce7493ae-9a4e-4cdc-af8a-b0f484bc204a",
+        "name": "Fencing",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "2b87d369-22a4-4794-b6b4-b398610b770f",
+        "name": "Paving",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "cffbe82a-112d-4176-8c73-20cf9db4a37d",
+        "name": "Driveways",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "14450069-0ada-45c0-acae-61f13966dd74",
+        "name": "Sleepers & Wall Boards",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "f3785415-6489-4c80-90dd-6474e16079c1",
+        "name": "Drainage",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "b77cbc5e-b2f3-42b2-aff4-14db025517b4",
+        "name": "Landscaping Fabrics",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "2092d267-096c-484a-a116-2d566edc1dce",
+        "name": "Artificial Grass",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "d6378263-8d22-47a8-afeb-f39e9c0adf42",
+        "name": "Aggregates",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "ff9d1f6e-df7c-4cdb-8704-12a3fc26bb38",
+        "name": "Decking",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.45
+      }
+    ]
+  },
+  {
+    "id": "e976fa84-2233-4b0c-a15a-82cad8625a76",
+    "name": "Metalwork & Fabrication",
+    "subcategories": [
+      {
+        "id": "f573a84c-f58f-4d54-8eed-e053491dbebd",
+        "name": "Bars & Angles",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 1.55
+      },
+      {
+        "id": "84ace59a-7f99-4c2f-8f4e-f1730509388d",
+        "name": "Sheet Metal & Mesh",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 1.55
+      },
+      {
+        "id": "65a0d4be-0d46-4f55-a015-8f4286879140",
+        "name": "Structural Beams",
+        "is_material_ambiguous": false,
+        "default_density_kg_per_m3": 7850,
+        "embodied_carbon_kg_per_kg": 1.55
+      },
+      {
+        "id": "64f13c0b-3ed1-4242-934c-6183e2320120",
+        "name": "Hollow Sections",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 1.55
+      }
+    ]
+  },
+  {
+    "id": "b45d03ab-3758-4afa-9093-dc3397298343",
+    "name": "Miscellaneous",
+    "subcategories": []
+  },
+  {
+    "id": "8d43cd98-73a6-443c-9c05-82ebccfdef5b",
+    "name": "Painting & Decorating",
+    "subcategories": [
+      {
+        "id": "c6f746b9-d62e-457a-b254-bd1110f07e26",
+        "name": "Paint",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "0280a216-151d-4fca-afee-e5e8f086c335",
+        "name": "Decorators Tools",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "aa5f07e0-959f-41ca-8578-861fffea25a4",
+        "name": "Wood Care",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "56e98b44-e32d-412c-999f-0ac8fd7eca6d",
+        "name": "Prep & Fillers",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "9a7d91cf-d8fd-4dcf-8349-0bcec1067c4d",
+    "name": "Plant & Equipment",
+    "subcategories": [
+      {
+        "id": "890c9e0b-0b2b-4b7d-b071-727c1db814eb",
+        "name": "Excavators",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "37636007-c8f9-41f0-8eb9-cb4f8149ee35",
+        "name": "Dumpers",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "70ffd329-fa00-4cac-86e6-17624cc601dd",
+        "name": "Access Equipment",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "1bd02052-350b-4cd6-9c57-b986da3fcada",
+        "name": "Lifting & Handling",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "0e53f5a7-9fa8-4d9a-bccc-c21a0449957c",
+        "name": "Compaction",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "f452cd97-3697-46b3-9c34-04be62364205",
+        "name": "Power Generation",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "92ec044c-d80a-4879-ab55-8239373ff204",
+        "name": "Mixers",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "850c87df-3675-46ce-a7c6-7cc3fa1afb49",
+    "name": "Plumbing & Heating",
+    "subcategories": [
+      {
+        "id": "06157055-adda-4b36-96c5-66de3fba1435",
+        "name": "Heating",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "01d619f8-c2cc-45cd-9170-c94c1ff7eb49",
+        "name": "Pipe & Fittings",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "c1a44239-5f87-470e-8221-eb5eeffe5a1f",
+        "name": "Plumbing Tools",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "3d69f6d6-aced-42ed-a39b-0830a6afc1d0",
+        "name": "Wastes & Traps",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "6fc16a83-7d0b-4d79-b6a6-839a4a0f73e7",
+    "name": "Security & Ironmongery",
+    "subcategories": [
+      {
+        "id": "f6c643ed-e809-4276-9a6a-10203c7c9a7c",
+        "name": "Door Furniture",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "ef2dc1da-4b8a-4d5a-922d-d1569f619f17",
+        "name": "Hardware",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "16391b52-2b93-4e19-ab55-d27cd17578dc",
+        "name": "Security",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "dda80414-0a72-4ff6-8907-04dd1ea4dc59",
+    "name": "Site Setup",
+    "subcategories": [
+      {
+        "id": "850dcc35-a486-4dc2-988b-6524720e2844",
+        "name": "Access & Storage",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "45828cbd-fd23-4913-ba0c-e1a5c1098917",
+        "name": "Site Welfare",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "7f047698-3ca2-4f6d-9caf-947247fbc705",
+        "name": "Waste Management",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "f7bbc5da-ec20-4b1f-ab3f-7d3273f16dc2",
+        "name": "Fuels & Lubricants",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "d64884b5-e6ee-475f-9510-f927ac400ec9",
+        "name": "Site Security",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  },
+  {
+    "id": "bda033ea-afd5-411b-be18-c0d3ea9731d0",
+    "name": "Timber & Joinery",
+    "subcategories": [
+      {
+        "id": "4169368e-d347-4e57-ba20-be378cc110fe",
+        "name": "Doors",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "a0a63556-372b-4877-a62a-fde5d8abbfe2",
+        "name": "Skirting",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "ccb5f0aa-8a1a-4517-b3e9-b0134d68ec30",
+        "name": "Architrave",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "dd561f08-f768-4abe-b5be-f3b5b9fb6525",
+        "name": "Mouldings",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "a2b86212-ec6b-48fd-b5d4-2e9a478153d0",
+        "name": "Treated Timber",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "6271bc6f-022f-4305-a038-d7e34dd31fc8",
+        "name": "Sawn Timber",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "952fdaa6-6086-4808-94e3-b043f0ccf4c3",
+        "name": "Window Boards",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "706350ef-e6dd-4dd3-83d1-51b89a9b0041",
+        "name": "CLS Timber",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "ccc7be6d-fd4b-4dc8-9d52-ff75850ed8b9",
+        "name": "Planed Timber",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "6a4fee42-378e-44a7-955a-a339098a8c4b",
+        "name": "Sheet Material Specifics",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "aa300898-d2c6-482f-a7ed-3887d433cf66",
+        "name": "Stair Parts",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "8cce90ec-641d-467e-927b-29eae1b05db4",
+        "name": "Windows",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "efec5ed3-9d2d-47b9-a32b-79b1fb69351d",
+        "name": "Sheet Materials",
+        "is_material_ambiguous": false,
+        "default_density_kg_per_m3": 500,
+        "embodied_carbon_kg_per_kg": 0.45
+      }
+    ]
+  },
+  {
+    "id": "7724609f-14ff-4f63-8aba-59d196f4a95c",
+    "name": "Tools, Equipment & Workwear",
+    "subcategories": [
+      {
+        "id": "f33a5f36-7fe2-42fd-98f9-ad6b991795cc",
+        "name": "Hand Tools",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "10023933-6497-4716-9043-6e0078fb24e2",
+        "name": "Power Tools",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "33cc03f2-2590-4d0c-aa70-7d4f10f5da8d",
+        "name": "Power Tool Accessories",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      },
+      {
+        "id": "c826c99a-7405-497b-a772-7a107ef4b403",
+        "name": "Safety Wear",
+        "is_material_ambiguous": true,
+        "default_density_kg_per_m3": null,
+        "embodied_carbon_kg_per_kg": 0.5
+      }
+    ]
+  }
+]

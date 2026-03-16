@@ -30,6 +30,7 @@ export interface SubCategory {
     default_density_kg_per_m3?: number;
     embodied_carbon_kg_per_kg?: number;
     is_material_ambiguous?: boolean;
+    is_volumetric_calculation_valid?: boolean;
 }
 
 export interface SubSubCategory {
