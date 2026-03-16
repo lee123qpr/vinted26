@@ -75,16 +75,12 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
 
     const [coordinates, setCoordinates] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
 
-    // --- Data Fetching (Categories & Materials) ---
+    // --- Data Fetching (Categories) ---
     useEffect(() => {
         const fetchData = async () => {
             setLoadingCategories(true);
 
-            // Parallel Fetch using Server Actions
-            const [catRes, matRes] = await Promise.all([
-                getCategories(),
-                getMaterials()
-            ]);
+            const catRes = await getCategories();
 
             if (catRes.error) {
                 console.error('Error fetching categories:', catRes.error);
@@ -92,16 +88,33 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 setCategories(catRes.data);
             }
 
-            if (matRes.error) {
-                console.error('Error fetching materials:', matRes.error);
-            } else if (matRes.data) {
-                setMaterials(matRes.data);
-            }
-
             setLoadingCategories(false);
         };
         fetchData();
     }, []);
+
+    // --- Dynamic Material Fetching ---
+    useEffect(() => {
+        const fetchContextualMaterials = async () => {
+            if (!formData.categoryId) {
+                setMaterials([]);
+                setSelectedMaterialId('');
+                return;
+            }
+            const matRes = await getMaterials(formData.categoryId);
+            if (matRes.data) {
+                setMaterials(matRes.data);
+                // If previously selected material is no longer valid, clear it
+                if (selectedMaterialId && !matRes.data.find(m => m.id === selectedMaterialId)) {
+                    setSelectedMaterialId('');
+                }
+            } else {
+                setMaterials([]);
+                setSelectedMaterialId('');
+            }
+        };
+        fetchContextualMaterials();
+    }, [formData.categoryId]);
 
     // --- Initialize Data for Edit Mode ---
     useEffect(() => {
@@ -260,7 +273,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
     }, [formData.subcategoryId]);
 
 
-    // --- Carbon Calculation Engine ---
+    // --- Carbon Calculation Engine V2 ---
     useEffect(() => {
         const calculate = () => {
             const sub = subcategories.find(s => s.id === formData.subcategoryId);
@@ -273,7 +286,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
             let density = sub.default_density_kg_per_m3;
             let carbonFactor = sub.embodied_carbon_kg_per_kg;
 
-            // Handle Ambiguous Materials
+            // Handle Ambiguous Materials via Dynamic Dropdown
             if (sub.is_material_ambiguous && selectedMaterialId) {
                 const mat = materials.find(m => m.id === selectedMaterialId);
                 if (mat) {
@@ -284,8 +297,10 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                 }
             }
 
-            // Calculate Volume (mm -> m) if valid for this shape
-            if (sub.is_volumetric_calculation_valid !== false && formData.dimensionsLength && formData.dimensionsWidth && formData.dimensionsHeight && density) {
+            const isVolumetricValid = sub.is_volumetric_calculation_valid !== false;
+
+            // SCENARIO 1 & 2: Volumetric Calculation (Solid Items)
+            if (isVolumetricValid && formData.dimensionsLength && formData.dimensionsWidth && formData.dimensionsHeight && density) {
                 const l = parseFloat(formData.dimensionsLength) / 1000;
                 const w = parseFloat(formData.dimensionsWidth) / 1000;
                 const h = parseFloat(formData.dimensionsHeight) / 1000;
@@ -299,14 +314,20 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                     setCarbonSaved(parseFloat((weight * carbonFactor).toFixed(2)));
                 }
             }
-            // Fallback: Manual weight
+            // SCENARIO 3: Non-Volumetric / Manual Weight Override
             else if (formData.weight) {
+                // Ignore dimensions entirely, use the provided weight
                 const w = parseFloat(formData.weight);
-                setCalculatedWeight(w);
+                const totalWeight = w * formData.quantity; // If user enters weight per item
+                setCalculatedWeight(parseFloat(totalWeight.toFixed(2)));
+                
                 if (carbonFactor) {
-                    setCarbonSaved(parseFloat((w * carbonFactor).toFixed(2)));
+                    setCarbonSaved(parseFloat((totalWeight * carbonFactor).toFixed(2)));
+                } else {
+                     setCarbonSaved(null);
                 }
-            } else {
+            } 
+            else {
                 setCalculatedWeight(null);
                 setCarbonSaved(null);
             }
@@ -721,13 +742,18 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                             {/* Decorative background element */}
                             <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-emerald-100/50 rounded-full blur-2xl"></div>
 
-                            {/* Dynamic Guidance Logic */}
+                            {/* Dynamic Guidance Logic V2 */}
                             {(() => {
                                 const selectedSub = subcategories.find(s => s.id === formData.subcategoryId);
                                 const isVolumetricInvalid = selectedSub?.is_volumetric_calculation_valid === false;
-                                const isManualWeightRequired = selectedSub && 
-                                    (isVolumetricInvalid || (!selectedSub.default_density_kg_per_m3 && !selectedSub.is_material_ambiguous));
-                                const hasResult = calculatedWeight !== null;
+                                
+                                // Material is required if it's ambiguous, OR if it's a hollow item that doesn't have a fixed embodied_carbon factor yet
+                                const isMaterialMissing = selectedSub?.is_material_ambiguous && !selectedMaterialId && (!selectedSub.embodied_carbon_kg_per_kg);
+                                
+                                // Weight is required if volumetric is disabled OR if it's a perfect solid but density is unknown.
+                                const isWeightMissing = !calculatedWeight && (isVolumetricInvalid || (!selectedSub?.default_density_kg_per_m3 && !selectedSub?.is_material_ambiguous));
+                                
+                                const hasResult = calculatedWeight !== null && carbonSaved !== null;
 
                                 return (
                                     <>
@@ -742,18 +768,20 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                                 <p className="text-sm text-emerald-800 mt-1 font-medium leading-snug">
                                                     {hasResult
                                                         ? "Great! Your listing now includes an environmental impact certificate."
-                                                        : isManualWeightRequired
-                                                            ? (isVolumetricInvalid ? "Please enter a Manual Weight to unlock (dimensions cannot be used to estimate this item)." : "We can't guess the weight of this item. Please enter the Weight below to unlock.")
-                                                            : "Enter Dimensions (or Weight) to unlock."
+                                                        : isVolumetricInvalid
+                                                            ? "Dimensions cannot be used to estimate this item's weight accurately. Please enter a manual weight below."
+                                                            : isMaterialMissing 
+                                                                ? "Please select the primary material to calculate carbon savings."
+                                                                : "Enter Dimensions (or Weight) to unlock your certificate."
                                                     }
                                                 </p>
                                             </div>
                                         </div>
 
                                         {/* Material Selector (Conditional) */}
-                                        {selectedSub?.is_material_ambiguous && (
+                                        {selectedSub?.is_material_ambiguous && materials.length > 0 && (
                                             <div className="mb-4 relative z-10">
-                                                <label className="label text-xs text-yellow-800 font-bold uppercase tracking-wide mb-1">What is this made of?</label>
+                                                <label className="label text-xs text-yellow-800 font-bold uppercase tracking-wide mb-1">Primary Material</label>
                                                 <select
                                                     value={selectedMaterialId}
                                                     onChange={e => setSelectedMaterialId(e.target.value)}
@@ -764,6 +792,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                                         <option key={m.id} value={m.id}>{m.name}</option>
                                                     ))}
                                                 </select>
+                                                {isVolumetricInvalid && <p className="text-[10px] text-yellow-700 mt-1">Material is used to calculate carbon intensity, not weight.</p>}
                                             </div>
                                         )}
 
@@ -782,8 +811,8 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                         )}
 
                                         <div className="mt-4 pt-4 border-t border-emerald-200/60 relative z-10">
-                                            <label className={`label text-xs font-bold uppercase tracking-wider mb-2 ${isManualWeightRequired ? "text-orange-700" : "text-emerald-700"}`}>
-                                                {isManualWeightRequired ? "Manual Weight (Required for Certificate)" : "Manual Weight Override (Optional)"}
+                                            <label className={`label text-xs font-bold uppercase tracking-wider mb-2 ${isVolumetricInvalid || isWeightMissing ? "text-orange-700" : "text-emerald-700"}`}>
+                                                {isVolumetricInvalid ? "Manual Weight (Required for Certificate)" : "Manual Weight Override (Optional)"}
                                             </label>
                                             <div className="relative">
                                                 <input
@@ -808,13 +837,13 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                                                             }));
                                                         }
                                                     }}
-                                                    className={`input-field text-sm py-2 pl-3 font-semibold shadow-sm ${isManualWeightRequired && !formData.weight
+                                                    className={`input-field text-sm py-2 pl-3 font-semibold shadow-sm ${isWeightMissing && !formData.weight
                                                         ? 'border-2 border-orange-300 bg-orange-50 text-orange-900 placeholder-orange-400 focus:border-orange-500 focus:ring-orange-200'
                                                         : 'border-emerald-200 focus:border-emerald-500 focus:ring-emerald-200 text-emerald-900 placeholder-emerald-400'
                                                         }`}
                                                     placeholder="Enter weight..."
                                                 />
-                                                <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold ${isManualWeightRequired ? 'text-orange-600' : 'text-emerald-600'}`}>kg</span>
+                                                <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold ${isWeightMissing ? 'text-orange-600' : 'text-emerald-600'}`}>kg</span>
                                             </div>
                                         </div>
                                     </>

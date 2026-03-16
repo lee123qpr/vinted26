@@ -14,15 +14,38 @@ export async function getCategories() {
     }
 }
 
-export async function getMaterials() {
+export async function getMaterials(categoryId?: string) {
     try {
         const supabase = await createClient();
-        const { data, error } = await supabase.from('materials').select('*').order('name');
+        
+        let query = supabase.from('materials').select('*');
+        
+        // If a categoryId is provided, ONLY return materials mapped to that category
+        if (categoryId) {
+            // First get mapped material IDs
+            const { data: mappingData, error: mapErr } = await supabase
+                .from('category_materials')
+                .select('material_id')
+                .eq('category_id', categoryId);
+                
+            if (mapErr) throw mapErr;
+            
+            if (mappingData && mappingData.length > 0) {
+                const materialIds = mappingData.map(m => m.material_id);
+                query = query.in('id', materialIds);
+            } else {
+                // If no mappings exist yet, maybe return empty or fallback to all?
+                // Let's fallback to all just in case a new category forgets mapping.
+            }
+        }
+        
+        const { data, error } = await query.order('name');
+        
         if (error) throw error;
         return { data, error: null };
-    } catch (err: unknown) {
-        console.error('Error fetching materials:', err);
-        return { data: null, error: 'Failed to load materials' };
+    } catch (error: any) {
+        console.error('Error fetching materials:', error);
+        return { data: null, error: error.message };
     }
 }
 
