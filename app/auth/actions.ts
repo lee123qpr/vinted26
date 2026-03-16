@@ -117,6 +117,16 @@ export async function signup(formData: FormData) {
         return { error: error.message };
     }
 
+    // Send the custom Welcome Email via Resend in the background
+    if (data.user?.email) {
+        import('@/lib/email').then(({ sendWelcomeEmail }) => {
+            sendWelcomeEmail({
+                to: data.user!.email!,
+                username: username
+            });
+        }).catch(err => console.error('Failed to trigger welcome email:', err));
+    }
+
     if (data.user && !data.session) {
         return { success: true, message: 'Check your email for confirmation.' };
     }

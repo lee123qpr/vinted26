@@ -3,6 +3,7 @@ import React from 'react';
 import OrderConfirmationEmail from '@/lib/emails/OrderConfirmationEmail';
 import ItemSoldEmail from '@/lib/emails/ItemSoldEmail';
 import OrderShippedEmail from '@/lib/emails/OrderShippedEmail';
+import WelcomeEmail from '@/lib/emails/WelcomeEmail';
 
 // Safely initializes with undefined if key doesn't exist
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -107,6 +108,34 @@ export async function sendOrderShippedEmail({
         return { success: true, data };
     } catch (error) {
         console.error('Failed to send OrderShippedEmail:', error);
+        return { success: false, error };
+    }
+}
+
+export async function sendWelcomeEmail({
+    to,
+    username
+}: {
+    to: string;
+    username: string;
+}) {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('RESEND_API_KEY missing. Skipping WelcomeEmail.');
+        return { success: false, error: 'No API Key' };
+    }
+
+    try {
+        const data = await resend.emails.send({
+            from: DEFAULT_FROM,
+            to,
+            subject: 'Welcome to Skipped!',
+            react: React.createElement(WelcomeEmail, { username }) as React.ReactElement,
+        });
+
+        if (data.error) throw new Error(data.error.message);
+        return { success: true, data };
+    } catch (error) {
+        console.error('Failed to send WelcomeEmail:', error);
         return { success: false, error };
     }
 }
