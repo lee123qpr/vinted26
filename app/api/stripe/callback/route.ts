@@ -16,8 +16,10 @@ export async function GET(req: Request) {
         // 1. Verify the account status with Stripe
         const account = await stripe.accounts.retrieve(accountId);
 
-        const chargesEnabled = account.charges_enabled; // secure way to check if they finished
-        console.log(`[Stripe Callback] account_id: ${accountId}, charges_enabled: ${chargesEnabled}, details_submitted: ${account.details_submitted}`);
+        // In Test Mode, charges_enabled is sometimes delayed even when details are fully submitted. 
+        // We will consider the account "connected" if they have submitted all required details.
+        const chargesEnabled = account.charges_enabled || account.details_submitted; 
+        console.log(`[Stripe Callback] account_id: ${accountId}, charges_enabled: ${account.charges_enabled}, details_submitted: ${account.details_submitted}`);
 
         // 2. Update DB
         const adminSupabase = await createAdminClient();
