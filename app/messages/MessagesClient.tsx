@@ -207,11 +207,13 @@ export default function MessagesClient({ currentUser: user, initialConversations
     }, [initListingId, initRecipientId, initialConversations, activeConversationId, user.id]);
 
     const activeConversation = conversations.find(c => c.key === activeConversationId);
+    const [isSending, setIsSending] = useState(false);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || !activeConversation || !user) return;
+        if (!newMessage.trim() || !activeConversation || !user || isSending) return;
 
+        setIsSending(true);
         const { listing_id, other_user_id } = activeConversation;
 
         const formData = new FormData();
@@ -245,6 +247,8 @@ export default function MessagesClient({ currentUser: user, initialConversations
             }
         } catch (err) {
             alert('Failed to send message. Please try again.');
+        } finally {
+            setIsSending(false);
         }
     };
 
@@ -396,7 +400,7 @@ export default function MessagesClient({ currentUser: user, initialConversations
                                         />
                                         <button
                                             type="submit"
-                                            disabled={!newMessage.trim()}
+                                            disabled={!newMessage.trim() || isSending}
                                             className="btn-primary py-3 px-6 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Send
