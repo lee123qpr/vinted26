@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-export const mockSupabase = {
+export const mockSupabase: any = {
     from: vi.fn(() => mockSupabase),
     select: vi.fn(() => mockSupabase),
     insert: vi.fn(() => mockSupabase),
@@ -34,7 +34,7 @@ export const mockSupabase = {
 };
 
 // Start chain with specific return values
-export const createMockSupabase = (overrides = {}) => {
+export const createMockSupabase = (overrides = {}): any => {
     const mock = { ...mockSupabase, ...overrides };
     // Reset standard mocks
     mock.from.mockReturnValue(mock);

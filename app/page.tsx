@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import HomeSearchForm from '@/components/HomeSearchForm';
 import HomeNewsletter from '@/components/HomeNewsletter';
@@ -66,32 +67,32 @@ export default async function HomePage() {
   const carbonTonnes = (totalCarbonKg / 1000).toFixed(1);
 
   const trustedCompanies = [
-    { name: 'Selco', logo: 'https://placehold.co/120x40?text=Selco' },
-    { name: 'Travis Perkins', logo: 'https://placehold.co/120x40?text=Travis' },
-    { name: 'Jewson', logo: 'https://placehold.co/120x40?text=Jewson' },
-    { name: 'Screwfix', logo: 'https://placehold.co/120x40?text=Screwfix' },
-    { name: 'Wickes', logo: 'https://placehold.co/120x40?text=Wickes' },
+    { name: 'Selco', logo: 'https://logo.clearbit.com/selcobw.com' },
+    { name: 'Travis Perkins', logo: 'https://logo.clearbit.com/travisperkins.co.uk' },
+    { name: 'Jewson', logo: 'https://logo.clearbit.com/jewson.co.uk' },
+    { name: 'Screwfix', logo: 'https://logo.clearbit.com/screwfix.com' },
+    { name: 'Wickes', logo: 'https://logo.clearbit.com/wickes.co.uk' },
   ];
 
   const testimonials = [
     {
       name: 'James Mitchell',
       role: 'Site Manager, BuildCo Ltd',
-      avatar: 'https://placehold.co/64x64?text=JM',
+      avatar: 'https://ui-avatars.com/api/?name=James+Mitchell&background=0284c7&color=fff&size=128',
       rating: 5,
       text: 'Saved thousands on our last project by sourcing materials through Skipped. The quality was excellent and the carbon certificate was a great bonus for our sustainability report.',
     },
     {
       name: 'Sarah Thompson',
       role: 'DIY Enthusiast',
-      avatar: 'https://placehold.co/64x64?text=ST',
+      avatar: 'https://ui-avatars.com/api/?name=Sarah+Thompson&background=059669&color=fff&size=128',
       rating: 5,
       text: 'Found exactly what I needed for my kitchen renovation at half the price. The seller was friendly and delivery was smooth. Highly recommend!',
     },
     {
       name: 'David Chen',
       role: 'Property Developer',
-      avatar: 'https://placehold.co/64x64?text=DC',
+      avatar: 'https://ui-avatars.com/api/?name=David+Chen&background=7c3aed&color=fff&size=128',
       rating: 5,
       text: 'As both a buyer and seller on Skipped, I\'ve had nothing but positive experiences. It\'s transformed how we handle surplus materials across our sites.',
     },
@@ -162,8 +163,8 @@ export default async function HomePage() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300">
             {trustedCompanies.map((company) => (
-              <div key={company.name} className="h-8 flex items-center">
-                <span className="text-2xl font-bold text-secondary-400">{company.name}</span>
+              <div key={company.name} className="h-10 relative flex items-center w-32">
+                <Image src={company.logo} alt={`${company.name} logo`} fill className="object-contain" sizes="(max-width: 768px) 100px, 128px" />
               </div>
             ))}
           </div>
@@ -291,8 +292,8 @@ export default async function HomePage() {
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-secondary-50 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-secondary-100">
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-bold text-lg mr-3">
-                    {testimonial.name[0]}
+                  <div className="w-12 h-12 relative flex-shrink-0 mr-3">
+                    <Image src={testimonial.avatar} alt={testimonial.name} fill className="rounded-full object-cover shadow-sm" sizes="48px" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-secondary-900">{testimonial.name}</h4>

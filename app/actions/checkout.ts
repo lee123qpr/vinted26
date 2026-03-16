@@ -133,7 +133,7 @@ export async function recordSuccessfulPayment({
             // Non-critical: we derived 'sold' state from transactions technically, but good to have.
         }
 
-        // 6. Notify Seller of New Order
+        // 6. Notify Seller of New Order (In-App)
         await createNotification({
             userId: listing.seller_id,
             type: 'payment_succeeded',
@@ -146,6 +146,46 @@ export async function recordSuccessfulPayment({
                 counterpartId: user.id
             }
         });
+
+        // 7. Dispatch Transactional Emails
+        try {
+            const { data: profiles } = await adminSupabase
+                .from('profiles')
+                .select('id, full_name, username, email')
+                .in('id', [user.id, listing.seller_id]);
+                
+            const buyerProfile = profiles?.find(p => p.id === user.id);
+            const sellerProfile = profiles?.find(p => p.id === listing.seller_id);
+
+            const buyerName = buyerProfile?.full_name || buyerProfile?.username || 'Buyer';
+            const sellerName = sellerProfile?.full_name || sellerProfile?.username || 'Seller';
+            const formattedTotal = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(totalAmount);
+
+            if (buyerProfile?.email) {
+                const { sendOrderConfirmationEmail } = await import('@/lib/email');
+                await sendOrderConfirmationEmail({
+                    to: buyerProfile.email,
+                    buyerName,
+                    itemName: listing.title,
+                    totalPrice: formattedTotal,
+                    orderId: transaction.id,
+                });
+            }
+
+            if (sellerProfile?.email) {
+                const { sendItemSoldEmail } = await import('@/lib/email');
+                await sendItemSoldEmail({
+                    to: sellerProfile.email,
+                    sellerName,
+                    itemName: listing.title,
+                    itemPrice: formattedTotal,
+                    buyerName,
+                    orderId: transaction.id,
+                });
+            }
+        } catch (emailError) {
+             console.error('Failed to dispatch transactional emails:', emailError);
+        }
 
         return { success: true, orderId: transaction.id };
 

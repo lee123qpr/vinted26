@@ -84,7 +84,7 @@ describe('Checkout Actions', () => {
             const result = await recordSuccessfulPayment(validParams);
 
             expect(mockStripe.refunds.create).toHaveBeenCalled();
-            expect(result.error).toContain('automatically refunded');
+            expect(result.error).toContain('This item was already sold');
         });
 
         it('should process successful payment correctly', async () => {

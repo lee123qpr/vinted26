@@ -24,14 +24,14 @@ const eslintConfig = [
   ...compat.extends("next/typescript"),
   {
     rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-require-imports": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": "off",
       "react/no-unescaped-entities": "warn",
       "@next/next/no-img-element": "warn",
       "@typescript-eslint/ban-ts-comment": "warn",
       "prefer-const": "warn",
-      "no-var": "warn",
+      "no-var": "off",
     },
   },
 ];

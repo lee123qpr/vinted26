@@ -43,8 +43,8 @@ export default function DashboardSidebar({ profile, displayInitial, displayName 
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold text-amber-800">Action Required</h3>
-                            <p className="text-xs text-amber-700 mt-1 mb-3">You must connect your bank to receive payouts for your sales.</p>
+                            <h3 className="text-sm font-bold text-amber-800">Action Required to Sell</h3>
+                            <p className="text-xs text-amber-700 mt-1 mb-3">If you plan to sell items on Skipped, you must connect your bank securely via Stripe to receive payouts for your sales.</p>
                             <Link href="/dashboard/settings" className="inline-block text-xs font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-3 py-1.5 rounded transition">
                                 Connect Now
                             </Link>

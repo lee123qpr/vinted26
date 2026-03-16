@@ -50,56 +50,45 @@ export async function middleware(request: NextRequest) {
             data: { user },
         } = await supabase.auth.getUser();
 
-        // 1. Handle "Suspended/Banned" Status (Security Block)
-        if (user && !pathname.startsWith('/auth/suspended') && !pathname.startsWith('/auth/callback')) {
+        const protectedPrefixes = ['/sell', '/dashboard', '/messages', '/checkout'];
+        const isAdminRoute = pathname.startsWith('/admin');
+        const isProtectedRoute = isAdminRoute || protectedPrefixes.some(prefix => pathname.startsWith(prefix));
+
+        // 1. Fetch Profile ONLY on Protected Routes to save DB queries
+        if (user && isProtectedRoute) {
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('account_status')
+                .select('account_status, is_admin')
                 .eq('id', user.id)
                 .single();
 
+            // Handle "Suspended/Banned" Status (Security Block)
             if (profile && (profile.account_status === 'suspended' || profile.account_status === 'banned')) {
                 const url = request.nextUrl.clone();
                 url.pathname = '/auth/suspended';
                 return NextResponse.redirect(url);
             }
-        }
 
-        // 2. Redirect Authenticated Users away from Auth pages
-        if (user && (pathname === '/auth/login' || pathname === '/auth/signup')) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/dashboard';
-            return NextResponse.redirect(url);
-        }
-
-        // 3. Admin Route Protection
-        if (pathname.startsWith('/admin')) {
-            if (!user) {
-                const url = request.nextUrl.clone();
-                url.pathname = '/auth/login';
-                url.searchParams.set('redirectTo', pathname);
-                return NextResponse.redirect(url);
-            }
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('is_admin')
-                .eq('id', user.id)
-                .single();
-
-            if (!profile || !profile.is_admin) {
+            // Admin Route Protection
+            if (isAdminRoute && (!profile || !profile.is_admin)) {
                 const url = request.nextUrl.clone();
                 url.pathname = '/';
                 return NextResponse.redirect(url);
             }
         }
 
-        // 4. General Protected Routes
-        const protectedPrefixes = ['/sell', '/dashboard', '/messages', '/checkout'];
-        if (!user && protectedPrefixes.some(prefix => pathname.startsWith(prefix))) {
+        // 2. Redirect Unauthenticated Users attempting to access protected routes
+        if (!user && isProtectedRoute) {
             const url = request.nextUrl.clone();
             url.pathname = '/auth/login';
             url.searchParams.set('redirectTo', pathname);
+            return NextResponse.redirect(url);
+        }
+
+        // 3. Redirect Authenticated Users away from Auth pages
+        if (user && (pathname === '/auth/login' || pathname === '/auth/signup')) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/dashboard';
             return NextResponse.redirect(url);
         }
 

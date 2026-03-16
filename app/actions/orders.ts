@@ -76,7 +76,7 @@ export async function updateOrderStatus(orderId: string, newStatus: 'shipped' | 
                 // Seller gets: (Price of Item - Platform Fee) + (Delivery Fee IF 'local')
                 // Platform keeps: Platform Fee + (Delivery Fee IF 'courier')
 
-                let payoutAmount = order.total_price_gbp - (order.platform_fee_gbp || 0);
+                const payoutAmount = order.total_price_gbp - (order.platform_fee_gbp || 0);
 
                 // If courier, we keep the delivery fee to pay the courier service (hypothetically)
                 if (order.delivery_method === 'delivery' && order.delivery_fee_gbp > 0) {
@@ -202,6 +202,32 @@ export async function updateOrderStatus(orderId: string, newStatus: 'shipped' | 
                     actor_username: user.email?.split('@')[0] || 'User'
                 }
             });
+
+            // Dispatch Order Shipped Email
+            if (newStatus === 'shipped') {
+                try {
+                    const { data: buyerProfile } = await adminSupabase
+                        .from('profiles')
+                        .select('email, full_name, username')
+                        .eq('id', order.buyer_id)
+                        .single();
+
+                    if (buyerProfile?.email) {
+                        const isCollection = order.delivery_method && order.delivery_method !== 'delivery';
+                        const buyerName = buyerProfile.full_name || buyerProfile.username || 'Buyer';
+                        
+                        const { sendOrderShippedEmail } = await import('@/lib/email');
+                        await sendOrderShippedEmail({
+                            to: buyerProfile.email,
+                            buyerName,
+                            itemName: order.listings?.title || 'Your item',
+                            isCollection: !!isCollection
+                        });
+                    }
+                } catch (emailError) {
+                     console.error('Error dispatching shipped email:', emailError);
+                }
+            }
         }
 
     } catch (err) {
@@ -374,7 +400,7 @@ export async function processPendingPayouts(sellerId: string) {
 
     for (const order of pendingOrders) {
         try {
-            let payoutAmount = order.total_price_gbp - (order.platform_fee_gbp || 0);
+            const payoutAmount = order.total_price_gbp - (order.platform_fee_gbp || 0);
             const payoutAmountPence = Math.round(payoutAmount * 100);
 
             if (payoutAmountPence > 0) {
