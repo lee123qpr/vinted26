@@ -53,9 +53,17 @@ export default function ListingsClient({ initialListings }: Props) {
                 </div>
 
                 {listings.length === 0 ? (
-                    <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                        <p className="text-secondary-500 mb-4">You haven&apos;t listed any items yet.</p>
-                        <Link href="/sell" className="btn-primary">Start Selling</Link>
+                    <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-secondary-200 border-dashed">
+                        <div className="w-20 h-20 bg-primary-50 text-primary-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-secondary-900 mb-2">You haven't listed any items yet</h3>
+                        <p className="text-secondary-500 mb-8 max-w-sm mx-auto">Got surplus materials or tools laying around? List them today to help the environment and make some money.</p>
+                        <Link href="/sell" className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                            Start Selling
+                        </Link>
                     </div>
                 ) : (
                     <div className="bg-white rounded-xl shadow-sm overflow-hidden">

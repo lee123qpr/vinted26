@@ -6,6 +6,7 @@ import { formatCurrency } from '@/lib/format';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { updateOrderStatus } from '@/app/actions/orders';
+import toast from 'react-hot-toast';
 import ReviewModal from '@/components/ReviewModal';
 import DisputeModal from '@/components/DisputeModal';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -35,13 +36,14 @@ export default function OrdersClient({ initialOrders: orders }: Props) {
         try {
             const result = await updateOrderStatus(orderId, 'completed');
             if (result.error) {
-                alert(result.error);
+                toast.error(result.error);
             } else {
+                toast.success('Delivery confirmed successfully!');
                 router.refresh(); // Refresh to show "Completed" status and enable Review button
                 setConfirmModalOpen(false);
             }
         } catch (err) {
-            alert('Failed to update status');
+            toast.error('Failed to update status');
         } finally {
             setLoadingMap(prev => ({ ...prev, [orderId]: false }));
             // Note: We don&apos;t close modal here on error to allow retry, 
@@ -66,8 +68,17 @@ export default function OrdersClient({ initialOrders: orders }: Props) {
             <h1 className="text-2xl font-bold text-secondary-900">My Orders</h1>
 
             {orders.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                    <p className="text-secondary-500">No orders yet.</p>
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-secondary-200 border-dashed">
+                    <div className="w-20 h-20 bg-primary-50 text-primary-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-secondary-900 mb-2">No orders yet</h3>
+                    <p className="text-secondary-500 mb-8 max-w-sm mx-auto">You haven't bought any materials yet. Discover great deals and save perfectly good materials from landfill!</p>
+                    <Link href="/search" className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                        Browse Materials
+                    </Link>
                 </div>
             ) : (
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">

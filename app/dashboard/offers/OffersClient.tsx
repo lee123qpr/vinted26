@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase/client';
 import { formatCurrency } from '@/lib/format';
 import { updateOfferStatus } from '@/app/actions/offers';
 import { getListingStatusAdmin } from '@/app/actions/listings';
+import toast from 'react-hot-toast';
 import CountdownTimer from '@/components/CountdownTimer';
 import CounterOfferModal from '@/components/CounterOfferModal';
 
@@ -71,11 +72,13 @@ export default function OffersClient({ offers, type }: OffersClientProps) {
         try {
             const result = await updateOfferStatus(offerId, status);
             if (result?.error) {
-                alert(result.error);
+                toast.error(result.error);
+            } else {
+                toast.success(`Offer ${status} successfully`);
             }
         } catch (err) {
             console.error(err);
-            alert('Something went wrong.');
+            toast.error('Something went wrong.');
         } finally {
             setLoadingMap(prev => ({ ...prev, [offerId]: false }));
         }
@@ -125,20 +128,24 @@ export default function OffersClient({ offers, type }: OffersClientProps) {
                 </div>
             ) : (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-secondary-200 border-dashed">
-                    <div className="w-16 h-16 bg-secondary-50 text-secondary-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
                         {type === 'sent' ? (
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         ) : (
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                         )}
                     </div>
-                    <h3 className="text-lg font-bold text-secondary-900 capitalize">No {type} offers</h3>
-                    <p className="text-secondary-500 mb-6">
-                        {type === 'sent' ? "You haven't made any offers on items yet." : "You haven't received any offers yet."}
+                    <h3 className="text-xl font-bold text-secondary-900 mb-2 capitalize">No {type} offers</h3>
+                    <p className="text-secondary-500 mb-8 max-w-sm mx-auto">
+                        {type === 'sent' ? "You haven't made any offers on items yet. Send offers to negotiate better deals!" : "You haven't received any offers yet. List more items to attract buyers!"}
                     </p>
-                    {type === 'sent' && (
-                        <Link href="/" className="btn-primary inline-flex items-center">
+                    {type === 'sent' ? (
+                        <Link href="/search" className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                             Browse Listings
+                        </Link>
+                    ) : (
+                        <Link href="/sell" className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                            List another item
                         </Link>
                     )}
                 </div>

@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { formatCurrency } from '@/lib/format';
 import { updateOrderStatus } from '@/app/actions/orders';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 import ConfirmModal from '@/components/ConfirmModal';
 import ReviewModal from '@/components/ReviewModal';
@@ -39,12 +40,13 @@ export default function SalesClient({ initialSales: sales }: Props) {
         setLoadingMap(prev => ({ ...prev, [orderId]: true }));
         try {
             const result = await updateOrderStatus(orderId, status);
-            if (result.error) alert(result.error);
+            if (result.error) toast.error(result.error);
             else {
+                toast.success('Order status updated!');
                 setConfirmModal({ isOpen: false, orderId: null, status: null });
             }
         } catch (err) {
-            alert('Failed to update status');
+            toast.error('Failed to update status');
         } finally {
             setLoadingMap(prev => ({ ...prev, [orderId]: false }));
             setConfirmModal(prev => ({ ...prev, isOpen: false }));
@@ -59,13 +61,16 @@ export default function SalesClient({ initialSales: sales }: Props) {
 
             {!sales || sales.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-secondary-200 border-dashed">
-                    <div className="w-16 h-16 bg-secondary-50 text-secondary-300 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-bold text-secondary-900">No sales yet</h3>
-                    <p className="text-secondary-500">Items you sell will appear here.</p>
+                    <h3 className="text-xl font-bold text-secondary-900 mb-2">No sales yet</h3>
+                    <p className="text-secondary-500 mb-8 max-w-sm mx-auto">You haven't sold any items yet. List your surplus materials to make money and help the environment.</p>
+                    <Link href="/sell" className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                        List an Item
+                    </Link>
                 </div>
             ) : (
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-secondary-100">

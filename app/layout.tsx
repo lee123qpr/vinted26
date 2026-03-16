@@ -8,6 +8,7 @@ import GlobalBanner from "@/components/GlobalBanner";
 import { createClient } from "@/lib/supabase/server";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import CookieConsent from "@/components/CookieConsent";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -116,6 +117,7 @@ export default async function RootLayout({
         </main>
         <Footer />
         <CookieConsent />
+        <Toaster position="bottom-right" toastOptions={{ duration: 4000, style: { background: '#333', color: '#fff', borderRadius: '8px' } }} />
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
       </body>
     </html>
