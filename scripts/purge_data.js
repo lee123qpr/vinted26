@@ -43,6 +43,7 @@ async function purgeAllUserData() {
             
             if (deleteError) {
                 console.error(`❌ Failed to delete ${user.email}:`, deleteError.message);
+                require('fs').writeFileSync('delete_error.json', JSON.stringify(deleteError, null, 2));
                 errorCount++;
             } else {
                 deletedCount++;

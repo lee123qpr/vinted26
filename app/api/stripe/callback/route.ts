@@ -17,6 +17,7 @@ export async function GET(req: Request) {
         const account = await stripe.accounts.retrieve(accountId);
 
         const chargesEnabled = account.charges_enabled; // secure way to check if they finished
+        console.log(`[Stripe Callback] account_id: ${accountId}, charges_enabled: ${chargesEnabled}, details_submitted: ${account.details_submitted}`);
 
         // 2. Update DB
         const adminSupabase = await createAdminClient();
