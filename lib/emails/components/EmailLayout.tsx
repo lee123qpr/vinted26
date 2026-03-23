@@ -61,14 +61,10 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
                         <Section className="py-6 px-6 text-center border-b border-secondary-100">
                             <Img
                                 src={`https://www.skipped-uk.com/logo.png`}
-                                width="48"
-                                height="48"
-                                alt="Skipped Logo"
+                                height="40"
+                                alt="Skipped."
                                 className="mx-auto block"
                             />
-                            <Text className="text-secondary-900 font-bold text-xl mt-3 mb-0 tracking-tight">
-                                SKIPPED
-                            </Text>
                         </Section>
 
                         {/* Content Area */}

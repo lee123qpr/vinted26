@@ -6,6 +6,41 @@ import HomeNewsletter from '@/components/HomeNewsletter';
 import HomeFAQ from '@/components/HomeFAQ';
 import { formatCurrency } from '@/lib/format';
 import ListingCard from '@/components/ListingCard';
+import { unstable_cache } from 'next/cache';
+
+// Cache the heavy impact aggregation for 1 hour
+const getImpactStats = unstable_cache(
+  async () => {
+    // We cannot use the cookie-based client inside unstable_cache easily, so we instanciate it inside or use anon key if public.
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    
+    try {
+        const response = await fetch(`${url}/rest/v1/listings?select=weight_kg,carbon_saved_kg&status=eq.sold`, {
+            headers: {
+                apikey: key,
+                Authorization: `Bearer ${key}`
+            }
+        });
+        const data = await response.json();
+        
+        let totalWeightKg = 0;
+        let totalCarbonKg = 0;
+
+        if (Array.isArray(data)) {
+            data.forEach((item: any) => {
+                totalWeightKg += item.weight_kg || 0;
+                totalCarbonKg += item.carbon_saved_kg || 0;
+            });
+        }
+        return { totalWeightKg, totalCarbonKg };
+    } catch (e) {
+        return { totalWeightKg: 0, totalCarbonKg: 0 };
+    }
+  },
+  ['global-impact-stats'],
+  { revalidate: 3600 } // Cache for 1 hour
+);
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -15,7 +50,7 @@ export default async function HomePage() {
     { data: recentListings },
     activeListingsRes,
     usersRes,
-    impactRes
+    impactStats
   ] = await Promise.all([
     // 1. Listings
     supabase
@@ -44,27 +79,16 @@ export default async function HomePage() {
     // 3. User Count
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
 
-    // 4. Impact Data
-    supabase.from('listings').select('weight_kg, carbon_saved_kg').eq('status', 'sold')
+    // 4. Cached Impact Data
+    getImpactStats()
   ]);
 
   const activeListingsCount = activeListingsRes.count || 0;
   const usersCount = usersRes.count || 0;
 
-  // Calculate Impact
-  let totalWeightKg = 0;
-  let totalCarbonKg = 0;
-
-  if (impactRes.data) {
-    impactRes.data.forEach((item: any) => {
-      totalWeightKg += item.weight_kg || 0;
-      totalCarbonKg += item.carbon_saved_kg || 0;
-    });
-  }
-
   // Convert to Tonnes (1 Tonne = 1000kg)
-  const landfillTonnes = (totalWeightKg / 1000).toFixed(1);
-  const carbonTonnes = (totalCarbonKg / 1000).toFixed(1);
+  const landfillTonnes = (impactStats.totalWeightKg / 1000).toFixed(1);
+  const carbonTonnes = (impactStats.totalCarbonKg / 1000).toFixed(1);
 
   const trustedCompanies = [
     { name: 'Selco', logo: 'https://logo.clearbit.com/selcobw.com' },
@@ -318,7 +342,13 @@ export default async function HomePage() {
       <section className="py-24 relative overflow-hidden">
         {/* Background with overlay */}
         <div className="absolute inset-0 bg-green-900 z-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518531933037-9a82bf552366?q=80&w=2074&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
+          <Image 
+            src="https://images.unsplash.com/photo-1518531933037-9a82bf552366?q=80&w=2074&auto=format&fit=crop"
+            alt="Sustainability Background"
+            fill
+            sizes="100vw"
+            className="object-cover opacity-10 mix-blend-overlay"
+          />
           <div className="absolute inset-0 bg-gradient-to-br from-green-900 via-primary-900 to-green-950 opacity-90"></div>
         </div>
 

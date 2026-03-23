@@ -29,8 +29,8 @@ export default async function MessagesPage({ searchParams }: Props) {
         .select(`
             *,
             listing:listings!listing_id (title, price_gbp, images:listing_images(image_url)),
-            participant1:profiles!participant1_id (username, avatar_url),
-            participant2:profiles!participant2_id (username, avatar_url),
+            participant1:profiles!participant1_id (id, username, avatar_url, role),
+            participant2:profiles!participant2_id (id, username, avatar_url, role),
             last_message:messages!last_message_id (
                 id,
                 message_text,
@@ -120,8 +120,8 @@ export default async function MessagesPage({ searchParams }: Props) {
                     message_text,
                     created_at,
                     is_read,
-                    sender:profiles!sender_id (username, avatar_url),
-                    recipient:profiles!recipient_id (username, avatar_url)
+                    sender:profiles!sender_id (id, username, avatar_url, role),
+                    recipient:profiles!recipient_id (id, username, avatar_url, role)
                 `)
                 .eq('listing_id', initListingId || null) // This might fail for null? .is('listing_id', null) for supabase?
                 // Supabase .eq handles null if we pass javascript null? usually yes, but let's be safe.
@@ -147,7 +147,7 @@ export default async function MessagesPage({ searchParams }: Props) {
         if (!existing) {
             // New conversation - fetch details
             const promises: PromiseLike<any>[] = [
-                supabase.from('profiles').select('username, avatar_url').eq('id', initRecipientId).single()
+                supabase.from('profiles').select('username, avatar_url, role').eq('id', initRecipientId).single()
             ];
 
             if (initListingId) {

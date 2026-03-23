@@ -170,9 +170,31 @@ export default function Navigation({ user: initialUser, categories }: Navigation
             }
         });
 
+        // 2. Realtime avatar/profile subscription - updates header icon instantly when user uploads new avatar
+        let profileSubscription: any;
+        if (user) {
+            profileSubscription = supabase
+                .channel('profile_updates')
+                .on(
+                    'postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user?.id}` },
+                    (payload) => {
+                        const updated = payload.new as any;
+                        if (updated?.avatar_url !== undefined) {
+                            setAvatarUrl(updated.avatar_url || null);
+                        }
+                        if (updated?.username || updated?.full_name) {
+                            setUserProfile((prev: any) => ({ ...prev, ...updated }));
+                        }
+                    }
+                )
+                .subscribe();
+        }
+
         return () => {
             authSubscription.unsubscribe();
             if (messageSubscription) supabase.removeChannel(messageSubscription);
+            if (profileSubscription) supabase.removeChannel(profileSubscription);
         };
 
     }, []);

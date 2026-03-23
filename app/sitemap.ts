@@ -45,5 +45,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.9, // Higher priority as these are the core content
     }));
 
-    return [...staticRoutes, ...categoryRoutes, ...listingRoutes];
+    // 4. Fetch Published Articles
+    const { data: articles } = await supabase
+        .from('articles')
+        .select('slug, updated_at')
+        .eq('is_published', true);
+
+    const articleRoutes = (articles || []).map((article) => ({
+        url: `${baseUrl}/articles/${article.slug}`,
+        lastModified: new Date(article.updated_at || new Date()),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7, // Content marketing priority
+    }));
+
+    return [...staticRoutes, ...categoryRoutes, ...listingRoutes, ...articleRoutes];
 }

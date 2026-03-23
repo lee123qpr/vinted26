@@ -133,6 +133,18 @@ export async function recordSuccessfulPayment({
             // Non-critical: we derived 'sold' state from transactions technically, but good to have.
         }
 
+        // 5.5 If payment was from an Offer, clear the active offer status
+        if (paymentIntent.metadata?.offerId && paymentIntent.metadata.offerId !== 'null' && paymentIntent.metadata.offerId !== 'undefined') {
+            const { error: offerUpdateError } = await adminSupabase
+                .from('offers')
+                .update({ status: 'purchased' }) // 'purchased' or just 'completed' - dashboard filters out active offers
+                .eq('id', paymentIntent.metadata.offerId);
+                
+            if (offerUpdateError) {
+                console.error('Failed to mark offer as purchased:', offerUpdateError);
+            }
+        }
+
         // 6. Notify Seller of New Order (In-App)
         await createNotification({
             userId: listing.seller_id,

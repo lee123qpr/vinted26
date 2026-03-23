@@ -1,6 +1,7 @@
 
 import { createAdminClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import EsgExportButton from './EsgExportButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,10 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
     return (
         <div className="p-8">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-slate-800">User Reports</h1>
+                <div className="flex items-center gap-4">
+                    <h1 className="text-3xl font-bold text-slate-800">User Reports & ESG</h1>
+                    <EsgExportButton />
+                </div>
                 <div className="flex gap-2">
                     <Link
                         href="/admin/reports"

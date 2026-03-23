@@ -23,6 +23,7 @@ export async function POST(req: Request) {
 
         let itemPrice = 0;
         let offerIdObj: any = null;
+        let listing: any = null;
 
         // If offerId provided, validate it
         if (body.offerId) {
@@ -52,11 +53,7 @@ export async function POST(req: Request) {
             if (dbError || !listingData) return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
             if (listingData.status !== 'active') return NextResponse.json({ error: 'Listing is not active' }, { status: 409 });
 
-            // Map listing data to 'listing' for downstream logic (delivery costs etc)
-            // We can just re-use the existing listing variable logic if we modify it a bit
-            var listing = listingData; // utilizing var to hoisting or just re-assign standard let/const if we change structure.
-            // Actually, let's keep it clean.
-
+            listing = listingData;
         } else {
             // Standard Flow
             const { data: listingData, error: dbError } = await supabase
@@ -72,7 +69,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Listing is no longer available' }, { status: 409 });
             }
             itemPrice = listingData.price_gbp;
-            var listing = listingData;
+            listing = listingData;
         }
 
         const platformFee = 0; // 5% fee is now deducted from seller payout, not added to buyer charge

@@ -1,84 +1,98 @@
 'use server';
 
 import { Resend } from 'resend';
-import WelcomeEmail from '@/lib/emails/WelcomeEmail';
-import ItemSoldEmail from '@/lib/emails/ItemSoldEmail';
-import OrderConfirmationEmail from '@/lib/emails/OrderConfirmationEmail';
-import OrderShippedEmail from '@/lib/emails/OrderShippedEmail';
-import ResetPasswordEmail from '@/lib/emails/ResetPasswordEmail';
-import NewListingsEmail from '@/lib/emails/NewListingsEmail';
-import AdminWarningEmail from '@/lib/emails/AdminWarningEmail';
+import { render } from '@react-email/components';
+import React from 'react';
+import DynamicEmail from '@/lib/emails/DynamicEmail';
+import { createClient } from '@supabase/supabase-js';
 
-// Initialize Resend with API Key from environment
+// Initialize Services
 const resend = new Resend(process.env.RESEND_API_KEY);
+const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL || 'Skipped Marketplace <noreply@skipped-uk.com>';
 
-const templates = {
-    'welcome': <WelcomeEmail />,
-    'item-sold': <ItemSoldEmail />,
-    'order-confirmation': <OrderConfirmationEmail />,
-    'order-shipped': <OrderShippedEmail />,
-    'reset-password': <ResetPasswordEmail />,
-    'new-listings': <NewListingsEmail />,
-    'admin-warning': <AdminWarningEmail />,
-};
-
-type TemplateKey = keyof typeof templates;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function sendTestEmail(templateKey: string, toEmail: string) {
-    // 1. Validate Input
-    if (!toEmail || !templateKey) {
-        return { success: false, error: 'Missing email or template' };
-    }
-
-    // 2. Validate API Key
-    if (!process.env.RESEND_API_KEY) {
-        console.warn('RESEND_API_KEY is missing. Email sending skipped.');
-        return {
-            success: false,
-            error: 'Configuration Error: RESEND_API_KEY is missing in .env file. Unable to send email.'
-        };
-    }
-
-    // 3. Get Template
-    const component = templates[templateKey as TemplateKey];
-    if (!component) {
-        return { success: false, error: 'Invalid template selected' };
-    }
+    if (!toEmail || !templateKey) return { success: false, error: 'Missing email or template' };
+    if (!process.env.RESEND_API_KEY) return { success: false, error: 'Configuration Error: API KMS missing.' };
 
     try {
-        // 4. Send Email via Resend
-        const data = await resend.emails.send({
-            from: 'Skipped Marketplace <onboarding@resend.dev>', // Default Resend test domain
+        const { data, error } = await supabase
+            .from('email_templates')
+            .select('*')
+            .eq('template_id', templateKey)
+            .single();
+
+        if (error || !data) return { success: false, error: 'Template not found' };
+
+        // Render with generic fallback strings for testing
+        let parsedHtml = data.body_html.replace(/\{\{[a-zA-Z]+\}\}/g, 'Test User');
+        let subject = data.subject.replace(/\{\{[a-zA-Z]+\}\}/g, 'Test Item');
+
+        const component = React.createElement(DynamicEmail, { bodyHtml: parsedHtml }) as React.ReactElement;
+
+        const sentData = await resend.emails.send({
+            from: DEFAULT_FROM,
             to: toEmail,
-            subject: `[TEST] ${templateKey.replace('-', ' ').toUpperCase()}`,
+            subject: `[TEST] ${subject}`,
             react: component,
         });
 
-        if (data.error) {
-            console.error('Resend API Error:', data.error);
-            return { success: false, error: data.error.message };
-        }
-
-        return { success: true, data };
+        if (sentData.error) throw new Error(sentData.error.message);
+        return { success: true, data: sentData };
 
     } catch (error) {
         console.error('Email Send Exception:', error);
-        return { success: false, error: 'Failed to send email. Check server logs.' };
+        return { success: false, error: 'Failed to send test email.' };
     }
 }
 
-// New: Render template to HTML string for Admin Preview
-import { render } from '@react-email/components';
-
 export async function renderTemplate(templateKey: string) {
-    const component = templates[templateKey as TemplateKey];
-    if (!component) return '';
-
     try {
+        const { data, error } = await supabase
+            .from('email_templates')
+            .select('*')
+            .eq('template_id', templateKey)
+            .single();
+
+        if (error || !data) return '<div style="padding: 20px;">Template not found in DB</div>';
+
+        // Render with text placeholders so it doesn't look empty
+        let parsedHtml = data.body_html.replace(/\{\{[a-zA-Z]+\}\}/g, 'Test User');
+
+        const component = React.createElement(DynamicEmail, { bodyHtml: parsedHtml }) as React.ReactElement;
         const html = await render(component);
         return html;
     } catch (e) {
         console.error('Render Error:', e);
-        return '<div>Error rendering template</div>';
+        return '<div style="padding: 20px;">Error rendering template</div>';
+    }
+}
+
+export async function getTemplateRaw(templateKey: string) {
+    const { data, error } = await supabase
+        .from('email_templates')
+        .select('subject, body_html')
+        .eq('template_id', templateKey)
+        .single();
+    
+    if (error || !data) return null;
+    return { subject: data.subject, bodyHtml: data.body_html };
+}
+
+export async function saveTemplate(templateKey: string, subject: string, bodyHtml: string) {
+    try {
+        const { error } = await supabase
+            .from('email_templates')
+            .update({ subject, body_html: bodyHtml, updated_at: new Date().toISOString() })
+            .eq('template_id', templateKey);
+        
+        if (error) throw error;
+        return { success: true };
+    } catch (error: any) {
+        console.error('Save Template Error:', error);
+        return { success: false, error: error.message };
     }
 }

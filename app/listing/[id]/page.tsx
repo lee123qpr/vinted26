@@ -57,7 +57,6 @@ export default async function ListingPage({ params }: Props) {
                 username,
                 avatar_url,
                 rating_average,
-                is_trade_verified,
                 created_at
             ),
             categories (

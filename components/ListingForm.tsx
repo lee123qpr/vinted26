@@ -341,6 +341,7 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const handleSubmit = async () => {
         try {
@@ -383,6 +384,24 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
             }
 
             setValidationErrors({});
+
+            // NEW: Show confirmation modal instead of proceeding immediately
+            setShowConfirmModal(true);
+            setUploading(false);
+
+        } catch (err: unknown) {
+            console.error('Error validating form:', err);
+            const msg = err instanceof Error ? err.message : 'Validation failed.';
+            setError(msg);
+            setUploading(false);
+        }
+    };
+
+    const confirmAndSubmit = async () => {
+        try {
+            setShowConfirmModal(false);
+            setUploading(true);
+            setError(null);
 
             // Carbon / Weight Validation - OPTIONAL
             // We do not block listing creation if these are missing.
@@ -975,6 +994,39 @@ export default function ListingForm({ mode, initialData }: ListingFormProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Sustainability Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center space-x-3 mb-4 text-emerald-600">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <h3 className="text-xl font-bold text-gray-900">Verify Sustainability Data</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                            We use your item's dimensions and weight to calculate the <strong className="text-emerald-700 font-bold">CO₂ and Landfill (kg)</strong> saved by keeping this item in circulation. 
+                        </p>
+                        <p className="text-sm text-gray-600 mb-6">
+                            Inaccurate data harms the integrity of our platform's sustainability goals. Please confirm your measurements are accurate.
+                        </p>
+                        <div className="flex justify-end space-x-3 mt-2">
+                            <button onClick={() => setShowConfirmModal(false)} disabled={uploading} className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors border border-gray-200">
+                                Wait, let me check
+                            </button>
+                            <button onClick={confirmAndSubmit} disabled={uploading} className="px-5 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm flex items-center space-x-2">
+                                {uploading ? (
+                                    <>
+                                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                        <span>Publishing...</span>
+                                    </>
+                                ) : (
+                                    <span>Yes, post my listing</span>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

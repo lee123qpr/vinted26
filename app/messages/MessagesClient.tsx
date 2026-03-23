@@ -23,6 +23,7 @@ export default function MessagesClient({ currentUser: user, initialConversations
     const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
     const [newMessage, setNewMessage] = useState('');
     const [connectionError, setConnectionError] = useState(false);
+    const [sendError, setSendError] = useState<string | null>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -86,7 +87,7 @@ export default function MessagesClient({ currentUser: user, initialConversations
         const key = `${msg.listing_id || 'null'}-${msg.sender_id}`;
 
         const promises: PromiseLike<any>[] = [
-            supabase.from('profiles').select('username, avatar_url').eq('id', msg.sender_id).single()
+            supabase.from('profiles').select('username, avatar_url, role').eq('id', msg.sender_id).single()
         ];
         if (msg.listing_id) {
             promises.push(supabase.from('listings').select('title, price_gbp').eq('id', msg.listing_id).single());
@@ -164,7 +165,7 @@ export default function MessagesClient({ currentUser: user, initialConversations
 
                 if (!exists) {
                     const promises: PromiseLike<any>[] = [
-                        supabase.from('profiles').select('username, avatar_url').eq('id', initRecipientId).single()
+                        supabase.from('profiles').select('username, avatar_url, role').eq('id', initRecipientId).single()
                     ];
                     if (initListingId) {
                         promises.push(supabase.from('listings').select('title, price_gbp').eq('id', initListingId).single());
@@ -226,6 +227,7 @@ export default function MessagesClient({ currentUser: user, initialConversations
 
             if (result.data) {
                 setNewMessage('');
+                setSendError(null);
                 const data = result.data;
                 setConversations(prev => {
                     const updatedConvos = prev.map(c => {
@@ -243,10 +245,10 @@ export default function MessagesClient({ currentUser: user, initialConversations
                     return updatedConvos;
                 });
             } else if (result.error) {
-                alert('Failed to send message: ' + result.error);
+                setSendError(result.error);
             }
         } catch (err) {
-            alert('Failed to send message. Please try again.');
+            setSendError('Failed to send message. Please check your connection.');
         } finally {
             setIsSending(false);
         }
@@ -290,8 +292,8 @@ export default function MessagesClient({ currentUser: user, initialConversations
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-baseline mb-0.5">
-                                                    <span className="font-bold text-secondary-900 truncate text-sm">
-                                                        {conv.other_user?.username || 'User'}
+                                                    <span className={`font-bold truncate text-sm ${conv.other_user?.role === 'admin' ? 'text-blue-600' : 'text-secondary-900'}`}>
+                                                        {conv.other_user?.role === 'admin' ? 'Skipped Admin 🛡️' : (conv.other_user?.username || 'User')}
                                                     </span>
                                                     <span className="text-[10px] text-secondary-500 whitespace-nowrap ml-2">
                                                         {conv.last_message?.created_at && formatDistanceToNow(new Date(conv.last_message.created_at), { addSuffix: true })}
@@ -352,7 +354,9 @@ export default function MessagesClient({ currentUser: user, initialConversations
                                                     </>
                                                 )}
                                                 <span className="text-secondary-500">
-                                                    Chatting with <span className="font-semibold text-secondary-700">{activeConversation.other_user?.username}</span>
+                                                    Chatting with <span className={`font-semibold ${activeConversation.other_user?.role === 'admin' ? 'text-blue-700' : 'text-secondary-700'}`}>
+                                                        {activeConversation.other_user?.role === 'admin' ? 'Skipped Admin 🛡️' : activeConversation.other_user?.username}
+                                                    </span>
                                                 </span>
                                             </div>
                                         </div>
@@ -390,12 +394,18 @@ export default function MessagesClient({ currentUser: user, initialConversations
 
                                 {/* Input Area */}
                                 <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-secondary-200">
+                                    {sendError && (
+                                        <div className="mb-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between">
+                                            <span>⚠️ {sendError}</span>
+                                            <button type="button" onClick={() => setSendError(null)} className="text-red-500 hover:text-red-700 font-bold ml-2">✕</button>
+                                        </div>
+                                    )}
                                     <div className="flex items-center space-x-3">
                                         <input
                                             type="text"
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
-                                            placeholder={`Message ${activeConversation.other_user?.username || 'user'}...`}
+                                            placeholder={`Message ${activeConversation.other_user?.role === 'admin' ? 'Skipped Admin' : (activeConversation.other_user?.username || 'user')}...`}
                                             className="flex-1 px-5 py-3 border border-secondary-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-secondary-50 text-secondary-900 placeholder:text-secondary-400 transition-shadow"
                                         />
                                         <button

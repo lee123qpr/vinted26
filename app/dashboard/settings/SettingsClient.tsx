@@ -219,7 +219,7 @@ export default function SettingsClient({ user, initialProfile }: Props) {
 
 
                     {/* Submit */}
-                    <div className="flex justify-end pt-4 border-t border-secondary-100 mb-12">
+                    <div className="flex justify-end pt-4 border-t border-secondary-100 pb-2">
                         <button
                             type="submit"
                             disabled={savingProfile}
@@ -231,7 +231,7 @@ export default function SettingsClient({ user, initialProfile }: Props) {
                 </form>
 
                 {/* Payments Section */}
-                <div className="pt-10 mb-12">
+                <div className="pt-6 mb-12">
                     <div className="border-b border-secondary-100 pb-2 mb-4">
                         <h2 className="text-xl font-bold text-secondary-900 flex items-center gap-2">
                             <span className="text-xl">💳</span>
@@ -242,7 +242,12 @@ export default function SettingsClient({ user, initialProfile }: Props) {
 
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center">
                         <div>
-                            <h3 className="font-semibold text-secondary-900">Stripe Connect</h3>
+                            <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold text-secondary-900">Stripe Connect</h3>
+                                <svg viewBox="0 0 60 25" xmlns="http://www.w3.org/2000/svg" className="h-4 w-auto drop-shadow-sm">
+                                  <path fill="#635BFF" d="M59.64 14.28h-8.06c.19 1.93 1.6 3.06 3.2 3.06 1.02 0 1.87-.26 2.59-.73l1.19 2.58c-1.37.81-3.15 1.11-4.66 1.11-3.66 0-5.86-2.28-5.86-5.99 0-3.63 2.18-6.19 5.59-6.19 3.52 0 5.43 2.65 5.43 6.09 0 .28-.02.66-.05 1.07zm-4.73-2.31c-.13-1.63-1.22-2.71-2.61-2.71-1.39 0-2.45 1.08-2.67 2.71h5.28zM43.6 8.52h2.95v11.39c0 .19.06.26.19.26.24 0 .6-.07.9-.19l.51 2.58c-.59.26-1.57.41-2.46.41-1.92 0-2.78-1-2.78-2.62v-9H41.3v-2.83h1.61V5.7l3.63-1.07v3.89H43.6v.01zM34.78 8.44c1.19 0 2.21.36 2.87.89l-.91 2.8c-.46-.37-1.12-.64-1.89-.64-1.66 0-2.5 1.05-2.5 2.57v5.85H28.7V8.52h2.95v1.48c.83-1.07 1.95-1.56 3.13-1.56zM24.81 8.52V23h-3.66V8.52h3.66zm-1.83-5.32c1.23 0 2.22.99 2.22 2.22 0 1.23-.99 2.22-2.22 2.22s-2.22-.99-2.22-2.22c.01-1.23 1-2.22 2.22-2.22zM15.34 8.44c1.69 0 2.75.92 3.16 2.05l.02.04v-1.63L22 8.59l-.02 5.09c0 3.73-2.11 6.67-6.55 6.67-2.66 0-4.67-.84-5.69-1.58l1.41-2.7c.94.59 2.5 1.2 4.14 1.2 2.11 0 3.03-1.22 3.03-3.05v-.74c-.58.85-1.74 1.58-3.4 1.58-3.1 0-5.74-2.5-5.74-6.07 0-3.68 2.55-6.17 5.76-6.17v-.01h.03zm.57 9.17c1.76 0 2.92-1.39 2.92-3.19 0-1.79-1.17-3.17-2.92-3.17-1.74 0-2.94 1.37-2.94 3.17 0 1.79 1.19 3.19 2.94 3.19zM7.05 15.6c0 1.17.96 1.91 2.48 1.91 1.42 0 2.45-.63 2.45-1.54 0-.91-.58-1.42-1.89-1.76l-1.69-.44c-2-.54-3.5-1.65-3.5-3.64 0-2.24 1.84-3.9 4.88-3.9 2.37 0 4 .76 5.02 1.48l-1.29 2.68c-.76-.48-1.92-1.22-3.58-1.22-1.15 0-1.81.42-1.81 1.18 0 .61.46.99 1.82 1.35l1.58.42c2.25.61 3.59 1.58 3.59 3.79 0 2.45-1.95 4.07-5.11 4.07-2.58 0-4.64-.81-5.78-1.6l1.39-2.78z" />
+                                </svg>
+                            </div>
                             <p className="text-sm text-secondary-500">Secure payments and payouts via Stripe.</p>
                             {initialProfile?.stripe_charges_enabled && (
                                 <p className="text-xs text-green-600 font-bold mt-1">✅ Payouts Active</p>

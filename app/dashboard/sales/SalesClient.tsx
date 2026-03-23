@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { formatCurrency } from '@/lib/format';
 import { updateOrderStatus } from '@/app/actions/orders';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 import ConfirmModal from '@/components/ConfirmModal';
@@ -23,6 +24,8 @@ export default function SalesClient({ initialSales: sales }: Props) {
         orderId: string | null;
         status: 'shipped' | 'cancelled' | null;
     }>({ isOpen: false, orderId: null, status: null });
+
+    const router = useRouter();
 
     const initiateStatusUpdate = (orderId: string, status: 'shipped' | 'cancelled') => {
         setConfirmModal({ isOpen: true, orderId, status });
@@ -43,6 +46,7 @@ export default function SalesClient({ initialSales: sales }: Props) {
             if (result.error) toast.error(result.error);
             else {
                 toast.success('Order status updated!');
+                router.refresh(); // Automatically refresh UI to show new status
                 setConfirmModal({ isOpen: false, orderId: null, status: null });
             }
         } catch (err) {

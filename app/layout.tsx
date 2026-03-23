@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
@@ -12,18 +12,26 @@ import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport: Viewport = {
+  themeColor: '#ffffff',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: {
-    template: '%s | Skipped',
-    default: 'Skipped - Construction Materials Marketplace'
+    template: '%s | Skipped Marketplace',
+    default: 'Skipped - Buy & Sell Surplus Construction Materials UK'
   },
-  description: "Buy and sell surplus construction materials. Save money, reduce waste, and track your environmental impact.",
+  description: "The UK's premier circular economy marketplace for construction materials. Buy and sell surplus, reclaimed, and leftover building supplies. Reduce waste, track carbon ESG impact, and save money.",
+  keywords: ["surplus construction materials", "reclaimed building materials", "buy building supplies uk", "sell leftover materials", "circular economy construction", "construction waste reuse", "charity building materials", "ESG data construction", "cheap building materials", "trade materials marketplace"],
   metadataBase: new URL('https://www.skipped-uk.com'),
   openGraph: {
-    title: 'Skipped - Construction Materials Marketplace',
-    description: 'Buy and sell surplus construction materials. Save money, reduce waste, and track your environmental impact.',
+    title: 'Skipped - Buy & Sell Surplus Construction Materials UK',
+    description: 'The UK\'s premier circular economy marketplace for construction materials. Join thousands of tradesmen and businesses reducing waste and tracking environmental impact.',
     url: 'https://www.skipped-uk.com',
-    siteName: 'Skipped',
+    siteName: 'Skipped Marketplace',
     locale: 'en_GB',
     type: 'website',
   },
@@ -118,7 +126,7 @@ export default async function RootLayout({
         <Footer />
         <CookieConsent />
         <Toaster position="bottom-right" toastOptions={{ duration: 4000, style: { background: '#333', color: '#fff', borderRadius: '8px' } }} />
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || 'G-XCV35D12C0'} />
       </body>
     </html>
   );
