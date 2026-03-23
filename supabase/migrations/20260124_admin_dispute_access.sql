@@ -7,7 +7,7 @@ create policy "Admins can view all disputes"
   using (
     exists (
       select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.is_admin = true
+      where profiles.id = (select auth.uid()) and profiles.is_admin = true
     )
   );
 
@@ -17,7 +17,7 @@ create policy "Admins can update disputes"
   using (
     exists (
       select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.is_admin = true
+      where profiles.id = (select auth.uid()) and profiles.is_admin = true
     )
   );
 
@@ -28,7 +28,7 @@ create policy "Admins can view all messages"
   using (
     exists (
       select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.is_admin = true
+      where profiles.id = (select auth.uid()) and profiles.is_admin = true
     )
   );
 
@@ -38,7 +38,7 @@ create policy "Admins can view all dispute messages"
   using (
     exists (
       select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.is_admin = true
+      where profiles.id = (select auth.uid()) and profiles.is_admin = true
     )
   );
 
@@ -47,6 +47,7 @@ create policy "Admins can insert dispute messages"
   with check (
     exists (
       select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.is_admin = true
+      where profiles.id = (select auth.uid()) and profiles.is_admin = true
     )
   );
+

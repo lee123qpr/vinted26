@@ -27,7 +27,8 @@ USING (
 DROP POLICY IF EXISTS "Sellers can view own listings" ON listings;
 CREATE POLICY "Sellers can view own listings"
 ON listings FOR SELECT
-USING (auth.uid() = seller_id);
+USING ((select auth.uid()) = seller_id);
 
 -- 5. Explicitly notify schema reload
 NOTIFY pgrst, 'reload schema';
+

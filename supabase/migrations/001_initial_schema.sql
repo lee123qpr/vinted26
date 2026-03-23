@@ -266,23 +266,23 @@ CREATE POLICY "Public profiles are viewable by everyone" ON profiles
   FOR SELECT USING (true);
 
 CREATE POLICY "Users can update own profile" ON profiles
-  FOR UPDATE USING (auth.uid() = id);
+  FOR UPDATE USING ((select auth.uid()) = id);
 
 CREATE POLICY "Users can insert own profile" ON profiles
-  FOR INSERT WITH CHECK (auth.uid() = id);
+  FOR INSERT WITH CHECK ((select auth.uid()) = id);
 
 -- Listings: Public read, sellers can manage their own
 CREATE POLICY "Listings are viewable by everyone" ON listings
   FOR SELECT USING (status = 'active' OR seller_id = auth.uid());
 
 CREATE POLICY "Users can create listings" ON listings
-  FOR INSERT WITH CHECK (auth.uid() = seller_id);
+  FOR INSERT WITH CHECK ((select auth.uid()) = seller_id);
 
 CREATE POLICY "Users can update own listings" ON listings
-  FOR UPDATE USING (auth.uid() = seller_id);
+  FOR UPDATE USING ((select auth.uid()) = seller_id);
 
 CREATE POLICY "Users can delete own listings" ON listings
-  FOR DELETE USING (auth.uid() = seller_id);
+  FOR DELETE USING ((select auth.uid()) = seller_id);
 
 -- Listing Images: Follow listing permissions
 CREATE POLICY "Listing images are viewable by everyone" ON listing_images
@@ -299,20 +299,20 @@ CREATE POLICY "Users can manage own listing images" ON listing_images
 
 -- Transactions: Only buyer and seller can view
 CREATE POLICY "Users can view own transactions" ON transactions
-  FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = seller_id);
+  FOR SELECT USING ((select auth.uid()) = buyer_id OR (select auth.uid()) = seller_id);
 
 CREATE POLICY "Users can create transactions" ON transactions
-  FOR INSERT WITH CHECK (auth.uid() = buyer_id);
+  FOR INSERT WITH CHECK ((select auth.uid()) = buyer_id);
 
 CREATE POLICY "Users can update own transactions" ON transactions
-  FOR UPDATE USING (auth.uid() = buyer_id OR auth.uid() = seller_id);
+  FOR UPDATE USING ((select auth.uid()) = buyer_id OR (select auth.uid()) = seller_id);
 
 -- Messages: Only sender and recipient can view
 CREATE POLICY "Users can view own messages" ON messages
-  FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = recipient_id);
+  FOR SELECT USING ((select auth.uid()) = sender_id OR (select auth.uid()) = recipient_id);
 
 CREATE POLICY "Users can send messages" ON messages
-  FOR INSERT WITH CHECK (auth.uid() = sender_id);
+  FOR INSERT WITH CHECK ((select auth.uid()) = sender_id);
 
 -- Carbon Certificates: Public if is_public, otherwise only buyer/seller
 CREATE POLICY "Public certificates are viewable by everyone" ON carbon_certificates
@@ -321,7 +321,7 @@ CREATE POLICY "Public certificates are viewable by everyone" ON carbon_certifica
     EXISTS (
       SELECT 1 FROM transactions
       WHERE transactions.id = carbon_certificates.transaction_id
-      AND (transactions.buyer_id = auth.uid() OR transactions.seller_id = auth.uid())
+      AND (transactions.buyer_id = (select auth.uid()) OR transactions.seller_id = auth.uid())
     )
   );
 
@@ -331,44 +331,44 @@ CREATE POLICY "Reviews are viewable by everyone" ON reviews
 
 CREATE POLICY "Users can create reviews for their transactions" ON reviews
   FOR INSERT WITH CHECK (
-    auth.uid() = reviewer_id AND
+    (select auth.uid()) = reviewer_id AND
     EXISTS (
       SELECT 1 FROM transactions
       WHERE transactions.id = reviews.transaction_id
-      AND (transactions.buyer_id = auth.uid() OR transactions.seller_id = auth.uid())
+      AND (transactions.buyer_id = (select auth.uid()) OR transactions.seller_id = auth.uid())
     )
   );
 
 -- Disputes: Only involved parties can view
 CREATE POLICY "Users can view own disputes" ON disputes
   FOR SELECT USING (
-    auth.uid() = opened_by_id OR
+    (select auth.uid()) = opened_by_id OR
     EXISTS (
       SELECT 1 FROM transactions
       WHERE transactions.id = disputes.transaction_id
-      AND (transactions.buyer_id = auth.uid() OR transactions.seller_id = auth.uid())
+      AND (transactions.buyer_id = (select auth.uid()) OR transactions.seller_id = auth.uid())
     )
   );
 
 CREATE POLICY "Users can create disputes for their transactions" ON disputes
   FOR INSERT WITH CHECK (
-    auth.uid() = opened_by_id AND
+    (select auth.uid()) = opened_by_id AND
     EXISTS (
       SELECT 1 FROM transactions
       WHERE transactions.id = disputes.transaction_id
-      AND (transactions.buyer_id = auth.uid() OR transactions.seller_id = auth.uid())
+      AND (transactions.buyer_id = (select auth.uid()) OR transactions.seller_id = auth.uid())
     )
   );
 
 -- Favourites: Users can manage their own
 CREATE POLICY "Users can view own favourites" ON favourites
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can create favourites" ON favourites
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete own favourites" ON favourites
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE USING ((select auth.uid()) = user_id);
 
 -- ============================================================================
 -- FUNCTIONS AND TRIGGERS
@@ -420,3 +420,4 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+

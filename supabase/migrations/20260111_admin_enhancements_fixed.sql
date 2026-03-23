@@ -67,18 +67,18 @@ CREATE POLICY "Users can view dispute messages" ON dispute_messages
       SELECT 1 FROM disputes d
       JOIN transactions t ON d.transaction_id = t.id
       WHERE d.id = dispute_messages.dispute_id
-      AND (t.buyer_id = auth.uid() OR t.seller_id = auth.uid())
+      AND (t.buyer_id = (select auth.uid()) OR t.seller_id = auth.uid())
     )
   );
 
 CREATE POLICY "Users can send dispute messages" ON dispute_messages
   FOR INSERT WITH CHECK (
-    auth.uid() = sender_id AND
+    (select auth.uid()) = sender_id AND
     EXISTS (
       SELECT 1 FROM disputes d
       JOIN transactions t ON d.transaction_id = t.id
       WHERE d.id = dispute_messages.dispute_id
-      AND (t.buyer_id = auth.uid() OR t.seller_id = auth.uid())
+      AND (t.buyer_id = (select auth.uid()) OR t.seller_id = auth.uid())
     )
   );
 
@@ -88,17 +88,18 @@ CREATE POLICY "Users can view dispute evidence" ON dispute_evidence
       SELECT 1 FROM disputes d
       JOIN transactions t ON d.transaction_id = t.id
       WHERE d.id = dispute_evidence.dispute_id
-      AND (t.buyer_id = auth.uid() OR t.seller_id = auth.uid())
+      AND (t.buyer_id = (select auth.uid()) OR t.seller_id = auth.uid())
     )
   );
 
 CREATE POLICY "Users can upload dispute evidence" ON dispute_evidence
   FOR INSERT WITH CHECK (
-    auth.uid() = uploaded_by AND
+    (select auth.uid()) = uploaded_by AND
     EXISTS (
       SELECT 1 FROM disputes d
       JOIN transactions t ON d.transaction_id = t.id
       WHERE d.id = dispute_evidence.dispute_id
-      AND (t.buyer_id = auth.uid() OR t.seller_id = auth.uid())
+      AND (t.buyer_id = (select auth.uid()) OR t.seller_id = auth.uid())
     )
   );
+

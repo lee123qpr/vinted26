@@ -8,7 +8,7 @@ BEGIN
   RETURN EXISTS (
     SELECT 1
     FROM profiles
-    WHERE id = auth.uid()
+    WHERE id = (select auth.uid())
     AND is_admin = true
   );
 END;
@@ -30,5 +30,6 @@ DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 CREATE POLICY "Users can view own profile" 
 ON profiles FOR SELECT 
 USING (
-  auth.uid() = id
+  (select auth.uid()) = id
 );
+

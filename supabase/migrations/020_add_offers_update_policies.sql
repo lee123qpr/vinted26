@@ -15,5 +15,6 @@ using (
 create policy "Buyers can update their own offers"
 on offers for update
 using (
-  auth.uid() = buyer_id
+  (select auth.uid()) = buyer_id
 );
+

@@ -14,12 +14,13 @@ alter table public.favourites enable row level security;
 -- Policies
 create policy "Users can view their own favourites" on public.favourites
   for select
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 create policy "Users can insert their own favourites" on public.favourites
   for insert
-  with check (auth.uid() = user_id);
+  with check ((select auth.uid()) = user_id);
 
 create policy "Users can delete their own favourites" on public.favourites
   for delete
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
+

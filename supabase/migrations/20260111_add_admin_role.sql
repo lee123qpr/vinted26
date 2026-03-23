@@ -10,7 +10,7 @@ DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
 CREATE POLICY "Admins can view all profiles" 
 ON profiles FOR SELECT 
 USING (
-  auth.uid() IN (
+  (select auth.uid()) IN (
     SELECT id FROM profiles WHERE is_admin = TRUE
   )
 );
@@ -27,3 +27,4 @@ USING (
 
 -- Index for performance
 CREATE INDEX IF NOT EXISTS idx_profiles_is_admin ON profiles(is_admin);
+

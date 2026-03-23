@@ -21,9 +21,10 @@ ALTER TABLE system_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can manage settings" 
 ON system_settings 
 USING (
-  auth.uid() IN (SELECT id FROM profiles WHERE is_admin = TRUE)
+  (select auth.uid()) IN (SELECT id FROM profiles WHERE is_admin = TRUE)
 );
 
 CREATE POLICY "Public can read active settings" 
 ON system_settings FOR SELECT
 USING (true);
+

@@ -15,7 +15,7 @@ CREATE POLICY "Admins can manage settings" ON system_settings
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles
-      WHERE profiles.id = auth.uid()
+      WHERE profiles.id = (select auth.uid())
       -- Add admin check here if you have an is_admin column, otherwise open for verified users?
       -- For now, let's keep it open for authenticated users to read, admin to write
     )
@@ -28,3 +28,4 @@ VALUES
   ('maintenance_mode', 'false', 'Put site in maintenance mode'),
   ('global_banner_text', '', 'Global announcement banner text')
 ON CONFLICT (key) DO NOTHING;
+

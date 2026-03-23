@@ -25,7 +25,7 @@ CREATE POLICY "Users can view their conversations"
 ON public.conversations
 FOR SELECT
 USING (
-    auth.uid() = participant1_id OR auth.uid() = participant2_id
+    (select auth.uid()) = participant1_id OR (select auth.uid()) = participant2_id
 );
 
 -- Users can insert conversations if they are part of it.
@@ -33,7 +33,7 @@ CREATE POLICY "Users can insert conversations"
 ON public.conversations
 FOR INSERT
 WITH CHECK (
-    auth.uid() = participant1_id OR auth.uid() = participant2_id
+    (select auth.uid()) = participant1_id OR (select auth.uid()) = participant2_id
 );
 
 -- Users can update conversations if they are part of it (e.g. to update last_message)
@@ -41,7 +41,7 @@ CREATE POLICY "Users can update their conversations"
 ON public.conversations
 FOR UPDATE
 USING (
-    auth.uid() = participant1_id OR auth.uid() = participant2_id
+    (select auth.uid()) = participant1_id OR (select auth.uid()) = participant2_id
 );
 
 -- 4. Indexes for Performance
@@ -133,3 +133,4 @@ CREATE TRIGGER trigger_update_conversation
 AFTER INSERT ON public.messages
 FOR EACH ROW
 EXECUTE FUNCTION update_conversation_on_message();
+

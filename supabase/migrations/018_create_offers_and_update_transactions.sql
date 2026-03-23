@@ -18,12 +18,12 @@ alter table offers enable row level security;
 -- Buyers can create offers
 create policy "Buyers can insert their own offers"
   on offers for insert
-  with check (auth.uid() = buyer_id);
+  with check ((select auth.uid()) = buyer_id);
 
 -- Buyers can view their own offers
 create policy "Buyers can view their own offers"
   on offers for select
-  using (auth.uid() = buyer_id);
+  using ((select auth.uid()) = buyer_id);
 
 -- Sellers can view offers on their listings
 create policy "Sellers can view offers on their listings"
@@ -47,3 +47,4 @@ alter table transactions add column dispute_reason text;
 alter table transactions add column dispute_evidence jsonb default '[]'::jsonb;
 alter table transactions add column delivered_at timestamptz;
 alter table transactions add column accepted_at timestamptz;
+

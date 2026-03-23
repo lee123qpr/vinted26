@@ -29,12 +29,13 @@ CREATE POLICY "Owner Manage"
 ON storage.objects FOR DELETE
 USING (
   bucket_id = 'listings' AND
-  (storage.foldername(name))[1] = auth.uid()::text
+  (storage.foldername(name))[1] = (select auth.uid())::text
 );
 
 CREATE POLICY "Owner Update"
 ON storage.objects FOR UPDATE
 USING (
   bucket_id = 'listings' AND
-  (storage.foldername(name))[1] = auth.uid()::text
+  (storage.foldername(name))[1] = (select auth.uid())::text
 );
+

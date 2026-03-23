@@ -19,9 +19,10 @@ ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can manage articles" 
 ON articles 
 USING (
-  auth.uid() IN (SELECT id FROM profiles WHERE is_admin = TRUE)
+  (select auth.uid()) IN (SELECT id FROM profiles WHERE is_admin = TRUE)
 );
 
 CREATE POLICY "Public can read published articles" 
 ON articles FOR SELECT
 USING (is_published = TRUE);
+

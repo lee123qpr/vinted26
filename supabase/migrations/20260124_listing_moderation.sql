@@ -21,7 +21,7 @@ create policy "Admins can view all reports"
   using (
     exists (
       select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.is_admin = true
+      where profiles.id = (select auth.uid()) and profiles.is_admin = true
     )
   );
 
@@ -31,14 +31,14 @@ create policy "Admins can update reports"
   using (
     exists (
       select 1 from public.profiles
-      where profiles.id = auth.uid() and profiles.is_admin = true
+      where profiles.id = (select auth.uid()) and profiles.is_admin = true
     )
   );
 
 -- Users can create reports (authenticated only for now to prevent spam)
 create policy "Users can insert reports"
   on public.reports for insert
-  with check (auth.uid() is not null);
+  with check ((select auth.uid()) is not null);
 
 
 -- 2. Auto-Moderation Trigger
@@ -81,3 +81,4 @@ create trigger on_listing_created_check_safety
     on public.listings
     for each row
     execute function public.auto_flag_listing();
+
