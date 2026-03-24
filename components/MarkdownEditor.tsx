@@ -113,6 +113,43 @@ export default function MarkdownEditor({ name, placeholder, required, defaultVal
         }
     };
 
+    const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+        const html = e.clipboardData.getData('text/html');
+        if (!html) return; // Fall back to default behavior
+
+        e.preventDefault();
+        
+        // Basic HTML -> Markdown converter
+        let markdown = html
+            .replace(/<(strong|b)[^>]*>(.*?)<\/\1>/gi, '**$2**')
+            .replace(/<(em|i)[^>]*>(.*?)<\/\1>/gi, '*$2*')
+            .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n')
+            .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n')
+            .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
+            .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n')
+            .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+            .replace(/<br[^>]*>/gi, '\n')
+            .replace(/<[^>]+>/g, ''); // Strip remaining tags
+            
+        // Decode common HTML entities
+        markdown = markdown
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'");
+
+        const el = textareaRef.current;
+        if (!el) return;
+
+        const start = el.selectionStart;
+        const end = el.selectionEnd;
+        const newValue = value.substring(0, start) + markdown + value.substring(end);
+        
+        pushToHistory(newValue, start + markdown.length, start + markdown.length);
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
         setValue(newValue);
@@ -209,6 +246,7 @@ export default function MarkdownEditor({ name, placeholder, required, defaultVal
                         value={value}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
+                        onPaste={handlePaste}
                         className="w-full px-5 py-4 min-h-[500px] outline-none resize-y font-mono text-[14px] leading-relaxed text-slate-800 selection:bg-primary-100 placeholder:text-slate-300"
                         placeholder={placeholder}
                     />
