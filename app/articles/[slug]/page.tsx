@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { format } from 'date-fns';
 import ShareButtons from '@/components/ShareButtons';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 3600; // Revalidate every hour
 
@@ -39,8 +40,44 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         notFound();
     }
 
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.skipped-uk.com';
+    const articleUrl = `${BASE_URL}/articles/${article.slug}`;
+
+    const articleSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: article.title,
+        description: article.summary,
+        url: articleUrl,
+        ...(article.cover_image && { image: [article.cover_image] }),
+        datePublished: article.published_at,
+        dateModified: article.updated_at || article.published_at,
+        author: {
+            '@type': 'Person',
+            name: article.profiles?.full_name || 'Skipped Editorial Team',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'Skipped',
+            logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo.png` },
+        },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl },
+    };
+
+    const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+            { '@type': 'ListItem', position: 2, name: 'Articles', item: `${BASE_URL}/articles` },
+            { '@type': 'ListItem', position: 3, name: article.title, item: articleUrl },
+        ],
+    };
+
     return (
         <article className="min-h-screen bg-white pb-20">
+            <JsonLd data={articleSchema} />
+            <JsonLd data={breadcrumbSchema} />
             {/* Header Image */}
             {article.cover_image && (
                 <div className="relative w-full h-[400px] md:h-[500px]">

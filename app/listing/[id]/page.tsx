@@ -4,6 +4,7 @@ import ListingClient from './ListingClient';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import RelatedListings from './RelatedListings';
+import JsonLd from '@/components/JsonLd';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -77,9 +78,60 @@ export default async function ListingPage({ params }: Props) {
         notFound();
     }
 
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.skipped-uk.com';
+    const mainImage = (listing as any).listing_images?.[0]?.image_url;
+
+    const productSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: listing.title,
+        description: listing.description,
+        ...(mainImage && { image: [mainImage] }),
+        brand: { '@type': 'Brand', name: 'Skipped Marketplace' },
+        ...(listing.condition && {
+            itemCondition: listing.condition === 'new'
+                ? 'https://schema.org/NewCondition'
+                : listing.condition === 'used_good'
+                ? 'https://schema.org/UsedCondition'
+                : 'https://schema.org/DamagedCondition',
+        }),
+        offers: {
+            '@type': 'Offer',
+            price: (listing as any).is_free ? '0' : (listing as any).price_gbp,
+            priceCurrency: 'GBP',
+            availability: 'https://schema.org/InStock',
+            url: `${BASE_URL}/listing/${listing.id}`,
+            seller: {
+                '@type': 'Person',
+                name: (listing as any).profiles?.username || 'Skipped Seller',
+            },
+        },
+        ...((listing as any).profiles?.rating_average && {
+            aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: (listing as any).profiles.rating_average,
+                bestRating: '5',
+                worstRating: '1',
+            },
+        }),
+    };
+
+    const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+            { '@type': 'ListItem', position: 2, name: 'Search', item: `${BASE_URL}/search` },
+            ...((listing as any).categories ? [{ '@type': 'ListItem', position: 3, name: (listing as any).categories.name, item: `${BASE_URL}/category/${(listing as any).categories.slug}` }] : []),
+            { '@type': 'ListItem', position: (listing as any).categories ? 4 : 3, name: listing.title, item: `${BASE_URL}/listing/${listing.id}` },
+        ],
+    };
+
     // Pass data to Client Component
     return (
         <>
+            <JsonLd data={productSchema} />
+            <JsonLd data={breadcrumbSchema} />
             <ListingClient
                 listing={listing}
                 user={user}

@@ -7,6 +7,7 @@ import HomeFAQ from '@/components/HomeFAQ';
 import { formatCurrency } from '@/lib/format';
 import ListingCard from '@/components/ListingCard';
 import { unstable_cache } from 'next/cache';
+import JsonLd from '@/components/JsonLd';
 
 // Cache the heavy impact aggregation for 1 hour
 const getImpactStats = unstable_cache(
@@ -122,8 +123,56 @@ export default async function HomePage() {
     },
   ];
 
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.skipped-uk.com';
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Skipped',
+    url: BASE_URL,
+    logo: `${BASE_URL}/logo.png`,
+    description: 'The UK marketplace for buying and selling surplus construction materials. Reduce waste, save money, and track your environmental impact.',
+    sameAs: [],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      url: `${BASE_URL}/contact`,
+    },
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Skipped',
+    url: BASE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${BASE_URL}/search?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const itemListSchema = recentListings && recentListings.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Latest Construction Material Listings on Skipped',
+    url: `${BASE_URL}/search`,
+    itemListElement: recentListings.map((listing: any, index: number) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `${BASE_URL}/listing/${listing.id}`,
+      name: listing.title,
+    })),
+  } : null;
+
   return (
     <div className="min-h-screen">
+      <JsonLd data={organizationSchema} />
+      <JsonLd data={websiteSchema} />
+      {itemListSchema && <JsonLd data={itemListSchema} />}
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white py-20">
         <div className="container-custom">

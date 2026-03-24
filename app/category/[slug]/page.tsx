@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import FilterSidebar from '@/components/FilterSidebar';
 import ListingCard from '@/components/ListingCard';
-
+import JsonLd from '@/components/JsonLd';
 import { Metadata } from 'next';
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -165,8 +165,22 @@ export default async function CategoryPage(props: {
         breadcrumbs.push({ name: currentDetailName, href: '#' });
     }
 
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.skipped-uk.com';
+
+    const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbs.map((crumb, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: crumb.name,
+            item: crumb.href !== '#' ? `${BASE_URL}${crumb.href}` : undefined,
+        })),
+    };
+
     return (
         <div className="min-h-screen bg-secondary-50 pb-12">
+            <JsonLd data={breadcrumbSchema} />
             {/* Category Header */}
             <div className="bg-white border-b border-secondary-200">
                 <div className="container-custom py-8">
