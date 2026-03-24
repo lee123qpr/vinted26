@@ -33,24 +33,33 @@ export default function EmailLabPage() {
         const loadPreview = async () => {
             setLoadingPreview(true);
             
-            // Fetch Raw DB text
-            const raw = await getTemplateRaw(selectedTemplate);
-            if (mounted) {
-                if (raw) {
-                    setSubject(raw.subject);
-                    setBodyHtml(raw.bodyHtml);
-                } else {
-                    // Reset if not found
-                    setSubject('');
-                    setBodyHtml('<p>Template not found in database. Create it here?</p>');
+            try {
+                // Fetch Raw DB text
+                const raw = await getTemplateRaw(selectedTemplate);
+                if (mounted) {
+                    if (raw) {
+                        setSubject(raw.subject);
+                        setBodyHtml(raw.bodyHtml);
+                    } else {
+                        setSubject('');
+                        setBodyHtml('<p>Template not found in database. Edit here to create it.</p>');
+                    }
                 }
-            }
 
-            // Fetch compiled iframe preview
-            const html = await renderTemplate(selectedTemplate);
-            if (mounted) {
-                setPreviewHtml(html);
-                setLoadingPreview(false);
+                // Fetch compiled iframe preview
+                const html = await renderTemplate(selectedTemplate);
+                if (mounted) {
+                    setPreviewHtml(html);
+                }
+            } catch (err: any) {
+                console.error("Failed to load preview:", err);
+                if (mounted) {
+                    setSubject('Error Loading Template');
+                    setBodyHtml(`<p>System Error: ${err.message || 'Unknown error'}</p>`);
+                    setPreviewHtml('<p>Error connecting to server actions.</p>');
+                }
+            } finally {
+                if (mounted) setLoadingPreview(false);
             }
         };
         loadPreview();
@@ -59,17 +68,23 @@ export default function EmailLabPage() {
 
     const handleSave = async () => {
         setIsSaving(true);
-        setSaveMessage('');
-        const res = await saveTemplate(selectedTemplate, subject, bodyHtml);
-        if (res.success) {
-            setSaveMessage('✓ Save Success');
-            const html = await renderTemplate(selectedTemplate);
-            setPreviewHtml(html);
-            setTimeout(() => setSaveMessage(''), 3000);
-        } else {
-            setSaveMessage('✕ Error: ' + res.error);
+        setSaveMessage('Saving...');
+        try {
+            const res = await saveTemplate(selectedTemplate, subject, bodyHtml);
+            if (res.success) {
+                setSaveMessage('✓ Save Success');
+                const html = await renderTemplate(selectedTemplate);
+                setPreviewHtml(html);
+                setTimeout(() => setSaveMessage(''), 3000);
+            } else {
+                setSaveMessage('✕ Error: ' + res.error);
+            }
+        } catch (err: any) {
+            console.error(err);
+            setSaveMessage('✕ Network Error: ' + (err.message || 'Call failed'));
+        } finally {
+            setIsSaving(false);
         }
-        setIsSaving(false);
     };
 
     const handleSendTest = async () => {
@@ -83,9 +98,10 @@ export default function EmailLabPage() {
                 setStatus('error');
                 alert(result.error);
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
             setStatus('error');
+            alert(e.message || "Network Error: Failed to contact the server.");
         }
     };
 

@@ -75,15 +75,20 @@ export async function renderTemplate(templateKey: string) {
 }
 
 export async function getTemplateRaw(templateKey: string) {
-    const supabase = await createAdminClient();
-    const { data, error } = await supabase
-        .from('email_templates')
-        .select('subject, body_html')
-        .eq('template_id', templateKey)
-        .single();
-    
-    if (error || !data) return null;
-    return { subject: data.subject, bodyHtml: data.body_html };
+    try {
+        const supabase = await createAdminClient();
+        const { data, error } = await supabase
+            .from('email_templates')
+            .select('subject, body_html')
+            .eq('template_id', templateKey)
+            .single();
+        
+        if (error || !data) return null;
+        return { subject: data.subject, bodyHtml: data.body_html };
+    } catch (e) {
+        console.error("getTemplateRaw Error:", e);
+        return null; // The frontend will fallback gracefully
+    }
 }
 
 export async function saveTemplate(templateKey: string, subject: string, bodyHtml: string) {
