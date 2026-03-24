@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import ShareButtons from '@/components/ShareButtons';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import JsonLd from '@/components/JsonLd';
+import RelatedArticles from '@/components/RelatedArticles';
 
 export const revalidate = 3600; // Revalidate every hour
 
@@ -129,10 +130,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                     </div>
 
                     {/* Share */}
-                    <ShareButtons
-                        title={article.title}
-                        url={`${process.env.NEXT_PUBLIC_APP_URL}/articles/${article.slug}`}
-                    />
+                    <div className="py-12 border-t border-secondary-100 mt-12">
+                        <ShareButtons
+                            title={article.title}
+                            url={articleUrl}
+                        />
+                    </div>
+
+                    {/* Related Articles */}
+                    <RelatedArticles currentArticleId={article.id} />
 
                 </div>
             </div>
