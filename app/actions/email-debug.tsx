@@ -4,21 +4,19 @@ import { Resend } from 'resend';
 import { render } from '@react-email/components';
 import React from 'react';
 import DynamicEmail from '@/lib/emails/DynamicEmail';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/server';
 
 // Initialize Services
-const resend = new Resend(process.env.RESEND_API_KEY);
 const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL || 'Skipped Marketplace <noreply@skipped-uk.com>';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function sendTestEmail(templateKey: string, toEmail: string) {
     if (!toEmail || !templateKey) return { success: false, error: 'Missing email or template' };
-    if (!process.env.RESEND_API_KEY) return { success: false, error: 'Configuration Error: API KMS missing.' };
+    if (!process.env.RESEND_API_KEY) return { success: false, error: 'Configuration Error: API Key missing.' };
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     try {
+        const supabase = await createAdminClient();
         const { data, error } = await supabase
             .from('email_templates')
             .select('*')
@@ -55,6 +53,7 @@ export async function sendTestEmail(templateKey: string, toEmail: string) {
 
 export async function renderTemplate(templateKey: string) {
     try {
+        const supabase = await createAdminClient();
         const { data, error } = await supabase
             .from('email_templates')
             .select('*')
@@ -76,6 +75,7 @@ export async function renderTemplate(templateKey: string) {
 }
 
 export async function getTemplateRaw(templateKey: string) {
+    const supabase = await createAdminClient();
     const { data, error } = await supabase
         .from('email_templates')
         .select('subject, body_html')
@@ -88,6 +88,7 @@ export async function getTemplateRaw(templateKey: string) {
 
 export async function saveTemplate(templateKey: string, subject: string, bodyHtml: string) {
     try {
+        const supabase = await createAdminClient();
         const { error } = await supabase
             .from('email_templates')
             .upsert({ 
