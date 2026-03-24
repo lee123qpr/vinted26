@@ -40,12 +40,16 @@ export async function sendTestEmail(templateKey: string, toEmail: string) {
             react: component,
         });
 
-        if (sentData.error) throw new Error(sentData.error.message);
-        return { success: true, data: sentData };
+        if (sentData.error) {
+            console.error('Resend Error:', sentData.error);
+            return { success: false, error: sentData.error.message };
+        }
+        
+        return { success: true, data: sentData.data };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Email Send Exception:', error);
-        return { success: false, error: 'Failed to send test email.' };
+        return { success: false, error: error.message || 'Failed to send test email.' };
     }
 }
 
@@ -86,8 +90,12 @@ export async function saveTemplate(templateKey: string, subject: string, bodyHtm
     try {
         const { error } = await supabase
             .from('email_templates')
-            .update({ subject, body_html: bodyHtml, updated_at: new Date().toISOString() })
-            .eq('template_id', templateKey);
+            .upsert({ 
+                template_id: templateKey,
+                subject, 
+                body_html: bodyHtml, 
+                updated_at: new Date().toISOString() 
+            }, { onConflict: 'template_id' });
         
         if (error) throw error;
         return { success: true };
